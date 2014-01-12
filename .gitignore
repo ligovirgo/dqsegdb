@@ -1,0 +1,8 @@
+/build
+/dist
+/dqsegdb.egg-info
+/dqsegdb/version.py
+.DS_Store
+*.pyc
+*.so
+*.swp
