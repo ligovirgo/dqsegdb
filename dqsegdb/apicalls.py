@@ -1,10 +1,9 @@
 import sys
-import dqsegdbURIFunctions
-import dqsegdbClientUtils
+import urifunctions
+import clientutils
 import json
-import jsonHelper
 import glue
-from jsonHelper import InsertFlagVersion
+from jsonhelper import InsertFlagVersion
 from urllib2 import HTTPError
 import time
 import json
@@ -21,7 +20,7 @@ from glue.ligolw import types as ligolwtypes
 import os
 import pyRXP
 import time
-from dqsegdbURIFunctions import *
+from urifunctions import *
 try:
     from lal import UTCToGPS as _UTCToGPS
 except ImportError:
@@ -39,8 +38,8 @@ def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,start
     Issue query to server for ifo:name:version with start and end time
     Returns the python loaded JSON response!
     """
-    queryurl=dqsegdbURIFunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
-    result=dqsegdbURIFunctions.getDataUrllib2(queryurl)
+    queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
+    result=urifunctions.getDataUrllib2(queryurl)
     result_json=json.loads(result)
     return result_json,queryurl
 
@@ -49,7 +48,7 @@ def reportFlags(protocol,server,verbose):
     queryurl=protocol+"://"+server+"/report/flags"
     if verbose:
         print queryurl
-    result=dqsegdbURIFunctions.getDataUrllib2(queryurl)
+    result=urifunctions.getDataUrllib2(queryurl)
     return result
 
 def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime):
@@ -66,10 +65,10 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
 
     ## Construct url and issue query to determine highest version from list 
     ## of versions
-    versionQueryURL=dqsegdbURIFunctions.constructVersionQueryURL(protocol,server,ifo,name)
+    versionQueryURL=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
     if verbose:
         print versionQueryURL
-    versionResult=dqsegdbURIFunctions.getDataUrllib2(versionQueryURL)
+    versionResult=urifunctions.getDataUrllib2(versionQueryURL)
 
     # Parse the result
     # Results should be a JSON object like this:
@@ -97,10 +96,10 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
         # I am assuming I need to pull off the versions from the urls to use my existing library function.  
         # Alternatively, we could make a new library function that starts from the end of the version and takes the include_list_string and start and end times as inputs
         version=versioned_url.split('/')[-1]
-        queryurl=dqsegdbURIFunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
+        queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
         if verbose:
             print queryurl
-        result=dqsegdbURIFunctions.getDataUrllib2(queryurl)
+        result=urifunctions.getDataUrllib2(queryurl)
         result_parsed=json.loads(result)
         jsonResults.append(result_parsed)
         # Fix!!! Executive Decision:  Should we force these intermediate results to hit disk?  
@@ -121,7 +120,7 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     # total_known_list across all versions, cascaded
     # and we have the total active list across all versions, cascaded
     # so we're done the math! : 
-    result_flag,affected_results=dqsegdbClientUtils.calculate_versionless_result(jsonResults,startTime,endTime)
+    result_flag,affected_results=clientutils.calculate_versionless_result(jsonResults,startTime,endTime)
     if verbose:
         print "active segments:", result_flag['active']
         print "known segments:", result_flag['known']

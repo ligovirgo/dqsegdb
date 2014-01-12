@@ -1,8 +1,7 @@
 from glue import segments
 import json
-#from dqsegdbAPICalls import dqsegdbQueryTimes
-import dqsegdbAPICalls
-import jsonHelper
+import apicalls
+import jsonhelper
 
 
 def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol, server,include_list_string):
@@ -16,7 +15,7 @@ def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol,
             ifo=entry[0]
             name=entry[1]
             version=entry[2]
-            result,queryurl=dqsegdbAPICalls.dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
+            result,queryurl=apicalls.dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
             includedURL.append(queryurl)
             includedJSON.append(result)
     if len(excludedList) > 0:
@@ -24,7 +23,7 @@ def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol,
             ifo=entry[0]
             name=entry[1]
             version=entry[2]
-            result,queryurl=dqsegdbAPICalls.dqsegdbQueryTimes(protocol,server,ifo,name,include_list_string,startTime,endTime)
+            result,queryurl=apicalls.dqsegdbQueryTimes(protocol,server,ifo,name,include_list_string,startTime,endTime)
             excludedURL.append(queryurl)
             excludedJSON.append(result)
 
@@ -80,7 +79,7 @@ def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
     version=1 
     known_segments=result_known_segment_list 
     active_segments=total_active_list 
-    result_flag=jsonHelper.buildFlagDict(ifo,name,version,known_segments,active_segments)
+    result_flag=jsonhelper.buildFlagDict(ifo,name,version,known_segments,active_segments)
     return result_flag
 
 def calculate_versionless_result(jsonResults,startTime,endTime):
@@ -133,7 +132,7 @@ def calculate_versionless_result(jsonResults,startTime,endTime):
     # I would prefer that this is more clear that this is not a specific IFO:FLAG:VERSION resource, but rather a contrived result, possibly by making it version 0
     total_active_list.coalesce()
     total_known_list.coalesce()
-    result_flag=jsonHelper.buildFlagDict(ifo,name,version,total_known_list,total_active_list)
+    result_flag=jsonhelper.buildFlagDict(ifo,name,version,total_known_list,total_active_list)
     return result_flag,affected_results
 
 
