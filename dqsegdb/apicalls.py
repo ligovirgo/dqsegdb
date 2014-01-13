@@ -3,7 +3,7 @@ import urifunctions
 import clientutils
 import json
 import glue
-from jsonhelper import InsertFlagVersion
+from dqsegdb.jsonhelper import InsertFlagVersion
 from urllib2 import HTTPError
 import time
 import json
@@ -20,7 +20,7 @@ from glue.ligolw import types as ligolwtypes
 import os
 import pyRXP
 import time
-from urifunctions import *
+from dqsegdb.urifunctions import *
 try:
     from lal import UTCToGPS as _UTCToGPS
 except ImportError:

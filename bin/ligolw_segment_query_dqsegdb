@@ -55,9 +55,8 @@ import socket
 import tempfile
 import urllib
 import urlparse
-import dqsegdbAPICalls
-import jsonHelper
-import dqsegdbClientUtils
+from dqsegdb import apicalls
+from dqsegdb import clientutils
 
 import glue.segments
 
@@ -298,7 +297,7 @@ def run_show_types(doc, protocol, server, gps_start_time, gps_end_time, included
 
     seg_dict = {}
 
-    result,queryurl=dqsegdbAPICalls.reportFlags(protocol,server,verbose)
+    result,queryurl=apicalls.reportFlags(protocol,server,verbose)
     ## Fix!!! Parse JSON result like rows is parsed below
     ## Fix!!! decide if we should still cut on included or excluded segments
 
@@ -415,7 +414,7 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
     # Let's try a.:
 
     # Ok the included_JSON_results and excluded_JSON_results will be handed to
-    # the dqsegdbClientUtils.calculate_combined_result function to generate the
+    # the clientutils.calculate_combined_result function to generate the
     # final segments for the combined result
     # *_intermediate_JSON will contain the by-products of versionless queries
     # where by-products mean the versioned results that are used to make the 
@@ -453,7 +452,7 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
                 sys.exit(1)
             # call to single version flag query goes here!
             # result is already processed into a python dict using json.loads :
-            json_result,queryurl=dqsegdbAPICalls.dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
+            json_result,queryurl=apicalls.dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
             if debug:
                 print json_result
                 print queryurl
@@ -464,7 +463,7 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
         else:
             version = '*'
             # Trigger versionless call to return a JSON result here
-            json_result,versioned_JSON,affected_results=dqsegdbAPICalls.dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime)
+            json_result,versioned_JSON,affected_results=apicalls.dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime)
             if debug:
                 print "Cascaded query call results:"
                 print json_result
@@ -536,14 +535,14 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
                     sys.exit(1)
                 # call to single version flag query goes here!
                 # result is already processed into a python dict using json.loads :
-                json_result,queryurl=dqsegdbAPICalls.dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
+                json_result,queryurl=apicalls.dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
                 excluded_JSON_results.append(json_result)
                 ex_segdefs.append((ifo, name, version, startTime, endTime, 0, 0))
                 #segment_summaries += json_result['known']&glue.segments.segmentlist(glue.segments.segment(startTime,endTime))
             else:
                 version = '*'
                 # Trigger versionless call to return a JSON result here
-                json_result,versioned_JSON,affected_results=dqsegdbAPICalls.dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime)
+                json_result,versioned_JSON,affected_results=apicalls.dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime)
                 # affected_results contains the segments of time that affected the final result for each version used in the calculation
                 # This replicates the S6 behavior:
                 excluded_JSON_results.append(json_result)
@@ -559,7 +558,7 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
     if debug:
         import pdb
         pdb.set_trace()
-    combined_result=dqsegdbClientUtils.calculate_combined_result(included_JSON_results,excluded_JSON_results,startTime,endTime,ifo)
+    combined_result=clientutils.calculate_combined_result(included_JSON_results,excluded_JSON_results,startTime,endTime,ifo)
     #found_segments=combined_result['active']
     found_segments=glue.segments.segmentlist([glue.segments.segment(x[0],x[1]) for x in combined_result['active']])
 

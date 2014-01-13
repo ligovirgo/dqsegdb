@@ -49,7 +49,7 @@ from glue.ligolw.utils import segments as ligolw_segments
 from glue.ligolw.utils import process as ligolw_process
 
 from glue.segmentdb import segmentdb_utils
-from dqsegdbAPICalls import *
+from dqsegdb.apicalls import *
 
 
 # try and exit gracefully on a term signal
@@ -235,7 +235,7 @@ try:
           logger.debug("inserting %s" % infiles)
           #myClient = segmentdb_utils.setup_database(options.segment_url)
           #result = myClient.insertdmt(xmltext)
-          #result=dqsegdbAPICalls.publish_xml(xmltext)
+          #result=apicalls.publish_xml(xmltext)
           #infile=[infile]
           result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=True,debug=local_debug,threads=thread_count)
           infiles=[]
@@ -265,7 +265,7 @@ try:
           logger.debug("inserting %s" % infiles)
           #myClient = segmentdb_utils.setup_database(options.segment_url)
           #result = myClient.insertdmt(xmltext)
-          #result=dqsegdbAPICalls.publish_xml(xmltext)
+          #result=apicalls.publish_xml(xmltext)
           #infile=[infile]
           result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=True,debug=local_debug,threads=thread_count)
       except KeyboardInterrupt:

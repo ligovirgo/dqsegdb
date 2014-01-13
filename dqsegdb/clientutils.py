@@ -1,7 +1,7 @@
 from glue import segments
 import json
-import apicalls
-import jsonhelper
+from dqsegdb import apicalls
+from dqsegdb import jsonhelper
 
 
 def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol, server,include_list_string):
