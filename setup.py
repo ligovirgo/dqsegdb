@@ -30,7 +30,7 @@ VERSION = vcinfo.version
 RELEASE = vcinfo.version != vcinfo.id and 'dev' not in VERSION
 
 # Use the find_packages tool to locate all packages and modules
-packagenames = find_packages()
+packagenames = find_packages(exclude=['utils', 'utils.*'])
 
 # glob for all scripts
 if os.path.isdir('bin'):

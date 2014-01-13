@@ -1,10 +1,10 @@
 from glue import segments
 import json
-from dqsegdb import apicalls
 from dqsegdb import jsonhelper
 
 
 def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol, server,include_list_string):
+    from dqsegdb import apicalls
     ## Form the results for included and excluded flags
     includedJSON=[]
     includedURL=[]

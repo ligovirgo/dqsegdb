@@ -1,6 +1,6 @@
 import sys
-import urifunctions
-import clientutils
+from dqsegdb import urifunctions
+from dqsegdb import clientutils
 import json
 import glue
 from dqsegdb.jsonhelper import InsertFlagVersion
