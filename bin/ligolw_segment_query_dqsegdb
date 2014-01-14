@@ -77,6 +77,7 @@ from glue import git_version
 
 # Fix!!!
 debug=False
+#debug=True
 
 PROGRAM_NAME = sys.argv[0].replace('./','')
 PROGRAM_PID  = os.getpid()
@@ -505,7 +506,9 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
             print segment_summaries
         print doc
         print process_id
-    segment_summaries.coalesce()
+    segment_summaries=[glue.segments.segmentlist(x) for x in segment_summaries]
+    for x in segment_summaries:
+        x.coalesce()
     segmentdb_utils.add_segment_info(doc, process_id, segdefs, None, segment_summaries)
 
 
@@ -562,7 +565,8 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
     combined_result=clientutils.calculate_combined_result(included_JSON_results,excluded_JSON_results,startTime,endTime,ifo)
     #found_segments=combined_result['active']
     found_segments=glue.segments.segmentlist([glue.segments.segment(x[0],x[1]) for x in combined_result['active']])
-
+    if not options.strict_off:
+        found_segments=found_segments&glue.segments.segmentlist([glue.segments.segment(startTime,endTime)])
 
     # Add the result type to the segment definer table
     seg_name   = result_name
