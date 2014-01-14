@@ -7,6 +7,8 @@ Currently must be used from CIT (ex: ldas-pcdev1.ligo.caltech.edu) or sugar (ex:
 
 To use the new client tools, run the following commands:
 
+```
+
 # Clone the repository
 git clone 
 
@@ -21,3 +23,5 @@ python setup.py install --user
 # Example:
 #  source /home/rfisher/.local/etc/dqsegdb-user-env.sh
 # This must be run each time you log in, or put it in your log in scripts (.bashrc)
+
+```
