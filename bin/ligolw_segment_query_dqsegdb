@@ -505,6 +505,7 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
             print segment_summaries
         print doc
         print process_id
+    segment_summaries.coalesce()
     segmentdb_utils.add_segment_info(doc, process_id, segdefs, None, segment_summaries)
 
 
