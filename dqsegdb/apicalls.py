@@ -37,6 +37,11 @@ def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,start
     """ 
     Issue query to server for ifo:name:version with start and end time
     Returns the python loaded JSON response!
+
+    Parameters
+    ----------
+    variable : `type`
+        docstring for variable
     """
     queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
     result=urifunctions.getDataUrllib2(queryurl)
@@ -44,7 +49,10 @@ def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,start
     return result_json,queryurl
 
 def reportFlags(protocol,server,verbose):
-    ## Construct url and issue query
+    """
+    Construct url and issue query to get the reported list of all flags
+    provided by dqsegdb.
+    """
     queryurl=protocol+"://"+server+"/report/flags"
     if verbose:
         print queryurl
@@ -383,39 +391,47 @@ def InsertSingleDQXMLFile(filename,server='http://slwebtest.virgo.infn.it',hackD
     return True
 
 def patchWithFailCases(i,url,debug=True):
-        try:
-            #patch to the flag/version
+    """
+    Attempts to patch data to a url where the data is in a dictionary format
+    that can be directly dumped to json tha the dqsegdb server expects.
+    Correctly fails to making a new version or flag in the database as needed.
+    """
+    try:
+        #patch to the flag/version
+        if debug:
+            print "Trying to patch alone for url: %s" % url 
+        patchDataUrllib2(url,json.dumps(i.flagDict))
+        if debug:
+            print "Patch alone succeeded for %s" % url
+    except HTTPError as e:
+        if e.code!=404:
+            raise e
+        try: 
+            #put to version
             if debug:
-                print "Trying to patch alone for url: %s" % url 
-            patchDataUrllib2(url,json.dumps(i.flagDict))
+                print "Trying to put alone for %s" % url
+            putDataUrllib2(url,json.dumps(i.flagDict))
             if debug:
-                print "Patch alone succeeded for %s" % url
-        except HTTPError as e:
-            if e.code!=404:
-                raise e
-            try: 
-                #put to version
-                if debug:
-                    print "Trying to put alone for %s" % url
-                putDataUrllib2(url,json.dumps(i.flagDict))
-                if debug:
-                    print "Put alone succeeded for %s" % url
-            except HTTPError as ee:
-                if ee.code!=404:
-                    raise ee
-                #put to flag
-                suburl='/'.join(url.split('/')[:-1])
-                if debug:
-                    print "Trying to PUT flag and version to: "+suburl
-                putDataUrllib2(suburl,json.dumps(i.flagDict))
-                #put to version
-                putDataUrllib2(url,json.dumps(i.flagDict))
-                if debug:
-                    print "Had to PUT flag and version"
+                print "Put alone succeeded for %s" % url
+        except HTTPError as ee:
+            if ee.code!=404:
+                raise ee
+            #put to flag
+            suburl='/'.join(url.split('/')[:-1])
+            if debug:
+                print "Trying to PUT flag and version to: "+suburl
+            putDataUrllib2(suburl,json.dumps(i.flagDict))
+            #put to version
+            putDataUrllib2(url,json.dumps(i.flagDict))
+            if debug:
+                print "Had to PUT flag and version"
 
 
 def threadedPatchWithFailCases(q,server,debug):
-    """ Used by threaded implementation of InsertSingleDQXMLFileThreaded """
+    """ 
+    Used by threaded implementation of InsertSingleDQXMLFileThreaded 
+    to patch data to server.
+    """
     while True:
         i=q.get()
         url=i.buildURL(server)
@@ -427,6 +443,9 @@ def threadedPatchWithFailCases(q,server,debug):
         q.task_done()
 
 def setupSegment_md(filename,xmlparser,lwtparser,debug):
+    """
+    Helper function used to setup ligolw parser.
+    """
     segment_md = ldbd.LIGOMetadata(xmlparser,lwtparser)
 
     if debug:
