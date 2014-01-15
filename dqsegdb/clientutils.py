@@ -4,6 +4,11 @@ from dqsegdb import jsonhelper
 
 
 def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol, server,include_list_string):
+    """
+    Function to query the dqsegdb for lists of included and excluded flags.
+    Returns lists of JSON for the included and excluded flags and lists of 
+    URLs used to query the database.
+    """
     from dqsegdb import apicalls
     ## Form the results for included and excluded flags
     includedJSON=[]
@@ -30,9 +35,9 @@ def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol,
     return includedJSON,includedURL,excludedJSON,excludedURL,ifo
 
 def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
-    """ Calculate the result of the union of the active times for the included flag less the intersection of that result with the union of the excluded flags
-
-    Inputs are 2 lists of python dictionaries representing the JSON (already have run json.loads() on the JSON), a start time, and end time, and the ifo name (it doesn't make sense to include/exclude across multiple ifos)
+    """ 
+    Calculate the result of the union of the active times for the included flag less the intersection of that result with the union of the excluded flags
+    Inputs are 2 lists of python dictionaries representing the JSON (already have run json.loads() on the JSON), a start time, and end time, and the ifo name (it does not make sense to include/exclude across multiple ifos)
     """
     total_active_list=segments.segmentlist([]) 
     for flag in includedJSON: 
@@ -83,8 +88,11 @@ def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
     return result_flag
 
 def calculate_versionless_result(jsonResults,startTime,endTime):
-    ## Construct output segments lists from multiple JSON objects    
-    ## The jsonResults are expected to be in order of decreasing versions
+    """
+    Construct output segments lists from multiple JSON objects.
+    The jsonResults input is a list of json ojbects and 
+    are expected to be in order of decreasing versions.
+    """
     debug=False
     active_results={}
     segment_known_results={}

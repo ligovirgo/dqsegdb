@@ -28,8 +28,11 @@ import glue.segments as segments
 ################################################################################
 
 def convertJSONtoXML(json_response):
-    """ Converts a standard JSON response from the dqsegdb server into a 
+    """ 
+    Incomplete!!
+    Converts a standard JSON response from the dqsegdb server into a 
     DQXML format.
+
     """
     # Assumes JSON input as defined in API doc (dictionary containing keys
     # "meta" and "flags")
@@ -61,7 +64,8 @@ def convertJSONtoXML(json_response):
 ################################################################################
 
 def buildFlagDict(ifo,name,version,known_segments,active_segments):
-    """Helper function to build a flag_version dictionary for JSON production.
+    """
+    Helper function to build a flag_version dictionary for JSON production.
     
     known_segments and active_segments are assumed to be segmentlist objects
     Note that this currently does not generate a false "query_metadata" block        
@@ -77,7 +81,9 @@ def buildFlagDict(ifo,name,version,known_segments,active_segments):
 
 
 class FlagVersion(object):
-    """ Class to set up a flag version object for parsing into JSON """
+    """ 
+    Class to set up a flag version object for parsing into JSON 
+    """
     def __init__(self,ifo,name,version):
         self.known=segments.segmentlist([])
         self.active=segments.segmentlist([])
@@ -165,14 +171,16 @@ class InsertFlagVersion(PatchFlagVersion):
 ################################################################################
 
 def convert_segmentlist_to_json(segmentlist_input):
-    """ Helper function used to convert segmentlist to json list of lists type 
+    """ 
+    Helper function used to convert segmentlist to json list of lists type 
     object.
     """
     json_list=[[x[0],x[1]] for x in segmentlist_input]
     return json_list
 
 def convert_json_list_to_segmentlist(jsonlist):
-     """ Helper function used to convert json list of lists type object to a 
+     """ 
+     Helper function used to convert json list of lists type object to a 
      segmentlist object
      """
      segment_list=segments.segmentlist([segments.segment(x[0],x[1]) for x in jsonlist])
