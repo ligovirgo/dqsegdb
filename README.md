@@ -14,7 +14,7 @@ To use the new client tools, run the following commands:
 ```
 
 # Clone the repository
-git clone 
+git clone https://github.com/lscsoft/dqsegdb.git
 
 # cd into the repo
 cd dqsegdb
