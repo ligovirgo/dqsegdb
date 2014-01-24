@@ -12,9 +12,11 @@ Currently must be used from CIT (ex: ldas-pcdev1.ligo.caltech.edu) or sugar (ex:
 To use the new client tools, run the following commands:
 
 ```
-
-# Clone the repository
-git clone https://github.com/lscsoft/dqsegdb.git
+# First, set up the equivalent of kinit for shibboleth to get you access to the
+#  git repo:
+ecp-cookie-init LIGO.ORG https://sugwg-git.phy.syr.edu/git/ albert.einstein 
+# Clone the repository:
+git clone https://sugwg-git.phy.syr.edu/git/dqsegdb
 
 # cd into the repo
 cd dqsegdb
