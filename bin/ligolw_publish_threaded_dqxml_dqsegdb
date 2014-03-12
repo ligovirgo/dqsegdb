@@ -265,8 +265,11 @@ try:
         traceback.print_exc()
         raise
       else:
-        logger.debug("published segments in group: %s" % str(grouped_segments))
-        published_segments |= grouped_segments
+        if result:
+          logger.debug("published segments in group: %s" % str(grouped_segments))
+          published_segments |= grouped_segments
+        else:
+          logger.debug("Failed to publish segments in group: %s" % str(grouped_segments))
   if group_files_counter!=0: # publish remaining files
       grouped_segments=current_segments
       try:
@@ -292,8 +295,11 @@ try:
       except Exception, e:
         logger.error("failed to publish %s (%s)" % (infiles, str(e)))
       else:
-        logger.debug("published remaining segments %s" % str(grouped_segments))
-        published_segments |= grouped_segments
+        if result:
+          logger.debug("published remaining segments %s" % str(grouped_segments))
+          published_segments |= grouped_segments
+        else: 
+          logger.debug("Failed to publish segments in group: %s" % str(grouped_segments))
 
 
   if options.state_file:
