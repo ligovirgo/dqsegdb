@@ -132,7 +132,7 @@ class PatchFlagVersion(FlagVersion):
         else:
             self.insert_history=[] # holds the process_metadatas and insertion_metadatas    # Note that this assumes that proper dictionaries are appended to this list
         #self.process_metadata={}
-        # self.process_metadata.keys() should be process_start_timestamp(or process_start_time during current hack for Dec 11),uid,args,pid,fqdn,name
+        # self.process_metadata.keys() should be process_start_timestamp(or process_start_time for old server hack for Dec 11),uid,args,pid,fqdn,name
         #self.insertion_metadata={}
         # self.insertion_metadata.keys() should be insert_data_stop,insert_data_start,uri,timestamp,auth_user,insert_data_start
     def buildFlagDictFromPatchVersion(self):
@@ -222,7 +222,7 @@ def convert_json_list_to_segmentlist(jsonlist):
 #     "process_user" : "user" // user who ran the insert process on the client
 #     "inserted_data_start": gpstime, // First gpstime of data this insertion describes
 #     "inserted_data_end": gpstime, // Last gpstime of data this insertion describes
-#     "process_start_time": gpstime, // When the insert process was started, use to determine run time of inserts
+#     "process_start_timestamp": gpstime, // When the insert process was started, use to determine run time of inserts
 #     // NOT to be added by client code -- these are server-side annotations, prior to insertion into the DB
 #     "auth_user" : "user identification" // from the auth infrastructure used to talk to the server 
 #     "insert_timestamp" : gpstime,    // when the insert was committed to the DB
