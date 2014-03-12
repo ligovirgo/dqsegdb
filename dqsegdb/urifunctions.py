@@ -76,6 +76,15 @@ def constructVersionQueryURL(protocol,server,ifo,name):
     url2='/'.join([url1,ifo,name])
     return url2
 
+def constructFlagQueryURL(protocol,server,ifo):
+    """
+    Simple url construction method for dqsegdb server flag queries. 
+    """
+    ## Simple url construction method:
+    url1=protocol+"://"+server+"/dq"
+    url2='/'.join([url1,ifo])
+    return url2
+
 def putDataUrllib2(url,payload,timeout=30):
     """
     Wrapper method for urllib2 that supports PUTs to a url.
