@@ -1,0 +1,43 @@
+<?php
+
+//////////////////////////////
+// Jquery-related actions. //
+////////////////////////////
+
+// Get libraries.
+require_once('DAO.php');
+require_once('GetServerData.php');
+require_once('InitVar.php');
+
+// JavaScript/AJAX/Jquery action class.
+class JSAction
+{
+	private $document;
+	private $getAdTypeResponse;
+ 
+	public function __construct()
+	{
+		// Build JS action response.
+		$this->document = $this->getAdTypeResponse();
+	}
+
+	// Decide which response to build.
+	private function getAdTypeResponse()
+	{
+		// Instantiate.
+		$serverdata = new GetServerData();
+		$variable = new Variables();
+		// Get admin type.
+		$variable->getAdminType();
+		// Get query server form.
+		if($variable->ad_type == 'update_div_query_server')
+		{
+			$serverdata->get_query_form_div(3);
+			$this->document = $serverdata->query_form;
+		}
+		// Output response.
+		echo "HERE";
+	}
+}
+
+?>
