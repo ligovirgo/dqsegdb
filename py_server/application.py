@@ -3,12 +3,6 @@ DQSEGDB Python Server
 Applcation class file
 '''
 # Import.
-import os
-import sys
-
-sys.path.append('/opt/dqsegdb/python_server/src')
-os.environ['PYTHON_EGG_CACHE'] = '/opt/dqsegdb/python_server/cache/.python-egg'
-
 import Admin
 import DAO
 import Request
