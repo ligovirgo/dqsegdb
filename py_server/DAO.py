@@ -772,7 +772,7 @@ class DAOHandle:
                 except:
                     pass
                 else:
-                   # Get.
+                    # Get.
                     cur.execute("""
                                 SELECT dq_flag_version_segment_total, dq_flag_version_earliest_segment_time, dq_flag_version_latest_segment_time
                                 FROM tbl_dq_flag_versions
@@ -894,10 +894,12 @@ class DAOHandle:
         return a
     
     # Get report segments.
-    def get_report_segments(self, request, t1, t2):
+    def get_report_segments(self, request, t1, t2, request_array):
         # Init.
         a = []
         flag_array = []
+        flag_json = []
+        seg_sql = ''
         w = ''
         pre_v_fk = 0
         i = 0
@@ -931,11 +933,15 @@ class DAOHandle:
                     tbl = '_summary'
                 # If request within acceptable range, i.e. 'active', 'known', etc., get list of all flags over period requested by args.
                 if not admin.check_request('seg', request) == False:
+                    # If 'known' or 'active' segments or everything included.
+                    if 'known' in request_array or 'active' in request_array or not request_array:
+                        # Get the additional fields from the DB.
+                        seg_sql = ', segment_start_time, segment_stop_time '
                     # Get.
                     cur.execute("""
-                                SELECT dq_flag_name, value_txt AS 'dq_flag_ifo_txt', dq_flag_description, dq_flag_active_means_ifo_badness, dq_flag_version_uri, dq_flag_version_deactivated, dq_flag_version, dq_flag_version_fk, segment_start_time, segment_stop_time
+                                SELECT dq_flag_name, value_txt AS 'dq_flag_ifo_txt', dq_flag_description, dq_flag_active_means_ifo_badness, dq_flag_version_uri, dq_flag_version_deactivated, dq_flag_version, dq_flag_version_fk""" + seg_sql + """
                                 FROM
-                                (SELECT dq_flag_version_fk, segment_start_time, segment_stop_time
+                                (SELECT dq_flag_version_fk""" + seg_sql + """
                                 FROM tbl_segment""" + tbl + w + """
                                 ORDER BY dq_flag_version_fk) AS t1
                                 LEFT JOIN tbl_dq_flag_versions ON t1.dq_flag_version_fk = tbl_dq_flag_versions.dq_flag_version_id
@@ -946,21 +952,27 @@ class DAOHandle:
                     for row in cur:
                         # If this is a different flag.
                         if not pre_v_fk == row.dq_flag_version_fk:
-                            # Get metadata for this flag.
-                            flag_json = admin.get_flag_metadata(row.dq_flag_ifo_txt, row.dq_flag_name, str(row.dq_flag_version), row.dq_flag_description, row.dq_flag_version_uri, row.dq_flag_version_deactivated, row.dq_flag_active_means_ifo_badness)
-                            # Reset segment array.
-                            flag_json[request] = []
+                            # If metadata or everything included.
+                            if 'metadata' in request_array or not request_array:
+                                # Get metadata for this flag.
+                                flag_json = admin.get_flag_metadata(row.dq_flag_ifo_txt, row.dq_flag_name, str(row.dq_flag_version), row.dq_flag_description, row.dq_flag_version_uri, row.dq_flag_version_deactivated, row.dq_flag_active_means_ifo_badness)
+                            # If 'known' or 'active' segments or everything included.
+                            if 'known' in request_array or 'active' in request_array or not request_array:
+                                # Reset segment array.
+                                flag_json[request] = []
                             # Add segment array to metadata.
                             flag_array.append(flag_json)
                             # If not on the first loop.
                             if not pre_v_fk == 0:
                                 # Increment array key.
                                 i += 1
-                        # Set segment start/stop times.
-                        t1 = int(row.segment_start_time)
-                        t2 = int(row.segment_stop_time)
-                        # Append segments to list.
-                        flag_array[i][request].append([t1,t2])
+                        # If 'known' segments or everything included.
+                        if 'known' in request_array or not request_array:
+                            # Set segment start/stop times.
+                            t1 = int(row.segment_start_time)
+                            t2 = int(row.segment_stop_time)
+                            # Append segments to list.
+                            flag_array[i][request].append([t1,t2])
                         # Set previous version FK for use in next loop. 
                         pre_v_fk = row.dq_flag_version_fk
                     # Close ODBC cursor.

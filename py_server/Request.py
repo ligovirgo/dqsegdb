@@ -1,15 +1,12 @@
 '''
 DQSEGDB Python Server
-URI GET request management class file
+URI + HTTP request management class file
 '''
 
 # Import.
 import Admin
-import Constants
 import DAO
-import gpstime
 import json
-import re
 import time
 from urlparse import urlparse, parse_qs #Re-named urllib.parse as of #3.x
 
@@ -200,7 +197,7 @@ class RequestHandle():
                             else:
                                 t2 = arg['e'][0]
                         # Get report segments.
-                        r = dao.get_report_segments(request, t1, t2)
+                        r = dao.get_report_segments(request, t1, t2, request_array)
                         # If no segments supplied.
                         if not r:
                             # Set HTTP code and log.
