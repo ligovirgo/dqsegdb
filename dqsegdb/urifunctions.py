@@ -37,10 +37,18 @@ def getDataUrllib2(url,timeout=30):
     """
     try:
         r1=urllib2.urlopen(url)
-    except urllib2.URLError,e:
-        print e.code
+    except urllib2.HTTPError,e:
         print e.read()
+        print e.code
         raise
+    except urllib2.URLError,e:
+        print e.read()
+        print e.reason
+        try:
+            type, value, traceback = sys.exc_info()
+            raise URLError, ("Unable to get data",type,value),traceback
+        except:
+            raise
     return r1.read()
 
 def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
@@ -96,9 +104,13 @@ def putDataUrllib2(url,payload,timeout=30):
     request.get_method = lambda: 'PUT'
     try:
         url = opener.open(request)
-    except urllib2.URLError,e:
-        print e.code
+    except urllib2.HTTPError,e:
         print e.read()
+        print e.code
+        raise
+    except urllib2.URLError,e:
+        print e.read()
+        print e.reason
         raise
     return url
 
@@ -113,10 +125,13 @@ def patchDataUrllib2(url,payload,timeout=30):
     request.get_method = lambda: 'PATCH'
     try:
         url = opener.open(request)
-    except urllib2.URLError,e:
-        print e.code
+    except urllib2.HTTPError,e:
         print e.read()
+        print e.code
+        raise
+    except urllib2.URLError,e:
+        print e.read()
+        print e.reason
         raise
     return url
-
 
