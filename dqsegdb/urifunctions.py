@@ -40,6 +40,7 @@ def getDataUrllib2(url,timeout=30):
     except urllib2.HTTPError,e:
         print e.read()
         print e.code
+        print e.reason
         raise
     except urllib2.URLError,e:
         print e.read()
@@ -107,6 +108,7 @@ def putDataUrllib2(url,payload,timeout=30):
     except urllib2.HTTPError,e:
         print e.read()
         print e.code
+        print e.reason
         raise
     except urllib2.URLError,e:
         print e.read()
@@ -128,6 +130,7 @@ def patchDataUrllib2(url,payload,timeout=30):
     except urllib2.HTTPError,e:
         print e.read()
         print e.code
+        print e.reason
         raise
     except urllib2.URLError,e:
         print e.read()
