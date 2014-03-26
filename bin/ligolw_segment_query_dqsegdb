@@ -286,22 +286,28 @@ def run_show_types(doc, protocol, server, gps_start_time, gps_end_time, included
     resulttable = lsctables.New(ShowTypesResultTable)
     doc.childNodes[0].appendChild(resulttable)
     
-    sql = """SELECT segment_definer.ifos, segment_definer.name, segment_definer.version,
-                 (CASE WHEN segment_definer.comment IS NULL THEN '-' WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),
-                 segment_summary.start_time, segment_summary.end_time,
-                 (CASE WHEN segment_summary.comment IS NULL THEN '-' WHEN segment_summary.comment IS NOT NULL THEN segment_summary.comment END)
-          FROM  segment_definer, segment_summary
-          WHERE segment_definer.segment_def_id = segment_summary.segment_def_id
-          AND   NOT (segment_summary.start_time > %d OR %d > segment_summary.end_time)
-          """ % (gps_end_time, gps_start_time)
+    #sql = """SELECT segment_definer.ifos, segment_definer.name, segment_definer.version,
+    #             (CASE WHEN segment_definer.comment IS NULL THEN '-' WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),
+    #             segment_summary.start_time, segment_summary.end_time,
+    #             (CASE WHEN segment_summary.comment IS NULL THEN '-' WHEN segment_summary.comment IS NOT NULL THEN segment_summary.comment END)
+    #      FROM  segment_definer, segment_summary
+    #      WHERE segment_definer.segment_def_id = segment_summary.segment_def_id
+    #      AND   NOT (segment_summary.start_time > %d OR %d > segment_summary.end_time)
+    #      """ % (gps_end_time, gps_start_time)
 
-    rows = engine.query(sql)
+    #rows = engine.query(sql)
+    # Note:
+    #Type and example of first row in rows:
+    #    <type 'tuple'>
+    #    ('H1          ', 'ODC-PSL_FSS_RFPD_LT_TH', 1, 'RPFD check, when above threshold the segment will be off', 1072880640, 1072880656, '-')
 
     seg_dict = {}
 
-    result,queryurl=apicalls.reportFlags(protocol,server,verbose)
+    includeSegments=True
+    result,queryurl=apicalls.reportKnown(protocol,server,includeSegments,True,gps_start_time,gps_end_time)
     ## Fix!!! Parse JSON result like rows is parsed below
     ## Fix!!! decide if we should still cut on included or excluded segments
+    rows=apicalls.parseKnown(result)
 
     for row in rows:
         ifos, name, version, segment_definer_comment, segment_summary_start_time, segment_summary_end_time, segment_summary_comment = row
@@ -323,7 +329,7 @@ def run_show_types(doc, protocol, server, gps_start_time, gps_end_time, included
         
             resulttable.append(result)
 
-    engine.close()
+    #engine.close()
 
 
     

@@ -95,6 +95,113 @@ def reportFlags(protocol,server,verbose):
     result=urifunctions.getDataUrllib2(queryurl)
     return result
 
+def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time):
+    """
+    Construct url and issue query to get the reported list of all flags
+    provided by dqsegdb.
+    """
+    includeText="?include=metadata"
+    if includeSegments:
+        includeText=""
+        timeText="?s=%d&e=%d"%(gps_start_time,gps_end_time)
+    else:
+        timeText="&s=%d&e=%d"%(gps_start_time,gps_end_time)
+    queryurl=protocol+"://"+server+"/report/known"+includeText+timeText
+    if verbose:
+        print queryurl
+    result=urifunctions.getDataUrllib2(queryurl)
+    return result,queryurl
+
+def parseKnown(jsonResult):
+    """
+    Accepts jsonResult from reportKnown call and parses into expected format 
+    for ligolw_segment_query client to generate xml.
+    """
+    rows=[]
+    resultDictionary=json.loads(jsonResult)
+    #ifos, name, version, segment_definer_comment, segment_summary_start_time, segment_summary_end_time, segment_summary_comment = row
+    # json looks like this: 
+    #{
+    #    "query_information": {
+    #        "api_version": 1, 
+    #        "end": "1076401264", 
+    #        "include": [], 
+    #        "server": "dqsegdb5.phy.syr.edu", 
+    #        "server_code_version": "v1r5", 
+    #        "server_elapsed_query_time": 2.3630100000000001, 
+    #        "server_timestamp": 1079895401, 
+    #        "start": "1076400544", 
+    #        "uri": "/report/known?s=1076400544&e=1076401264"
+    #    }, 
+    #    "results": [
+    #        {
+    #            "ifo": "L1", 
+    #            "known": [
+    #                [
+    #                    1076400480, 
+    #                    1076400848
+    #                ], 
+    #                [
+    #                    1076400848, 
+    #                    1076401200
+    #                ], 
+    #                [
+    #                    1076401200, 
+    #                    1076401568
+    #                ]
+    #            ], 
+    #            "metadata": {
+    #                "active_indicates_ifo_badness": false, 
+    #                "comment": "L1 interferometer Up from h(t) DQ flags", 
+    #                "deactivated": false, 
+    #                "provenance_url": "This is where the url should go"
+    #            }, 
+    #            "name": "DMT-UP", 
+    #            "version": 1
+    #        }, 
+    #        {
+    #            "ifo": "L1", 
+    #            "known": [
+    #                [
+    #                    1076400848, 
+    #                    1076401200
+    #                ], 
+    #                [
+    #                    1076401200, 
+    #                    1076401568
+    #                ], 
+    #                [
+    #                    1076400480, 
+    #                    1076400848
+    #                ]
+    #            ], 
+    #            "metadata": {
+    #                "active_indicates_ifo_badness": false, 
+    #                "comment": "L1 interferometer Up from h(t) DQ flags", 
+    #                "deactivated": false, 
+    #                "provenance_url": "This is where the url should go"
+    #            }, 
+    #            "name": "DMT-SCIENCE", 
+    #            "version": 1
+    #        }, 
+    for i in resultDictionary['results']:
+        # Ex: >>> resultDict['results'][0]
+        #{u'known': [[1076400480, 1076400848], [1076400848, 1076401200], [1076401200, 1076401568]], u'ifo': u'L1', u'name': u'DMT-UP', u'version': 1, u'metadata': {u'comment': u'L1 interferometer Up from h(t) DQ flags', u'provenance_url': u'This is where the url should go', u'active_indicates_ifo_badness': False, u'deactivated': False}}
+        #old: row = ('H1          ', 'ODC-PSL_FSS_RFPD_LT_TH', 1, 'RPFD check, when above threshold the segment will be off', 1072880640, 1072880656, '-')
+        ifo=i['ifo']
+        flag=i['name']
+        version=i['version']
+        comment=i['metadata']['comment']
+        summary_comment=''
+        for j in i['known']:
+            start=j[0]
+            stop=j[1]
+            row=(str(ifo),str(flag),int(version),str(comment),int(start),int(stop),str(summary_comment))
+            rows.append(row)
+
+
+    return rows
+
 def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime):
     """ 
     Queries server for needed flag_versions to generate the result of a
