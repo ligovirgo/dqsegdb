@@ -38,12 +38,12 @@ def getDataUrllib2(url,timeout=30):
     try:
         r1=urllib2.urlopen(url)
     except urllib2.HTTPError,e:
-        print e.read()
+        #print e.read()
         print e.code
-        print e.reason
+        #print e.reason
         raise
     except urllib2.URLError,e:
-        print e.read()
+        #print e.read()
         print e.reason
         try:
             type, value, traceback = sys.exc_info()
@@ -106,12 +106,12 @@ def putDataUrllib2(url,payload,timeout=30):
     try:
         url = opener.open(request)
     except urllib2.HTTPError,e:
-        print e.read()
+        #print e.read()
         print e.code
-        print e.reason
+        #print e.reason
         raise
     except urllib2.URLError,e:
-        print e.read()
+        #print e.read()
         print e.reason
         raise
     return url
@@ -128,12 +128,12 @@ def patchDataUrllib2(url,payload,timeout=30):
     try:
         url = opener.open(request)
     except urllib2.HTTPError,e:
-        print e.read()
+        #print e.read()
         print e.code
-        print e.reason
+        #print e.reason
         raise
     except urllib2.URLError,e:
-        print e.read()
+        #print e.read()
         print e.reason
         raise
     return url

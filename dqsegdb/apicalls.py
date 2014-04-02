@@ -647,3 +647,274 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         t2=time.time()
         print "Time elapsed for file %s = %d." % (filename,t2-t1)
     return True
+
+
+def InsertMultipleDQXMLFileThreaded_offset(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=True,debug=True,threads=20,offset=1000000000):
+    """ 
+    Inserts multiple dqxml files of data into the DQSEGDB.
+    - filename is a list of string filenames for  DQXML files.
+    - hackDec11 is used to turn off good features that the server doesn't
+    yet support.
+    returns True if it completes sucessfully
+    """
+    from threading import Thread
+    from Queue import Queue
+    import sys
+
+    xmlparser = pyRXP.Parser()
+    lwtparser = ldbd.LIGOLwParser()
+    
+    flag_versions = {}
+    
+    # flag_versions, filename, server, hackDec11, debug are current variables
+
+    # This next bunch of code is specific to a given file:
+    if len(filenames)<1:
+        print "Empty file list sent to InsertMultipleDQXMLFileThreaded"
+        raise ValueError
+    for filename in filenames:
+    
+        segment_md = setupSegment_md(filename,xmlparser,lwtparser,debug)
+
+        # segment_md, flag_versions, filename, server, hackDec11, debug are current variables
+        
+        flag_versions_numbered = {}
+        
+        for j in range(len(segment_md.table['segment_definer']['stream'])):
+            flag_versions_numbered[j] = {}
+            for i,entry in enumerate(segment_md.table['segment_definer']['orderedcol']):
+              #print j,entry,segment_md.table['segment_definer']['stream'][j][i]
+              flag_versions_numbered[j][entry] = segment_md.table['segment_definer']['stream'][j][i]
+        
+        
+        # parse process table and make a dict that corresponds with each
+        # process, where the keys for the dict are like "process:process_id:1"
+        # so that we can match
+        # these to the flag_versions from the segment definer in the next
+        # section
+        
+        # Note:  Wherever temp_ preceeds a name, it is generally an identifier
+        # field from the dqxml, that is only good for the single dqxml file
+        # being parsed
+        
+        
+        process_dict = {}
+        # Going to assign process table streams to process_dict with a key
+        # matching process_id (process:process_id:0 for example)
+        for j in range(len(segment_md.table['process']['stream'])):
+            process_id_index = segment_md.table['process']['orderedcol'].index('process_id')
+            temp_process_id = segment_md.table['process']['stream'][j][process_id_index]
+            # Now we're going to assign elements to process_dict[process_id]
+            process_dict[temp_process_id] = {}
+            for i,entry in enumerate(segment_md.table['process']['orderedcol']):
+                #print j,entry,segment_md.table['process']['stream'][j][i]
+                process_dict[temp_process_id][entry] = segment_md.table['process']['stream'][j][i]
+                # Note that the segment_md.table['process']['stream'][0] looks like this:
+                #0 program SegGener
+                #0 version 6831
+                #0 cvs_repository https://redoubt.ligo-wa.caltech.edu/
+                #0                svn/gds/trunk/Monitors/SegGener/SegGener.cc
+                #0 cvs_entry_time 1055611021
+                #0 comment Segment generation from an OSC condition
+                #0 node l1gds2
+                #0 username john.zweizig@LIGO.ORG
+                #0 unix_procid 24286
+                #0 start_time 1065916603
+                #0 end_time 1070395521
+                #0 process_id process:process_id:0
+                #0 ifos L0L1
+                # So now I have all of that info stored by the process_id keys
+                # Eventually I have to map these elements to the process_metadata
+                # style.. maybe I can do that now:
+            process_dict[temp_process_id]['process_metadata'] = {}
+            if hackDec11:
+                process_dict[temp_process_id]['process_metadata']['process_start_time'] = process_dict[temp_process_id]['start_time']
+            else:
+                process_dict[temp_process_id]['process_metadata']['process_start_timestamp'] = process_dict[temp_process_id]['start_time']
+            process_dict[temp_process_id]['process_metadata']['uid'] = process_dict[temp_process_id]['username']
+            process_dict[temp_process_id]['process_metadata']['args'] = [] ### Fix!!! dqxml has no args???
+            process_dict[temp_process_id]['process_metadata']['pid'] = process_dict[temp_process_id]['unix_procid']
+            process_dict[temp_process_id]['process_metadata']['name'] = process_dict[temp_process_id]['program']
+            process_dict[temp_process_id]['process_metadata']['fqdn'] = process_dict[temp_process_id]['node'] ### Fix!!! Improvement: not really fqdn, just the node name
+        
+        # So now I have process_dict[temp_process_id]['process_metadata'] for each
+        # process_id, and can add it to a flag version when it uses it;  really I
+        # should group it with the segment summary info because that has the
+        # insertion_metadata start and stop time
+        
+        ### Fix!!! Get the args from the *other* process table... yikes
+        
+        temp_id_to_flag_version = {}
+        
+        for i in flag_versions_numbered.keys():
+            ifo = flag_versions_numbered[i]['ifos']
+            name = flag_versions_numbered[i]['name']
+            version = flag_versions_numbered[i]['version']
+            if (ifo,name,version) not in flag_versions.keys():
+                flag_versions[(ifo,name,version)] = InsertFlagVersion(ifo,name,version)
+                flag_versions[(ifo,name,version)].flag_comment=str(flag_versions_numbered[i]['comment'])
+                flag_versions[(ifo,name,version)].version_comment=str(flag_versions_numbered[i]['comment'])
+            flag_versions[(ifo,name,version)].temporary_definer_id = flag_versions_numbered[i]['segment_def_id']
+            flag_versions[(ifo,name,version)].temporary_process_id = flag_versions_numbered[i]['process_id']
+            # Populate reverse lookup dictionary:
+            temp_id_to_flag_version[flag_versions[(ifo,name,version)].temporary_definer_id] = (ifo,name,version)
+        
+        
+        # ways to solve the metadata problem:
+        # Associate each insertion_metadata block with a process, then group
+        # them and take the min insert_data_start and max insert_data_stop
+        
+        
+        # parse segment_summary table and associate known segments with
+        # flag_versions above:
+        ## Note this next line is needed for looping over multiple files
+        for i in flag_versions.keys():
+            flag_versions[i].temp_process_ids={}
+        for j in range(len(segment_md.table['segment_summary']['stream'])):
+            #flag_versions_numbered[j] = {}
+            seg_def_index = segment_md.table['segment_summary']['orderedcol'].index('segment_def_id')
+            #print "associated seg_def_id is: "+ segment_md.table['segment_summary']['stream'][j][seg_def_index]
+            (ifo,name,version) = temp_id_to_flag_version[segment_md.table['segment_summary']['stream'][j][seg_def_index]]
+            seg_sum_index = segment_md.table['segment_summary']['orderedcol'].index('segment_sum_id')
+            # Unneeded:
+            #flag_versions[(ifo,name,version)].temporary_segment_sum_id = segment_md.table['segment_summary']['stream'][j][seg_sum_index]
+            start_time_index = segment_md.table['segment_summary']['orderedcol'].index('start_time')
+            end_time_index = segment_md.table['segment_summary']['orderedcol'].index('end_time')
+            start_time = segment_md.table['segment_summary']['stream'][j][start_time_index]+offset
+            end_time = segment_md.table['segment_summary']['stream'][j][end_time_index]+offset
+            new_seg_summary = segments.segmentlist([segments.segment(start_time,end_time)])
+            flag_versions[(ifo,name,version)].appendKnown(new_seg_summary)
+            # Now I need to build up the insertion_metadata dictionary for this
+            # summary: 
+            # Now I need to associate the right process with the known
+            # segments here, and put the start and end time into the
+            # insertion_metadata part of the
+            #  insert_history dict
+            # Plan for processes and affected data:
+            # Loop through segment summaries
+            # If we haven't seen the associated process before, create it:
+            # First, append the temp_process_id to temp_process_ids
+            # Then, each temp_process_ids entry is a dictionary, where the one
+            # element is start_affected time, and the other is end_affected
+            # time, and later we will combine this with the correct
+            # process_metadata dictionary
+            process_id_index = segment_md.table['segment_summary']['orderedcol'].index('process_id')
+            temp_process_id = segment_md.table['segment_summary']['stream'][j][process_id_index]
+            if temp_process_id in flag_versions[(ifo,name,version)].temp_process_ids.keys():
+                # We don't need to append this process metadata, as it already
+                # exists We do need to extend the affected data start and stop
+                # to match
+                if start_time < flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id]['insert_data_start']:
+                    flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id]['insert_data_start'] = start_time
+                if end_time > flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id]['insert_data_stop']:
+                    flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id]['insert_data_stop'] = end_time
+            else:
+                # Need to make the dictionary entry for this process_id
+                flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id] = {}
+                flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id]['insert_data_start'] = start_time
+                flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id]['insert_data_stop'] = end_time
+        
+        
+        # Now, I need to append an insert_history element to the flag_versions
+        # for this ifo,name, version, as I have the correct insertion_metadata
+        # and the correct
+        # process_metadata (from the process_dict earlier
+        if debug:
+            t1=time.time()
+        for i in flag_versions.keys():
+            for pid in flag_versions[i].temp_process_ids.keys():
+                start = flag_versions[i].temp_process_ids[pid]['insert_data_start']
+                stop = flag_versions[i].temp_process_ids[pid]['insert_data_stop']
+                insert_history_dict = {}
+                try:
+                    insert_history_dict['process_metadata'] = process_dict[pid]['process_metadata']
+                except:
+                    import pdb
+                    pdb.set_trace()
+                insert_history_dict['insertion_metadata'] = {}
+                insert_history_dict['insertion_metadata']['insert_data_stop'] = stop
+                insert_history_dict['insertion_metadata']['insert_data_start'] = start
+                ifo = flag_versions[i].ifo
+                version = flag_versions[i].version
+                name = flag_versions[i].name
+                insert_history_dict['insertion_metadata']['uri'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])
+                #print ifo,name,version
+                insert_history_dict['insertion_metadata']['timestamp'] = _UTCToGPS(time.gmtime())
+                insert_history_dict['insertion_metadata']['auth_user']=process.get_username()
+                #if hackDec11:
+                #    # note that this only uses one insert_history...despite
+                #    all that hard work to get the list right...
+                #    # so this might break something...
+                #    flag_versions[i].insert_history=insert_history_dict
+                #else:
+                #    flag_versions[i].insert_history.append(insert_history_dict)
+                flag_versions[i].insert_history.append(insert_history_dict)
+        
+        # parse segment table and associate known segments with flag_versions
+        # above:
+        try:
+            for j in range(len(segment_md.table['segment']['stream'])):
+                #flag_versions_numbered[j] = {}
+                seg_def_index = segment_md.table['segment']['orderedcol'].index('segment_def_id')
+                #print "associated seg_def_id is: "+ 
+                #    segment_md.table['segment']['stream'][j][seg_def_index]
+                (ifo,name,version) = temp_id_to_flag_version[segment_md.table['segment']['stream'][j][seg_def_index]]
+                #seg_sum_index = segment_md.table['segment']['orderedcol'].index('segment_sum_id')
+                start_time_index = segment_md.table['segment']['orderedcol'].index('start_time')
+                end_time_index = segment_md.table['segment']['orderedcol'].index('end_time')
+                start_time = segment_md.table['segment']['stream'][j][start_time_index]+offset
+                end_time = segment_md.table['segment']['stream'][j][end_time_index]+offset
+                new_seg = segments.segmentlist([segments.segment(start_time,end_time)])
+                flag_versions[(ifo,name,version)].appendActive(new_seg)
+        except KeyError:
+            logger.info("No segment table for this file: %s" % filename)
+            if debug:
+                print "No segment table for this file: %s" % filename
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            raise
+
+    if threads>1:
+        # Call this after the loop over files, and we should be good to go
+        concurrent=min(threads,len(i)) # Fix!!! why did I do len(i) ???
+        q=Queue(concurrent*2) # Fix!!! Improvement: remove hardcoded concurrency
+        for i in range(concurrent):
+            t=Thread(target=threadedPatchWithFailCases, args=[q,server,debug])
+            t.daemon=True
+            t.start()
+        for i in flag_versions.values():
+            i.buildFlagDictFromInsertVersion()
+            #i.flagDict
+            url=i.buildURL(server)
+            if debug:
+                print url
+                logger.debug("json.dumps(i.flagDict):")
+                logger.debug("%s"%json.dumps(i.flagDict))
+            #if hackDec11:
+            #    if len(i.active)==0:
+            #        print "No segments for this url"
+            #        continue
+            q.put(i)
+        q.join()
+    else:
+        for i in flag_versions.values():
+            i.buildFlagDictFromInsertVersion()
+            #i.flagDict
+            url=i.buildURL(server)
+            if debug:
+                print url
+                logger.debug("json.dumps(i.flagDict):")
+                logger.debug("%s"%json.dumps(i.flagDict))
+            #if hackDec11:
+            #    if len(i.active)==0:
+            #        print "No segments for this url"
+            #        continue
+            patchWithFailCases(i,url,debug)
+
+    if debug:
+        print "If we made it this far, no errors were encountered in the inserts."
+    ### Fix!!! Improvement: Should be more careful about error handling here.
+    if debug:
+        t2=time.time()
+        print "Time elapsed for file %s = %d." % (filename,t2-t1)
+    return True
