@@ -313,7 +313,7 @@ def dtd_uri_callback(uri):
         # otherwise just use the uri in the file
         return uri
     
-def patchWithFailCases(i,url,debug=True):
+def patchWithFailCases(i,url,debug=True,inlogger=None):
     """
     Attempts to patch data to a url where the data is in a dictionary format
     that can be directly dumped to json tha the dqsegdb server expects.
@@ -322,8 +322,9 @@ def patchWithFailCases(i,url,debug=True):
     try:
         #patch to the flag/version
         if debug:
+            inlogger.debug("Trying to patch alone for url: %s" % url)
             print "Trying to patch alone for url: %s" % url 
-        patchDataUrllib2(url,json.dumps(i.flagDict))
+        patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
         if debug:
             print "Patch alone succeeded for %s" % url
     except HTTPError as e:
@@ -333,7 +334,7 @@ def patchWithFailCases(i,url,debug=True):
             #put to version
             if debug:
                 print "Trying to put alone for %s" % url
-            putDataUrllib2(url,json.dumps(i.flagDict))
+            putDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
             if debug:
                 print "Put alone succeeded for %s" % url
         except HTTPError as ee:
@@ -343,14 +344,14 @@ def patchWithFailCases(i,url,debug=True):
             suburl='/'.join(url.split('/')[:-1])
             if debug:
                 print "Trying to PUT flag and version to: "+suburl
-            putDataUrllib2(suburl,json.dumps(i.flagDict))
+            putDataUrllib2(suburl,json.dumps(i.flagDict),logger=inlogger)
             #put to version
-            putDataUrllib2(url,json.dumps(i.flagDict))
+            putDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
             if debug:
                 print "Had to PUT flag and version"
 
 
-def threadedPatchWithFailCases(q,server,debug):
+def threadedPatchWithFailCases(q,server,debug,inputlogger=None):
     """ 
     Used by InsertMultipleDQXMLFileThreaded
     to patch data to server.
@@ -359,7 +360,7 @@ def threadedPatchWithFailCases(q,server,debug):
         i=q.get()
         url=i.buildURL(server)
         try:
-            patchWithFailCases(i,url,debug)
+            patchWithFailCases(i,url,debug,inlogger=inputlogger)
         except KeyboardInterrupt:
             print "interrupted by user!"
             sys.exit(1)
@@ -612,7 +613,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         concurrent=min(threads,len(i)) # Fix!!! why did I do len(i) ???
         q=Queue(concurrent*2) # Fix!!! Improvement: remove hardcoded concurrency
         for i in range(concurrent):
-            t=Thread(target=threadedPatchWithFailCases, args=[q,server,debug])
+            t=Thread(target=threadedPatchWithFailCases, args=[q,server,debug,logger])
             t.daemon=True
             t.start()
         for i in flag_versions.values():
@@ -638,7 +639,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             #    if len(i.active)==0:
             #        print "No segments for this url"
             #        continue
-            patchWithFailCases(i,url,debug)
+            patchWithFailCases(i,url,debug,logger)
 
     if debug:
         print "If we made it this far, no errors were encountered in the inserts."
@@ -879,7 +880,7 @@ def InsertMultipleDQXMLFileThreaded_offset(filenames,logger,server='http://slweb
         concurrent=min(threads,len(i)) # Fix!!! why did I do len(i) ???
         q=Queue(concurrent*2) # Fix!!! Improvement: remove hardcoded concurrency
         for i in range(concurrent):
-            t=Thread(target=threadedPatchWithFailCases, args=[q,server,debug])
+            t=Thread(target=threadedPatchWithFailCases, args=[q,server,debug,logger])
             t.daemon=True
             t.start()
         for i in flag_versions.values():
@@ -909,7 +910,7 @@ def InsertMultipleDQXMLFileThreaded_offset(filenames,logger,server='http://slweb
             #    if len(i.active)==0:
             #        print "No segments for this url"
             #        continue
-            patchWithFailCases(i,url,debug)
+            patchWithFailCases(i,url,debug,logger)
 
     if debug:
         print "If we made it this far, no errors were encountered in the inserts."

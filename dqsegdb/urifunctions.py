@@ -1,3 +1,4 @@
+import sys
 import httplib
 import urlparse
 import urllib2
@@ -28,28 +29,35 @@ def getDataHttplib(url):
     data1=r1.read()
     return data1
 
-def getDataUrllib2(url,timeout=30):
+def getDataUrllib2(url,timeout=900,logger=None):
     socket.setdefaulttimeout(timeout)
     """
     Takes a url such as:
     url="http://segdb-test-internal/dq/dq/H1/DMT-SCIENCE/1/active?s=10&e=20"
     Returns JSON response from server
     """
+    if logger:
+        logger.debug("Beginning url call: %s" % url)
     try:
         r1=urllib2.urlopen(url)
     except urllib2.HTTPError,e:
         #print e.read()
+        print "Error accesing url: %s" % url
         print e.code
         #print e.reason
         raise
     except urllib2.URLError,e:
         #print e.read()
+        print "Error accesing url: %s" % url
         print e.reason
         try:
             type, value, traceback = sys.exc_info()
-            raise URLError, ("Unable to get data",type,value),traceback
+            print "Trying custom URLError."
+            raise urllib2.URLError, ("Unable to get data",type,value),traceback
         except:
             raise
+    if logger:
+        logger.debug("Completed url call: %s" % url)
     return r1.read()
 
 def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
@@ -94,7 +102,7 @@ def constructFlagQueryURL(protocol,server,ifo):
     url2='/'.join([url1,ifo])
     return url2
 
-def putDataUrllib2(url,payload,timeout=30):
+def putDataUrllib2(url,payload,timeout=900,logger=None):
     """
     Wrapper method for urllib2 that supports PUTs to a url.
     """
@@ -103,6 +111,8 @@ def putDataUrllib2(url,payload,timeout=30):
     request = urllib2.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PUT'
+    if logger:
+        logger.debug("Beginning url call: %s" % url)
     try:
         url = opener.open(request)
     except urllib2.HTTPError,e:
@@ -114,9 +124,11 @@ def putDataUrllib2(url,payload,timeout=30):
         #print e.read()
         print e.reason
         raise
+    if logger:
+        logger.debug("Completed url call: %s" % url)
     return url
 
-def patchDataUrllib2(url,payload,timeout=30):
+def patchDataUrllib2(url,payload,timeout=900,logger=None):
     """
     Wrapper method for urllib2 that supports PATCHs to a url.
     """
@@ -125,6 +137,8 @@ def patchDataUrllib2(url,payload,timeout=30):
     request = urllib2.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PATCH'
+    if logger:
+        logger.debug("Beginning url call: %s" % url)
     try:
         url = opener.open(request)
     except urllib2.HTTPError,e:
@@ -136,5 +150,7 @@ def patchDataUrllib2(url,payload,timeout=30):
         #print e.read()
         print e.reason
         raise
+    if logger:
+        logger.debug("Completed url call: %s" % url)
     return url
 
