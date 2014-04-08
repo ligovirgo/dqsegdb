@@ -25,6 +25,7 @@ def getDataHttplib(url):
     r1=conn.getresponse()
     if r1.status!=200:
         print "Return status code: %s, %s" % r1.status,r1.reason
+        print url
         raise(urllib2.URLError)
     data1=r1.read()
     return data1
@@ -45,6 +46,7 @@ def getDataUrllib2(url,timeout=900,logger=None):
         print "Error accesing url: %s" % url
         print e.code
         #print e.reason
+        print url
         raise
     except urllib2.URLError,e:
         #print e.read()
@@ -53,8 +55,10 @@ def getDataUrllib2(url,timeout=900,logger=None):
         try:
             type, value, traceback = sys.exc_info()
             print "Trying custom URLError."
+            print url
             raise urllib2.URLError, ("Unable to get data",type,value),traceback
         except:
+            print url
             raise
     if logger:
         logger.debug("Completed url call: %s" % url)
@@ -119,10 +123,12 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
         #print e.read()
         print e.code
         #print e.reason
+        print url
         raise
     except urllib2.URLError,e:
         #print e.read()
         print e.reason
+        print url
         raise
     if logger:
         logger.debug("Completed url call: %s" % url)
@@ -145,10 +151,12 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
         #print e.read()
         print e.code
         #print e.reason
+        print url
         raise
     except urllib2.URLError,e:
         #print e.read()
         print e.reason
+        print url
         raise
     if logger:
         logger.debug("Completed url call: %s" % url)
