@@ -65,7 +65,7 @@ from glue.ligolw.utils import process as ligolw_process
 
 from glue.segmentdb import segmentdb_utils
 from dqsegdb.apicalls import *
-from apicalls import *
+#from apicalls import *
 
 
 # try and exit gracefully on a term signal
@@ -116,6 +116,9 @@ parser.add_option("-o", "--offset", metavar="offset", help="Offset to add to GPS
 
 
 options, filenames = parser.parse_args()
+if options.log_level=="DEBUG":
+    print options
+    #sys.exit(5)
 
 if options.offset:
     offset=options.offset
