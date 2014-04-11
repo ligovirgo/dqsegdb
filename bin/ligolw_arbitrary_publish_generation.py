@@ -126,8 +126,7 @@ if site=='SYR':
 
 ## Generate bash script file for submit file to call with parameters
 
-script_text="""
-#!/bin/bash
+script_text="""#!/bin/bash
 
 # Assumes lib directory is one down from this script:
 #DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
