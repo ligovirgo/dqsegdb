@@ -28,6 +28,29 @@ server="http://dqsegdb3.phy.syr.edu"
 files_per_publish=5000
 threading=1
 
+# [L]
+interferometer="L" # H,L,V
+run_dir="/home/rfisher/DQSEGDB/DQSEGDBClient/"+time.strftime("%d%m%Y")
+dqsegdb_code_DIR="/home/rfisher/DQSEGDB_Mar12/dqsegdb"
+template_state_file="/home/rfisher/DQSEGDB/DQSEGDBClient/var/spool/"+interferometer+"-DQ_Segments_S6_template.xml"
+publish_executable=dqsegdb_code_DIR+"/bin/ligolw_publish_threaded_dqxml_dqsegdb_hacked"
+#dqxml_dir="/archive/frames/online/DQ/V1" # /archive/frames/dmt/L${inf}O/triggers/DQ_Segments
+offset=3000000000 # time offset to publish segmetns
+mode="vanilla" # single?, local
+start_time=968654528# ignored if not > 928787010
+end_time=968656112# ignored if not < 975287010
+#log_file = run_dir+"/var/log/"+
+site='CIT' # used to determine DQXML file path
+executable_name=run_dir+"/van_V1_offset_test.sh"
+user_name=str(sys.argv[1]) # used so cluster jobs will write to /usr1/ directory for logging
+gps_stride_per_job=500
+log_file_dir=run_dir+"/var/log"
+gap_publish=False
+debug=True
+server="http://dqsegdb3.phy.syr.edu"
+files_per_publish=100
+threading=1
+
 
 if debug:
     log_level="DEBUG"
