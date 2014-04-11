@@ -76,9 +76,30 @@ elif interferometer=="H":
 elif  interferometer=="L":
     gps_range[0]=max(start_time,gps_range_L1[0])
     gps_range[1]=min(end_time,gps_range_L1[1])
-
 try:
     os.makedirs(run_dir)
+except OSError as e:
+    if e.errno == errno.EEXIST and os.path.isdir(run_dir):
+        pass
+    else:
+        raise
+try:
+    os.makedirs(run_dir+"/var/spool")
+except OSError as e:
+    if e.errno == errno.EEXIST and os.path.isdir(run_dir):
+        pass
+    else:
+        raise
+try:
+    os.makedirs(run_dir+"/var/log")
+except OSError as e:
+    if e.errno == errno.EEXIST and os.path.isdir(run_dir):
+        pass
+    else:
+        raise
+
+try:
+    os.makedirs(run_dir+"/var/run")
 except OSError as e:
     if e.errno == errno.EEXIST and os.path.isdir(run_dir):
         pass
@@ -123,9 +144,9 @@ end=$3
 echo "Run directory="
 echo "%(run_dir)s"
 
-mkdir -p %(run_dir)s/var/spool
-mkdir -p %(run_dir)s/var/log
-mkdir -p %(run_dir)s/var/run
+#mkdir -p %(run_dir)s/var/spool
+#mkdir -p %(run_dir)s/var/log
+#mkdir -p %(run_dir)s/var/run
 
 %(comment_cp)scp %(template_state_file)s %(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}.xml
 
