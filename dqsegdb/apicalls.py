@@ -608,6 +608,9 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             print "Unexpected error:", sys.exc_info()[0]
             raise
 
+    for i in flag_versions.keys():
+        flag_versions[i].coalesceInsertHistory()
+
     if threads>1:
         # Call this after the loop over files, and we should be good to go
         concurrent=min(threads,len(i)) # Fix!!! why did I do len(i) ???
@@ -875,6 +878,9 @@ def InsertMultipleDQXMLFileThreaded_offset(filenames,logger,server='http://slweb
             print "Unexpected error:", sys.exc_info()[0]
             raise
 
+    for i in flag_versions.keys():
+        flag_versions[i].coalesceInsertHistory()
+    
     if threads>1:
         # Call this after the loop over files, and we should be good to go
         concurrent=min(threads,len(i)) # Fix!!! why did I do len(i) ???
