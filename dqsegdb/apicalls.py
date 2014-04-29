@@ -313,7 +313,23 @@ def dtd_uri_callback(uri):
         # otherwise just use the uri in the file
         return uri
     
-def patchWithFailCases(i,url,debug=True,inlogger=None):
+
+
+def synchRun(runTime,action):
+    """runTime is time in HH:MM (string) format, action is call to a function to
+    be exceuted at specified time.
+    Function source: http://stackoverflow.com/a/6579355/2769157
+    """
+    startTime = time(*(map(int, runTime.split(':'))))
+    waitTime=0 # Timeout set to 20 minutes
+    while startTime > datetime.today().time() and waitTime < 1200:
+        sleep(1)
+        waitTime+=1
+    return action
+
+
+
+def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
     """
     Attempts to patch data to a url where the data is in a dictionary format
     that can be directly dumped to json tha the dqsegdb server expects.
@@ -324,7 +340,11 @@ def patchWithFailCases(i,url,debug=True,inlogger=None):
         if debug:
             inlogger.debug("Trying to patch alone for url: %s" % url)
             print "Trying to patch alone for url: %s" % url 
-        patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
+        if synchronize in testing_options:
+            startTime=testing_options['synchronize']
+            syncRun(startTime,patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger))
+        else:
+            patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
         if debug:
             print "Patch alone succeeded for %s" % url
     except HTTPError as e:
@@ -383,7 +403,7 @@ def setupSegment_md(filename,xmlparser,lwtparser,debug):
         segment_md.table.keys()
     return segment_md
 
-def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=True,debug=True,threads=20):
+def InsertMultipleDQXMLFileThreaded_old(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=True,debug=True,threads=20):
     """ 
     Inserts multiple dqxml files of data into the DQSEGDB.
     - filename is a list of string filenames for  DQXML files.
@@ -653,17 +673,23 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
     return True
 
 
-def InsertMultipleDQXMLFileThreaded_offset(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=True,debug=True,threads=20,offset=1000000000):
+def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=True,debug=True,threads=20,testing_options={}):
     """ 
     Inserts multiple dqxml files of data into the DQSEGDB.
     - filename is a list of string filenames for  DQXML files.
     - hackDec11 is used to turn off good features that the server doesn't
     yet support.
     returns True if it completes sucessfully
+    - options is a dictionary including (optionally):offset(int),synchronize(bool)
     """
     from threading import Thread
     from Queue import Queue
     import sys
+
+    if 'offset' in testing_options:
+        offset=testing_options['offset']
+    if 'synchronize' in testing_options:
+        synchronize=testing_options['synchronize']
 
     xmlparser = pyRXP.Parser()
     lwtparser = ldbd.LIGOLwParser()
@@ -916,7 +942,7 @@ def InsertMultipleDQXMLFileThreaded_offset(filenames,logger,server='http://slweb
             #    if len(i.active)==0:
             #        print "No segments for this url"
             #        continue
-            patchWithFailCases(i,url,debug,logger)
+            patchWithFailCases(i,url,debug,logger,testing_options)
 
     if debug:
         print "If we made it this far, no errors were encountered in the inserts."
