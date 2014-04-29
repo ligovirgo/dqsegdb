@@ -113,6 +113,7 @@ parser.add_option("-e", "--end-time", metavar="end_time",help="Manual end time w
 parser.add_option("-m", "--multiple-files",metavar="multiple_files",help="Setting to control the number of DQXML files batched together before the data is sent to the dqsegdb, defaults to 1.")
 parser.add_option("-c", "--thread-count",metavar="thread_count",help="Setting to control the number of threads used when the data is sent to the dqsegdb, defaults to 1.")
 parser.add_option("-o", "--offset", metavar="offset", help="Offset to add to GPS times of known and active segments published to database.")
+parser.add_option("-x", "--synchronize", metavar="synchronize", help="Time to run first PATCH in format HH:MM.")
 
 
 options, filenames = parser.parse_args()
@@ -120,8 +121,13 @@ if options.log_level=="DEBUG":
     print options
     #sys.exit(5)
 
+testing_options={}
 if options.offset:
     offset=options.offset
+    testing_options['offset']=offset
+if options.synchronize:
+    testing_options['synchronize']=options.synchronize #time in 'HH:MM' (string) format
+
 
 if not options.segment_url:
   raise ValueError, "missing argument --segment-url"
@@ -260,7 +266,7 @@ try:
           #result = myClient.insertdmt(xmltext)
           #result=apicalls.publish_xml(xmltext)
           #infile=[infile]
-          result=InsertMultipleDQXMLFileThreaded_offset(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count,offset=2000000000)
+          result=InsertMultipleDQXMLFileThreaded_offset(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count,testing_options)
           infiles=[]
       except KeyboardInterrupt:
         logger.info("caught keyboard interrupt")
@@ -293,7 +299,7 @@ try:
           #result = myClient.insertdmt(xmltext)
           #result=apicalls.publish_xml(xmltext)
           #infile=[infile]
-          result=InsertMultipleDQXMLFileThreaded_offset(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count,offset=2000000000)
+          result=InsertMultipleDQXMLFileThreaded_offset(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count,testing_options)
           #result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count)
       except KeyboardInterrupt:
         logger.info("caught keyboard interrupt")
