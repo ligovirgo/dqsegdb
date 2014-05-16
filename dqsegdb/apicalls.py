@@ -680,7 +680,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
     - hackDec11 is used to turn off good features that the server doesn't
     yet support.
     returns True if it completes sucessfully
-    - options is a dictionary including (optionally):offset(int),synchronize(bool)
+    - options is a dictionary including (optionally):offset(int),synchronize(time in 'HH:MM' format (string))
     """
     from threading import Thread
     from Queue import Queue
