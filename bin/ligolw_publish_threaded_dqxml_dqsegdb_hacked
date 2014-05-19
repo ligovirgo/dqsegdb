@@ -266,7 +266,7 @@ try:
           #result = myClient.insertdmt(xmltext)
           #result=apicalls.publish_xml(xmltext)
           #infile=[infile]
-          result=InsertMultipleDQXMLFileThreaded_offset(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count,testing_options)
+          result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count,testing_options=testing_options)
           infiles=[]
       except KeyboardInterrupt:
         logger.info("caught keyboard interrupt")
@@ -299,7 +299,7 @@ try:
           #result = myClient.insertdmt(xmltext)
           #result=apicalls.publish_xml(xmltext)
           #infile=[infile]
-          result=InsertMultipleDQXMLFileThreaded_offset(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count,testing_options)
+          result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count,testing_options=testing_options)
           #result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count)
       except KeyboardInterrupt:
         logger.info("caught keyboard interrupt")
