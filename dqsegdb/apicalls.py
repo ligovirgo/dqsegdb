@@ -21,6 +21,7 @@ from glue.ligolw import types as ligolwtypes
 import os
 import pyRXP
 import time
+from datetime import datetime, time as time2
 from dqsegdb.urifunctions import *
 try:
     from lal import UTCToGPS as _UTCToGPS
@@ -315,17 +316,17 @@ def dtd_uri_callback(uri):
     
 
 
-def synchRun(runTime,action):
+def waitTill(runTime,timeout=1200):
     """runTime is time in HH:MM (string) format, action is call to a function to
     be exceuted at specified time.
     Function source: http://stackoverflow.com/a/6579355/2769157
     """
-    startTime = time(*(map(int, runTime.split(':'))))
+    startTime = time2(*(map(int, runTime.split(':'))))
     waitTime=0 # Timeout set to 20 minutes
     while startTime > datetime.today().time() and waitTime < 1200:
-        sleep(1)
+        time.sleep(1)
         waitTime+=1
-    return action
+    return
 
 
 
@@ -340,9 +341,10 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
         if debug:
             inlogger.debug("Trying to patch alone for url: %s" % url)
             print "Trying to patch alone for url: %s" % url 
-        if synchronize in testing_options:
+        if 'synchronize' in testing_options:
             startTime=testing_options['synchronize']
-            syncRun(startTime,patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger))
+            waitTill(startTime)
+            patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
         else:
             patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
         if debug:
@@ -687,7 +689,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
     import sys
 
     if 'offset' in testing_options:
-        offset=testing_options['offset']
+        offset=int(testing_options['offset'])
     if 'synchronize' in testing_options:
         synchronize=testing_options['synchronize']
 
