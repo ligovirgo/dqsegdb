@@ -343,6 +343,7 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
             print "Trying to patch alone for url: %s" % url 
         if 'synchronize' in testing_options:
             startTime=testing_options['synchronize']
+            inlogger.debug("Trying to patch synchronously at time %s" % startTime)
             waitTill(startTime)
             patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
         else:
