@@ -85,6 +85,21 @@ def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,start
     result_json=json.loads(result)
     return result_json,queryurl
 
+def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string):
+    """ 
+    Issue query to server for ifo:name:version with start and end time
+    Returns the python loaded JSON response!
+
+    Parameters
+    ----------
+    variable : `type`
+        docstring for variable
+    """
+    queryurl=urifunctions.constructSegmentQueryURL(protocol,server,ifo,name,version,include_list_string)
+    result=urifunctions.getDataUrllib2(queryurl)
+    result_json=json.loads(result)
+    return result_json,queryurl
+
 def reportFlags(protocol,server,verbose):
     """
     Construct url and issue query to get the reported list of all flags
