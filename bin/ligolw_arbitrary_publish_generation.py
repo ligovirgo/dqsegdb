@@ -177,13 +177,13 @@ echo "%(run_dir)s"
 
 %(comment_cp)scp %(template_state_file)s %(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}.xml
 
-rm /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}.log
+rm -f /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}.log
 
 /usr/bin/env python -W ignore::DeprecationWarning %(publish_executable)s --segment-url %(server)s --state-file=%(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}.xml --pid-file=%(run_dir)s/var/run/${inf}-DQ_Segments_S6_${start}_${end}.pid --log-file=/usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}.log --input-directory=%(input_directory)s --log-level %(log_level)s -m %(files_per_publish)s -c %(threading)s -b ${start} -e ${end} -o %(offset)s %(synch_command)s
 
 cp /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}.log %(log_file_dir)s/${inf}-DQ_Segments_S6_${start}_${end}.log 
 
-rm /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}.log
+rm -f /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}.log
 """ % locals()
 
 script_fh=open(executable_name,'w')
