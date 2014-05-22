@@ -70,6 +70,21 @@ def dqsegdbMaxVersion(protocol,server,ifo,name):
     return max(version_list)
 
 
+def dqsegdbFindEndTime(flag_dict):
+    """
+    Determines max end_time from known times in flag_dict
+
+    Parameters
+    _________
+    flag_dict: `dictionary`
+        Input dictionary, converted from json using json.loads in previous call
+
+    Returns max_end_time: `int`
+    """
+    maxEndTime=max([i[1] for i in flag_dict['known']])
+    return maxEndTime
+
+
 def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
     """ 
     Issue query to server for ifo:name:version with start and end time
