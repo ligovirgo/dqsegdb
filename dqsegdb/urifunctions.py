@@ -47,6 +47,7 @@ def getDataUrllib2(url,timeout=900,logger=None):
         print e.code
         #print e.reason
         print url
+        print "May be handled cleanly by calling instance: raising error:"
         raise
     except urllib2.URLError,e:
         #print e.read()

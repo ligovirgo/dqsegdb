@@ -1,0 +1,641 @@
+#!/usr/bin/python
+
+###################################################################
+import os
+import socket
+import atexit
+import pwd
+import re
+import urlparse
+import time
+import sys
+import commands
+import StringIO
+import logging
+import logging.handlers
+import exceptions
+import binascii
+from optparse import OptionParser
+from dqsegdb import apicalls
+
+
+try:
+  import pyRXP
+except ImportError, e:
+  print >> sys.stderr, """
+Error: unable to import the pyRXP module.
+
+You must have pyRXP installed and in your PYTHONPATH to run %s.
+
+%s
+""" %(sys.argv[0], e)
+
+try:
+  from glue import gpstime
+  from glue import ldbd
+  from glue import segments
+  from glue import git_version
+  from glue.segmentdb import segmentdb_utils
+  from glue.ligolw import table
+  from glue.ligolw import lsctables
+  from glue.ligolw import ligolw 
+  from glue.ligolw.utils import process
+  from glue.ligolw import types as ligolwtypes 
+except ImportError, e:
+  print >> sys.stderr, """
+Error: unable to import modules from glue.
+
+Check that glue is correctly installed and in your PYTHONPATH.
+
+%s
+""" % e
+  sys.exit(1)
+##################################################################
+__author__ = "Ryan Fisher <rpfisher@syr.edu>"
+__date__ = git_version.date
+__version__ = git_version.id
+__src__ = git_version.status
+
+PROGRAM_NAME = sys.argv[0].replace('./','')
+PROGRAM_PID  = os.getpid()
+
+try:
+  USER_NAME = os.getlogin()
+except:
+  USER_NAME = pwd.getpwuid(os.getuid())[0]
+
+
+##################################################################
+#            Command Line
+##################################################################
+def parse_command_line():
+  parser = OptionParser()
+  
+  parser.add_option("-p", "--ping", action = "store_true", default = None, help = "Ping the target server")
+  parser.add_option("-t", "--segment-url", action = "store", metavar = "URL", default = None, help = "Users have to specify protocol 'https://' for a secure connection in the segment database url. For example, '--segment-url=https://segdb.ligo.caltech.edu'. No need to specify port number'.")
+  parser.add_option("-o", "--output", action = "store", metavar = "FILE", default = None,help = "Write segments to FILE rather than the segment database")
+  parser.add_option("-j", "--identity", action = "store", metavar = "IDENTITY", default = None,help = "Set the subject line of the server's service certificate to IDENTITY")
+  parser.add_option("-I", "--insert", action = "store_true", default = 0, help = "Insert segments to the segment database")
+  parser.add_option("-A", "--append", action = "store_true", default = 0, help = "Append segments to an existing segment type")
+  parser.add_option("-H", "--ignore-future", action = "store_true", default = 0, help = "Allow insert or append to add segments to future times.")
+  parser.add_option("-F", "--ignore-append-check", action = "store_true", default = 0, help = "Allow --append to insert segments prior to the latest existing segment.")
+  parser.add_option("-D", "--debug", action = "store_true", default = 0, help = "Set debug flag True")
+  parser.add_option("-i", "--ifos", action = "store", metavar = "IFOS", default = None,  help = "Set the segment interferometer to IFOS (e.g. H1)")
+  parser.add_option("-n", "--name", action = "store", metavar = "NAME", default = None,  help = "Set the name of the segment to NAME (e.g. DMT-BADMONTH)")
+  parser.add_option("-v", "--version", action = "store", metavar = "VERSION", default = None,  help = "Set the numeric version of the segment to VERSION (e.g. 1)")
+  parser.add_option("-e", "--explain", action = "store", metavar = "EXPLAIN", default = None,  help = "Set the segment_definer:comment to COMMENT. This should explaining WHAT this flag mean (e.g. \"Light dip 10%\"). Required when --Insert/-I is specified.")
+  parser.add_option("-c", "--comment", action = "store", metavar = "COMMENT", default = None,  help = "Set the segment_summary:comment to COMMENT. This should explaining WHY these segments were inserted (e.g. \"Created from hveto results\")")
+  parser.add_option("-S", "--summary-file", action = "store", metavar = "FILE", default = None, help = "Read the segment_summary rows from FILE. This should be a file containing the gps start and end times that the flag was defined (i.e. the union of on and off)")
+  parser.add_option("-G", "--segment-file", action = "store", metavar = "FILE", default = None,  help = "Read the segment rows from FILE. This should containin the gps start and end times when the flag was active")
+  
+  
+  return parser.parse_args()
+  
+    
+(options, args) = parse_command_line()
+    
+# Make sure all necessary command line arguments are properly given
+errmsg = ""
+if not options.segment_url:
+  errmsg += "Error: --segment-url must be specified\n"
+if not options.ifos:
+  errmsg += "Error: --ifos must be specified\n"
+if not options.name:
+  errmsg += "Error: --name must be specified\n"
+if not options.version:
+  errmsg += "Error: --version must be specified\n"
+if (not options.explain) and (not options.append):
+  errmsg += "Error: --explain must be specified\n"
+if not options.comment:
+  errmsg += "Error: --comment must be specified\n"
+if not options.summary_file:
+  errmsg += "Error: --summary-file must be specified\n"
+if not options.segment_file:
+  errmsg += "Error: --segment-file must be specified\n"
+if options.insert and options.append:
+  errmsg += "Error: Exactly one of [--insert | --append] can be specified\n"
+if (not options.insert) and (not options.append):
+  errmsg += "One of --help, --insert, or --append must be specified\n"
+#o if (not options.ping) and (not options.insert) and (not options.append):
+#o   errmsg += "One of --ping, --help, --insert, --append must be specified\n"
+# --ignore-append-check is too dangerous to allow for direct DB access;
+# user must dump to XML, check it, and be authorized to insert via ldbdc
+if (not options.output and options.ignore_append_check):
+  errmsg += "--ignore-append-check may only be used with --output-file\n"
+if options.debug:
+    debug=True
+else:
+    debug=False
+
+  
+if len(errmsg) and not options.ping:
+  print >> sys.stderr, errmsg
+  print >> sys.stderr, "Run\n    %s --help\nfor more information." % sys.argv[0]
+  sys.exit(1)
+
+
+#o ########################################################################
+#o # open connection to LDBD(W)Server
+#o myClient = segmentdb_utils.setup_database(options.segment_url)
+#o 
+#o if options.ping:
+#o    try:
+#o      print myClient.ping()
+#o    except Exception, e:
+#o      print "Error ping --segment-url", str(e)
+#o      sys.exit(1)
+#o else:
+#o ########################################################################
+def dtd_uri_callback(uri):
+  if uri in ['http://www.ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt',
+    'http://ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt']:
+    # if the XML file contains a http pointer to the ligolw DTD at CIT then
+    # return a local copy to avoid any network problems
+    return 'file://localhost' + os.path.join( os.environ["GLUE_PREFIX"],
+      'etc/ligolw_dtd.txt' )
+  else:
+    # otherwise just use the uri in the file
+    return uri
+
+def del_file(name):
+  os.remove(name)
+
+def callInsertMultipleDQXMLThreaded(filepath):
+  logger = logging.getLogger('ligolw_publish_dqxml_dqsegdb')
+  log_file=filepath.split('.xml')[0]+'.log'
+  handler = logging.handlers.RotatingFileHandler(log_file, 'a', 1024**3, 3)
+  formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+  handler.setFormatter(formatter)
+  logger.addHandler(handler)
+  logger.setLevel(eval("logging." + "DEBUG"))
+  infiles=[filepath]
+  result=apicalls.InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=False,threads=1)
+  return result
+
+
+#Create an xml parser, a ligo_lw document parser, and the document
+xmlparser = pyRXP.Parser()
+lwtparser = ldbd.LIGOLwParser()
+segment_md = ldbd.LIGOMetadata(xmlparser,lwtparser)
+
+########################################################################
+# Construct local table process, process_params and segment_definer 
+########################################################################
+# Table process and process_params will be popullated by calling the 
+# process/process_params utility
+
+#myClient = segmentdb_utils.setup_database(options.segment_url)
+doc = ligolw.Document()
+doc.appendChild(ligolw.LIGO_LW())
+
+ligolwtypes.FromPyType[type(True)] = ligolwtypes.FromPyType[type(0)] 
+
+process_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__,
+             version = __version__,
+             cvs_entry_time = __date__, comment = options.comment).process_id
+
+##########################################################################
+#             Process segment-file and summary-file 
+##########################################################################
+# create the total time interval and storage for the active segments
+intervals = segments.segmentlist()
+active_segments = segments.segmentlist()
+
+#-----------------Check version and type existence-------------------------
+
+# Query server for current highest version and flag name
+o=urlparse.urlparse(options.segment_url)        
+protocol=o.scheme        
+server=o.netloc
+
+version=int(options.version)
+
+if debug:
+  print "Determining max version"
+maxVersion=apicalls.dqsegdbMaxVersion(protocol,server,options.ifos,options.name)
+if debug:
+  print "maxVersion=%d" % maxVersion
+  print "Script call provided version=%d" % version
+
+
+if maxVersion == 0:
+  # Flag doesn't exist in db
+  # If I use my publisher, this is fine, since it will take care of it for me
+  ### Fix!!! the determination and use of max_end_time should go here:
+  maxEndTime=0 ## Because this flag doesn't exist yet!
+elif maxVersion > version:
+  # Fail!
+  print "Version in DB (%d) is greater than that specified (%d), exiting with error." % (maxVersion,version)
+  raise ValueError
+elif maxVersion == version and options.insert:
+  # Fail!
+  print "Version in DB (%d) is equal to that specified (%d) for insertion, exiting with error." % (maxVersion,version)
+  raise ValueError
+else:
+  # Proceed to grab maxEndTime from server
+  if debug:
+    print "Version approved by checks, determining max end time:"
+  if options.append:
+    data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
+    maxEndTime=max([i[1] for i in data_dict['known']])
+  elif options.insert:
+    maxEndTime=0 # The version is greater than the existing versions, so we're ok to go forward regardless of what the summary segments are in the payload!
+
+
+#-----------------Determine max_end_time of existing data in database-------------------------
+
+#data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
+#maxEndTime=max([i[1] for i in data_dict['known']])
+
+### Fix!!!:  If I'm going to allow an xml file input, I'm going to have to do the following check on the xml file instead, implement that when I allow that.  
+
+#-----------------Check summary-file---------------------------------
+# get and check the summary intervals to be inserted
+fh = open(options.summary_file, 'r')
+line_no = 1
+for line in fh.readlines():
+  sum_line = line.strip().split(" ")
+  if len(sum_line) != 2:
+     print "\nERROR: invalid format in your --summary-file row number: %d " % line_no
+     print "Invalid interval is %s" % str(sum_line)
+     sys.exit(1)
+  current_time = str(gpstime.GpsSecondsFromPyUTC(time.time()))
+
+  # make sure gps time is 9 digits
+  #if (len(sum_line[0])!=9 or len(sum_line[1])!=9):
+  #   print "\nERROR: gps time must be 9 digits"
+  #   print "Invalid interval in your --summary-file row number: %d " % line_no
+  #   print "Invalid interval is %s" % str(sum_line)
+  #   sys.exit(1)
+  ## make sure interval start time is less than and not equal to end time
+  if (int(sum_line[0]) >= int(sum_line[1])):
+     print "\nERROR: start_time MUST be less than the end_time"
+     print "Invalid interval in your --summary-file row number: %d " % line_no
+     print "Invalid interval is %s" % str(sum_line)
+     sys.exit(1)
+  # make sure interval start time is greater than the max end time in the database
+  # unless --ignore-append-check is specified
+  elif (int(sum_line[0]) < maxEndTime) and not options.ignore_append_check:
+     print "\nERROR: summary start_time MUST be greater than the max summary end_time %d in the database" % maxEndTime
+     print "Invalid interval in your --summary-file row number: %d" % line_no
+     print "Invalid interval is %s" % str(sum_line)
+     sys.exit(1)
+  # make sure interval end time is less than current time
+  elif  (int(sum_line[1]) > int(current_time)) and not options.ignore_future:
+     print "\nERROR: summary end_time cannot be greater than the current time"
+     print "Invalid interval in your --summary-file row number: %d " % line_no
+     print "Invalid interval is %s" % str(sum_line)
+     sys.exit(1)
+  # if interval is valid, append it to intervals list
+  else:
+    this_sum = segments.segment(int(sum_line[0]),int(sum_line[1]))
+    intervals.append(this_sum)
+    line_no += 1
+intervals.coalesce()
+
+#-----------------Check segment-file---------------------------------
+# get and check the active segments to be inserted
+fh = open(options.segment_file, 'r')
+line_no = 1
+for line in fh.readlines():
+  seg_line = line.strip().split(" ")
+  if len(seg_line) != 2:
+     print "\nERROR: invalid format in your --segment-file row number: %d " % line_no
+     print "Invalid segment is %s" % str(seg_line)
+     sys.exit(1)
+  # make sure gps time is 9 digits
+  #if (len(seg_line[0]) != 9 or len(seg_line[1])!=9): 
+  #   print "\nERROR: gps time must be 9 digits"
+  #   print "Invalid segment in your --segment-file row number: %d" % line_no
+  #   print "Invalid segment is %s" % str(seg_line)
+  #   sys.exit(1)
+  # make sure segment start_time is less than end_time:
+  if int(seg_line[0])>=int(seg_line[1]):
+    print "\nERROR: segment start_time MUST be less than the end_time"
+    print "Invalid segment in your --segment-file row number: %d" % line_no
+    print "Invalid segment is %s" % str(seg_line)
+    sys.exit(1)
+  # make sure segment falls in the summary  intervals specified in the --summary-file
+  this_seg = segments.segment(int(seg_line[0]),int(seg_line[1])) 
+  if this_seg not in intervals:
+    print "\nERROR: segment cannot fall outside of the summary intervals specified in your --summary-file"
+    print "Invalid segment in your --segment-file row number: %d" % line_no
+    print "Invalid segment is %s" % str(seg_line)
+    sys.exit(1)
+  # Otherwise, append this segment to the list of active segments
+  active_segments.append(this_seg)
+  line_no += 1
+active_segments.coalesce()
+
+if debug:
+    print "Beginning INSERT part of code"
+#######################################################################################
+#                            Process INSERT
+#######################################################################################
+if options.insert or options.append:
+  # For the new DQSEGDB, the creator_db is gone and the seg_def_id is determined server side from the ifo,name,version tuple.  Thus, inserts and appends appear identical to the server, and only the checks done above need to differentiate them.
+  #--------------------------------------------------------------------------#
+  # create segment_definer table
+  seg_def_table = lsctables.New(lsctables.SegmentDefTable,columns = [
+                'segment_def_id', 'process_id','ifos','name', 'version','comment'])
+  doc.childNodes[0].appendChild(seg_def_table)
+  segment_definer = lsctables.SegmentDef()
+
+  seg_def_id = seg_def_table.get_next_id()
+  segment_definer.segment_def_id = seg_def_id
+  segment_definer.process_id = process_id
+  segment_definer.ifos = options.ifos
+  segment_definer.name = options.name
+  segment_definer.version = int(options.version)
+  segment_definer.comment = options.explain
+  seg_def_table.append(segment_definer)
+
+  #---------------- create local segment table ------------#
+  segment_table = lsctables.New(lsctables.SegmentTable, columns = [
+                  'segment_id','process_id','segment_def_id','start_time','end_time'])
+  doc.childNodes[0].appendChild(segment_table)
+
+  for this_seg in active_segments:
+    segment = lsctables.Segment()
+    seg_id = segment_table.get_next_id()
+
+    segment.segment_id = seg_id
+    segment.process_id = process_id
+    segment.segment_def_id = seg_def_id
+    segment.start_time = int(this_seg[0])
+    segment.end_time = int(this_seg[1])
+
+    segment_table.append(segment)
+
+  
+  #-------------- create local segment_summary table ------------#
+  seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = [
+                  'segment_sum_id', 'process_id', 'segment_def_id', 'start_time', 'end_time', 'comment'])
+  doc.childNodes[0].appendChild(seg_sum_table)
+
+  for this_sum in intervals:
+     segment_summary = lsctables.SegmentSum()
+     seg_sum_id = seg_sum_table.get_next_id()
+     
+     segment_summary.segment_sum_id = seg_sum_id
+     segment_summary.process_id = process_id
+     segment_summary.segment_def_id = seg_def_id
+     segment_summary.start_time = this_sum[0]
+     segment_summary.end_time = this_sum[1]
+     segment_summary.comment = options.comment
+ 
+     seg_sum_table.append(segment_summary)
+
+  fake_file = StringIO.StringIO()
+  doc.write(fake_file)
+
+  if options.output:
+    if debug:
+      print "Writing out to file and then exiting."
+    fp = open(options.output,"w")
+    fp.write(fake_file.getvalue())
+    fp.close()
+  else:
+    if debug:
+      print "Writing to temporary file, then calling callInsertMultipleDQXMLThreaded"
+    filepath='/tmp/ligolw_segment_insert_'+str(time.time())+'.xml'
+    atexit.register(del_file,filepath) # 
+    fp = open(filepath,'w')
+    fp.write(fake_file.getvalue())
+    fp.close()
+    result=callInsertMultipleDQXMLThreaded(filepath)
+    if not result:
+        raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
+    else:
+        # We're done here
+        if debug:
+          print "Insert worked!"
+        sys.exit()
+
+
+#o ### Fix!!! Decide how to append below:  I don't really want to grab the old process information, right?
+#o 
+#o   #######################################################################################
+#o   #                            Process APPEND
+#o   #######################################################################################
+#o   if options.append:
+#o     #-----------------------------------------------------------# 
+#o     # query the database to get the segment_def_id and creator_db 
+#o     # of this given segment type
+#o     myClient = segmentdb_utils.setup_database(options.segment_url)
+#o     sql = "SELECT creator_db, hex(segment_def_id) AS segment_def_id "
+#o     sql += "From segment_definer WHERE "
+#o     sql += "ifos = '%s' AND " % options.ifos
+#o     sql += "name = '%s' AND " % options.name
+#o     sql += "version = %d " % int(options.version)
+#o     defxml = myClient.query(sql)
+#o 
+#o     del myClient
+#o     myClient = None
+#o 
+#o     # parse the result returned from the database query
+#o     seg_def_md = ldbd.LIGOMetadata(xmlparser,lwtparser)
+#o     xmlparser.eoCB = dtd_uri_callback
+#o     seg_def_md.parse(defxml)
+#o 
+#o     cdb_col = \
+#o      seg_def_md.table['segment_definer']['orderedcol'].index('creator_db')
+#o     sdf_col = \
+#o      seg_def_md.table['segment_definer']['orderedcol'].index('segment_def_id')
+#o     creator_db = seg_def_md.table['segment_definer']['stream'][0][cdb_col]
+#o     seg_def_id = binascii.a2b_hex(seg_def_md.table['segment_definer']['stream'][0][sdf_col])
+#o     #-----------------------------------------------------------------------------#
+#o     # create the elements in the process table that need to be filled in
+#o     process_cols = {
+#o       "process_id" : "ilwd:char",
+#o       "program" : "lstring",
+#o       "version" : "lstring",
+#o       "cvs_repository" : "lstring",
+#o       "cvs_entry_time" : "int_4s",
+#o       "is_online" : "int_4s",
+#o       "node" : "lstring",
+#o       "username" : "lstring",
+#o       "unix_procid" : "int_4s",
+#o       "start_time": "int_4s",
+#o       "end_time": "int_4s",
+#o       "ifos" : "lstring",
+#o       "comment" : "lstring",
+#o      }
+#o 
+#o     process_ocols = [
+#o      "process_id",
+#o      "program",
+#o      "version",
+#o      "cvs_repository",
+#o      "cvs_entry_time",
+#o      "is_online",
+#o      "node",
+#o      "username",
+#o      "unix_procid",
+#o      "start_time",
+#o      "end_time",
+#o      "ifos",
+#o      "comment"
+#o     ]
+#o 
+#o     process_stream = [(
+#o      "process:process_id:0",
+#o      os.path.basename(sys.argv[0]), 
+#o      __version__, 
+#o      __src__,
+#o      gpstime.GpsSecondsFromPyUTC( time.mktime( time.strptime( 
+#o       __date__, "%Y-%m-%d %H:%M:%S +0000" ) ) ),
+#o      0,
+#o      socket.gethostname(),
+#o      pwd.getpwuid(os.geteuid())[0],
+#o      os.getpid(),
+#o      gpstime.GpsSecondsFromPyUTC(time.time()),
+#o      gpstime.GpsSecondsFromPyUTC(time.time()),
+#o      options.ifos,
+#o      options.comment
+#o      )]
+#o 
+#o     process_dict = { 
+#o     'pos' : 0,
+#o     'column' : process_cols,
+#o     'orderedcol' : process_ocols,
+#o     'stream' : process_stream
+#o     }
+#o 
+#o     #----------- create local process_params table ------#
+#o     process_params_cols = {
+#o     "process_id" : "ilwd:char",
+#o     "program" : "lstring",
+#o     "type" : "lstring",
+#o     "value" : "lstring",
+#o     "param":"lstring"
+#o     }
+#o     
+#o     process_params_ocols = [
+#o     "process_id",
+#o     "program",
+#o     "type",
+#o     "value",
+#o     "param"
+#o     ]
+#o 
+#o     process_params_stream = []
+#o     for key,val in vars(options).iteritems(): 
+#o       process_params_stream.append(
+#o       tuple([   
+#o       "process:process_id:0",
+#o       os.path.basename(sys.argv[0]), 
+#o       "lstring",
+#o       str(val),
+#o       "--" + str(key).replace('_','-')
+#o     ])) 
+#o 
+#o     process_params_dict = {
+#o     'pos' : 0,
+#o     'column' : process_params_cols,
+#o     'orderedcol' : process_params_ocols,
+#o     'stream' : process_params_stream
+#o     }
+#o 
+#o     #------------ create local segment table ------------#
+#o     segment_cols = {
+#o       "process_id" : "ilwd:char",
+#o       "segment_def_id" : "ilwd:char_u",
+#o       "segment_def_cdb" : "int_4s",
+#o       "segment_id" : "ilwd:char",
+#o       "start_time" : "int_4s",
+#o       "end_time" : "int_4s",
+#o     }
+#o 
+#o     segment_ocols = [
+#o      "process_id",
+#o      "segment_def_id",
+#o      "segment_def_cdb",
+#o      "segment_id",
+#o      "start_time",
+#o      "end_time",
+#o     ]
+#o 
+#o     segment_stream = []
+#o     seg_id = 0
+#o     for this_seg in active_segments:
+#o       segment_stream.append (
+#o       tuple(["process:process_id:0",
+#o       seg_def_id,
+#o       creator_db,
+#o       "segment:segment_id:" + str(seg_id),
+#o       int(this_seg[0]),
+#o       int(this_seg[1])
+#o       ]))
+#o       seg_id += 1
+#o  
+#o     segment_dict = { 
+#o      'pos' : 0,
+#o      'column' : segment_cols,
+#o      'orderedcol' : segment_ocols,
+#o      'stream' : segment_stream
+#o     } 
+#o 
+#o     #------------ create local segment_summary table  ------------#
+#o     # create the elements in the segment_summary table that need to be filled in
+#o     segment_summary_cols = {
+#o     "process_id" : "ilwd:char",
+#o     "segment_def_id" : "ilwd:char_u",
+#o     "segment_def_cdb" : "int_4s",
+#o     "segment_sum_id" : "ilwd:char",
+#o     "start_time" : "int_4s",
+#o     "end_time" : "int_4s",
+#o     "comment" : "lstring"
+#o      }
+#o 
+#o     segment_summary_ocols = [
+#o     "process_id",
+#o     "segment_def_id",
+#o     "segment_def_cdb",
+#o     "segment_sum_id",
+#o     "start_time",
+#o     "end_time",
+#o     "comment"
+#o     ]
+#o  
+#o     segment_summary_stream = []
+#o     sum_id = 0
+#o     for this_sum in intervals:
+#o       segment_summary_stream.append(
+#o       tuple([
+#o       "process:process_id:0",
+#o       seg_def_id,
+#o       creator_db,
+#o       "segment_summary:segment_sum_id" + str(sum_id),
+#o       int(this_sum[0]),
+#o       int(this_sum[1]),
+#o       options.comment
+#o       ]))
+#o       sum_id += 1
+#o     
+#o  
+#o     segment_summary_dict = { 
+#o     'pos' : 0,
+#o     'column' : segment_summary_cols,
+#o     'orderedcol' : segment_summary_ocols,
+#o     'stream' : segment_summary_stream
+#o     }
+#o     
+#o     #append all the tales we have created for APPEND
+#o     segment_md.table['process']=process_dict
+#o     segment_md.table['process_params']=process_params_dict
+#o     segment_md.table['segment']=segment_dict
+#o     segment_md.table['segment_summary']=segment_summary_dict
+#o 
+#o 
+#o     if options.output:
+#o       fp = open(options.output,"w")
+#o       fp.write(segment_md.xml())
+#o       fp.close()
+#o     else:
+#o       myClient = segmentdb_utils.setup_database(options.segment_url)
+#o       myClient.insert(segment_md.xml())
+
+#sys.exit(0)
+ 
+
