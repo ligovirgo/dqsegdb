@@ -208,13 +208,15 @@ o=urlparse.urlparse(options.segment_url)
 protocol=o.scheme        
 server=o.netloc
 
+version=int(options.version)
+
 if debug:
   print "Determining max version"
 maxVersion=apicalls.dqsegdbMaxVersion(protocol,server,options.ifos,options.name)
 if debug:
   print "maxVersion=%d" % maxVersion
+  print "Script call provided version=%d" % version
 
-version=options.version
 
 if maxVersion == 0:
   # Flag doesn't exist in db
@@ -233,8 +235,11 @@ else:
   # Proceed to grab maxEndTime from server
   if debug:
     print "Version approved by checks, determining max end time:"
-  data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
-  maxEndTime=max([i[1] for i in data_dict['known']])
+  if options.append:
+    data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
+    maxEndTime=max([i[1] for i in data_dict['known']])
+  elif options.insert:
+    maxEndTime=0 # The version is greater than the existing versions, so we're ok to go forward regardless of what the summary segments are in the payload!
 
 
 #-----------------Determine max_end_time of existing data in database-------------------------
