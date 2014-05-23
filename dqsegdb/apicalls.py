@@ -706,10 +706,10 @@ def InsertMultipleDQXMLFileThreaded_old(filenames,logger,server='http://slwebtes
     return True
 
 
-def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=True,debug=True,threads=20,testing_options={}):
+def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=True,debug=True,threads=1,testing_options={}):
     """ 
     Inserts multiple dqxml files of data into the DQSEGDB.
-    - filename is a list of string filenames for  DQXML files.
+    - filenames is a list of string filenames for  DQXML files.
     - hackDec11 is used to turn off good features that the server doesn't
     yet support.
     returns True if it completes sucessfully
