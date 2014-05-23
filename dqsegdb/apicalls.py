@@ -40,6 +40,7 @@ def dqsegdbCheckVersion(protocol,server,ifo,name,version):
     Checks for existence of a given version of a flag in the db.
     Returns true if version exists
     """
+    ### Fix!!! This looks wrong:  seems to check if the flag exists, not whether a version on the server matches what was passed to the function
     queryurl=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
     try:
         result=urifunctions.getDataUrllib2(queryurl)
@@ -56,6 +57,7 @@ def dqsegdbMaxVersion(protocol,server,ifo,name):
     Checks for existence of a flag in the db, returns maximum
     version if the flag exists exists, 0 if the flag does not exist.
     """
+    ### Fix!!! This isn't getting a list of versions:
     queryurl=urifunctions.constructFlagQueryURL(protocol,server,ifo)
     try:
         result=urifunctions.getDataUrllib2(queryurl)
@@ -65,6 +67,15 @@ def dqsegdbMaxVersion(protocol,server,ifo,name):
         else:
             raise
     # Now parse result for max version:
+    queryurl=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
+    try: 
+        result=urifunctions.getDataUrllib2(queryurl)
+    except HTTPError as e:
+        if e.code==404:
+            return 0
+        else:
+            raise
+
     result_json=json.loads(result)
     version_list=result_json['version']
     return max(version_list)
@@ -721,6 +732,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
 
     if 'offset' in testing_options:
         offset=int(testing_options['offset'])
+    else:
+        offset=0
     if 'synchronize' in testing_options:
         synchronize=testing_options['synchronize']
 

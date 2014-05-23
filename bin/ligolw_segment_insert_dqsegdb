@@ -6,14 +6,18 @@ import socket
 import atexit
 import pwd
 import re
+import urlparse
 import time
 import sys
 import commands
 import StringIO
+import logging
+import logging.handlers
 import exceptions
 import binascii
 from optparse import OptionParser
 from dqsegdb import apicalls
+
 
 try:
   import pyRXP
@@ -68,32 +72,21 @@ def parse_command_line():
   parser = OptionParser()
   
   parser.add_option("-p", "--ping", action = "store_true", default = None, help = "Ping the target server")
-  parser.add_option("-t", "--segment-url", action = "store", metavar = "URL", default = None, \
-                    help = "Users have to specify protocol 'https://' for a secure connection in the segment database url. For example, '--segment-url=https://segdb.ligo.caltech.edu'. No need to specify port number'.")
-  parser.add_option("-o", "--output", action = "store", metavar = "FILE", default = None, \
-                    help = "Write segments to FILE rather than the segment database")
-  parser.add_option("-j", "--identity", action = "store", metavar = "IDENTITY", default = None, \
-                    help = "Set the subject line of the server's service certificate to IDENTITY")
+  parser.add_option("-t", "--segment-url", action = "store", metavar = "URL", default = None, help = "Users have to specify protocol 'https://' for a secure connection in the segment database url. For example, '--segment-url=https://segdb.ligo.caltech.edu'. No need to specify port number'.")
+  parser.add_option("-o", "--output", action = "store", metavar = "FILE", default = None,help = "Write segments to FILE rather than the segment database")
+  parser.add_option("-j", "--identity", action = "store", metavar = "IDENTITY", default = None,help = "Set the subject line of the server's service certificate to IDENTITY")
   parser.add_option("-I", "--insert", action = "store_true", default = 0, help = "Insert segments to the segment database")
   parser.add_option("-A", "--append", action = "store_true", default = 0, help = "Append segments to an existing segment type")
-  parser.add_option("-H", "--ignore-future", action = "store_true", default = 0,
-                    help = "Allow insert or append to add segments to future times.")
-  parser.add_option("-F", "--ignore-append-check", action = "store_true", default = 0,
-                    help = "Allow --append to insert segments prior to the latest existing segment.")
-  parser.add_option("-i", "--ifos", action = "store", metavar = "IFOS", default = None, \
-                    help = "Set the segment interferometer to IFOS (e.g. H1)")
-  parser.add_option("-n", "--name", action = "store", metavar = "NAME", default = None, \
-                    help = "Set the name of the segment to NAME (e.g. DMT-BADMONTH)")
-  parser.add_option("-v", "--version", action = "store", metavar = "VERSION", default = None, \
-                    help = "Set the numeric version of the segment to VERSION (e.g. 1)")
-  parser.add_option("-e", "--explain", action = "store", metavar = "EXPLAIN", default = None, \
-                    help = "Set the segment_definer:comment to COMMENT. This should explaining WHAT this flag mean (e.g. \"Light dip 10%\"). Required when --Insert/-I is specified.")
-  parser.add_option("-c", "--comment", action = "store", metavar = "COMMENT", default = None, \
-                    help = "Set the segment_summary:comment to COMMENT. This should explaining WHY these segments were inserted (e.g. \"Created from hveto results\")")
-  parser.add_option("-S", "--summary-file", action = "store", metavar = "FILE", default = None, \
-                    help = "Read the segment_summary rows from FILE. This should be a file containing the gps start and end times that the flag was defined (i.e. the union of on and off)")
-  parser.add_option("-G", "--segment-file", action = "store", metavar = "FILE", default = None, \
-                    help = "Read the segment rows from FILE. This should containin the gps start and end times when the flag was active")
+  parser.add_option("-H", "--ignore-future", action = "store_true", default = 0, help = "Allow insert or append to add segments to future times.")
+  parser.add_option("-F", "--ignore-append-check", action = "store_true", default = 0, help = "Allow --append to insert segments prior to the latest existing segment.")
+  parser.add_option("-D", "--debug", action = "store_true", default = 0, help = "Set debug flag True")
+  parser.add_option("-i", "--ifos", action = "store", metavar = "IFOS", default = None,  help = "Set the segment interferometer to IFOS (e.g. H1)")
+  parser.add_option("-n", "--name", action = "store", metavar = "NAME", default = None,  help = "Set the name of the segment to NAME (e.g. DMT-BADMONTH)")
+  parser.add_option("-v", "--version", action = "store", metavar = "VERSION", default = None,  help = "Set the numeric version of the segment to VERSION (e.g. 1)")
+  parser.add_option("-e", "--explain", action = "store", metavar = "EXPLAIN", default = None,  help = "Set the segment_definer:comment to COMMENT. This should explaining WHAT this flag mean (e.g. \"Light dip 10%\"). Required when --Insert/-I is specified.")
+  parser.add_option("-c", "--comment", action = "store", metavar = "COMMENT", default = None,  help = "Set the segment_summary:comment to COMMENT. This should explaining WHY these segments were inserted (e.g. \"Created from hveto results\")")
+  parser.add_option("-S", "--summary-file", action = "store", metavar = "FILE", default = None, help = "Read the segment_summary rows from FILE. This should be a file containing the gps start and end times that the flag was defined (i.e. the union of on and off)")
+  parser.add_option("-G", "--segment-file", action = "store", metavar = "FILE", default = None,  help = "Read the segment rows from FILE. This should containin the gps start and end times when the flag was active")
   
   
   return parser.parse_args()
@@ -129,6 +122,11 @@ if (not options.insert) and (not options.append):
 # user must dump to XML, check it, and be authorized to insert via ldbdc
 if (not options.output and options.ignore_append_check):
   errmsg += "--ignore-append-check may only be used with --output-file\n"
+if options.debug:
+    debug=True
+else:
+    debug=False
+
   
 if len(errmsg) and not options.ping:
   print >> sys.stderr, errmsg
@@ -170,8 +168,8 @@ def callInsertMultipleDQXMLThreaded(filepath):
   handler.setFormatter(formatter)
   logger.addHandler(handler)
   logger.setLevel(eval("logging." + "DEBUG"))
-  infiles=['filepath']
-  result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=False,threads=1)
+  infiles=[filepath]
+  result=apicalls.InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=False,threads=1)
   return result
 
 
@@ -206,26 +204,43 @@ active_segments = segments.segmentlist()
 #-----------------Check version and type existence-------------------------
 
 # Query server for current highest version and flag name
-maxVersion=dqsegdbMaxVersion(protocol,server,ifo,name)
-if maxVersion==0:
-    # Flag doesn't exist in db
-    # If I use my publisher, this is fine, since it will take care of it for me
+o=urlparse.urlparse(options.segment_url)        
+protocol=o.scheme        
+server=o.netloc
+
+if debug:
+  print "Determining max version"
+maxVersion=apicalls.dqsegdbMaxVersion(protocol,server,options.ifos,options.name)
+if debug:
+  print "maxVersion=%d" % maxVersion
+
+version=options.version
+
+if maxVersion == 0:
+  # Flag doesn't exist in db
+  # If I use my publisher, this is fine, since it will take care of it for me
+  ### Fix!!! the determination and use of max_end_time should go here:
+  maxEndTime=0 ## Because this flag doesn't exist yet!
 elif maxVersion > version:
-    # Fail!
-    print "Version in DB (%d) is greater than that specified (%d), exiting with error." % (maxVersion,version))
-    raise ValueError
+  # Fail!
+  print "Version in DB (%d) is greater than that specified (%d), exiting with error." % (maxVersion,version)
+  raise ValueError
 elif maxVersion == version and options.insert:
-    # Fail!
-    print "Version in DB (%d) is equal to that specified (%d) for insertion, exiting with error." % (maxVersion,version))
-    raise ValueError
+  # Fail!
+  print "Version in DB (%d) is equal to that specified (%d) for insertion, exiting with error." % (maxVersion,version)
+  raise ValueError
 else:
-    # Proceed!
-    pass
+  # Proceed to grab maxEndTime from server
+  if debug:
+    print "Version approved by checks, determining max end time:"
+  data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
+  maxEndTime=max([i[1] for i in data_dict['known']])
 
 
 #-----------------Determine max_end_time of existing data in database-------------------------
-data_dict,query_url1=dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string='known,metadata')
-maxEndTime=max([i[1] for i in data_dict['known']])
+
+#data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
+#maxEndTime=max([i[1] for i in data_dict['known']])
 
 ### Fix!!!:  If I'm going to allow an xml file input, I'm going to have to do the following check on the xml file instead, implement that when I allow that.  
 
@@ -255,8 +270,8 @@ for line in fh.readlines():
      sys.exit(1)
   # make sure interval start time is greater than the max end time in the database
   # unless --ignore-append-check is specified
-  elif (int(sum_line[0]) < max_end_sum) and not options.ignore_append_check:
-     print "\nERROR: summary start_time MUST be greater than the max summary end_time %d in the database" % max_end_sum
+  elif (int(sum_line[0]) < maxEndTime) and not options.ignore_append_check:
+     print "\nERROR: summary start_time MUST be greater than the max summary end_time %d in the database" % maxEndTime
      print "Invalid interval in your --summary-file row number: %d" % line_no
      print "Invalid interval is %s" % str(sum_line)
      sys.exit(1)
@@ -307,7 +322,8 @@ for line in fh.readlines():
   line_no += 1
 active_segments.coalesce()
 
-
+if debug:
+    print "Beginning INSERT part of code"
 #######################################################################################
 #                            Process INSERT
 #######################################################################################
@@ -369,10 +385,14 @@ if options.insert or options.append:
   doc.write(fake_file)
 
   if options.output:
+    if debug:
+      print "Writing out to file and then exiting."
     fp = open(options.output,"w")
     fp.write(fake_file.getvalue())
     fp.close()
   else:
+    if debug:
+      print "Writing to temporary file, then calling callInsertMultipleDQXMLThreaded"
     filepath='/tmp/ligolw_segment_insert_'+str(time.time())+'.xml'
     atexit.register(del_file,filepath) # 
     fp = open(filepath,'w')
@@ -383,6 +403,8 @@ if options.insert or options.append:
         raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
     else:
         # We're done here
+        if debug:
+          print "Insert worked!"
         sys.exit()
 
 
@@ -609,6 +631,6 @@ if options.insert or options.append:
 #o       myClient = segmentdb_utils.setup_database(options.segment_url)
 #o       myClient.insert(segment_md.xml())
 
-sys.exit(0)
+#sys.exit(0)
  
 
