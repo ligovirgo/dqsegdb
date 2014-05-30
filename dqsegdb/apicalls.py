@@ -27,7 +27,6 @@ try:
     from lal import UTCToGPS as _UTCToGPS
 except ImportError:
     # lal is optional
-    # FIXME:  make it not optional
     from glue import gpstime
     _UTCToGPS = lambda utc: int(gpstime.GpsSecondsFromPyUTC(time.mktime(utc)))
 
@@ -49,15 +48,23 @@ def dqsegdbCheckVersion(protocol,server,ifo,name,version):
             return False
         else:
             raise
+    ult_json=json.loads(result)
+    version_list=result_json['version']
+    if version in version_list:
+        return True 
+    else:
+        return False
+
+    ## Optional method: query the version directly, and look for !404:
+    # Pro:
     # No need to actually parse result for this function so just return True
-    return True 
+    # Con?
 
 def dqsegdbMaxVersion(protocol,server,ifo,name):
     """ 
     Checks for existence of a flag in the db, returns maximum
     version if the flag exists exists, 0 if the flag does not exist.
     """
-    ### Fix!!! This isn't getting a list of versions:
     queryurl=urifunctions.constructFlagQueryURL(protocol,server,ifo)
     try:
         result=urifunctions.getDataUrllib2(queryurl)
@@ -357,7 +364,7 @@ def dtd_uri_callback(uri):
     
 
 
-def waitTill(runTime,timeout=1200):
+def waitTill(runTime,timeout=2400):
     """runTime is time in HH:MM (string) format, action is call to a function to
     be exceuted at specified time.
     Function source: http://stackoverflow.com/a/6579355/2769157
