@@ -119,16 +119,18 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
     if logger:
         logger.debug("Beginning url call: %s" % url)
     try:
-        url = opener.open(request)
+        urlreturned = opener.open(request)
     except urllib2.HTTPError,e:
         #print e.read()
         print e.code
         #print e.reason
+        print urlreturned
         print url
         raise
     except urllib2.URLError,e:
         #print e.read()
         print e.reason
+        print urlreturned
         print url
         raise
     if logger:
