@@ -28,28 +28,28 @@ import time
 #files_per_publish=5000
 #threading=1
 
-# [L]
-interferometer="L" # H,L,V
-user_name=str(sys.argv[1]) # used so cluster jobs will write to /usr1/ directory for logging
-run_dir=os.getcwd()+"/"+time.strftime("%M%H%d%m%Y")
-dqsegdb_code_DIR="<path>/dqsegdb"
-template_state_file="/home/rfisher/DQSEGDB/DQSEGDBClient/var/spool/"+interferometer+"-DQ_Segments_S6_template.xml"
-publish_executable=dqsegdb_code_DIR+"/bin/ligolw_publish_threaded_dqxml_dqsegdb_hacked"
-#dqxml_dir="/archive/frames/online/DQ/V1" # /archive/frames/dmt/L${inf}O/triggers/DQ_Segments
-offset=3000000000 # time offset to publish segmetns
-mode="vanilla" # single?, local
-start_time=968654528# ignored if not > 928787010
-end_time=968656112# ignored if not < 975287010
-#log_file = run_dir+"/var/log/"+
-site='CIT' # used to determine DQXML file path
-executable_name=run_dir+"/van_"+interferometer+"1_offset_test.sh"
-gps_stride_per_job=500
-log_file_dir=run_dir+"/var/log"
-gap_publish=False
-debug=True
-server="http://dqsegdb3.phy.syr.edu"
-files_per_publish=100
-threading=1
+## [L]
+#interferometer="L" # H,L,V
+#user_name=str(sys.argv[1]) # used so cluster jobs will write to /usr1/ directory for logging
+#run_dir=os.getcwd()+"/"+time.strftime("%M%H%d%m%Y")
+#dqsegdb_code_DIR="<path>/dqsegdb"
+#template_state_file="/home/rfisher/DQSEGDB/DQSEGDBClient/var/spool/"+interferometer+"-DQ_Segments_S6_template.xml"
+#publish_executable=dqsegdb_code_DIR+"/bin/ligolw_publish_threaded_dqxml_dqsegdb_hacked"
+##dqxml_dir="/archive/frames/online/DQ/V1" # /archive/frames/dmt/L${inf}O/triggers/DQ_Segments
+#offset=3000000000 # time offset to publish segmetns
+#mode="vanilla" # single?, local
+#start_time=968654528# ignored if not > 928787010
+#end_time=968656112# ignored if not < 975287010
+##log_file = run_dir+"/var/log/"+
+#site='CIT' # used to determine DQXML file path
+#executable_name=run_dir+"/van_"+interferometer+"1_offset_test.sh"
+#gps_stride_per_job=500
+#log_file_dir=run_dir+"/var/log"
+#gap_publish=False
+#debug=True
+#server="http://dqsegdb3.phy.syr.edu"
+#files_per_publish=100
+#threading=1
 
 interferometer="L" # H,L,V
 user_name=str(sys.argv[1]) # used so cluster jobs will write to /usr1/ directory for logging
@@ -58,7 +58,7 @@ dqsegdb_code_DIR="/home/rfisher/DQSEGDB_Mar12/dqsegdb"
 template_state_file="/home/rfisher/DQSEGDB/DQSEGDBClient/var/spool/"+interferometer+"-DQ_Segments_S6_template.xml"
 publish_executable=dqsegdb_code_DIR+"/bin/ligolw_publish_threaded_dqxml_dqsegdb_hacked"
 #dqxml_dir="/archive/frames/online/DQ/V1" # /archive/frames/dmt/L${inf}O/triggers/DQ_Segments
-offset=71 # time offset to publish segmetns
+offset_base=71 # time offset to publish segmetns
 mode="local" # single?, local
 start_time=968654528# ignored if not > 928787010
 end_time = 969454528 # 16(s)*5000(files) # ignored if not < 975287010
@@ -73,6 +73,7 @@ server="http://dqsegdb3.phy.syr.edu"
 files_per_publish=5000
 threading=1
 synch="14:30"
+repeat_runs=0
 
 
 if debug:
@@ -175,15 +176,15 @@ echo "%(run_dir)s"
 #mkdir -p %(run_dir)s/var/log
 #mkdir -p %(run_dir)s/var/run
 
-%(comment_cp)scp %(template_state_file)s %(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}.xml
-
-rm -f /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}.log
-
-/usr/bin/env python -W ignore::DeprecationWarning %(publish_executable)s --segment-url %(server)s --state-file=%(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}.xml --pid-file=%(run_dir)s/var/run/${inf}-DQ_Segments_S6_${start}_${end}.pid --log-file=/usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}.log --input-directory=%(input_directory)s --log-level %(log_level)s -m %(files_per_publish)s -c %(threading)s -b ${start} -e ${end} -o %(offset)s %(synch_command)s
-
-cp /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}.log %(log_file_dir)s/${inf}-DQ_Segments_S6_${start}_${end}.log 
-
-rm -f /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}.log
+for i in {1..${repeat_runs}}
+do
+  (offset=$((offset_base+i))
+  %(comment_cp)scp %(template_state_file)s %(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.xml
+  rm -f /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log
+  /usr/bin/env python -W ignore::DeprecationWarning %(publish_executable)s --segment-url %(server)s --state-file=%(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.xml --pid-file=%(run_dir)s/var/run/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.pid --log-file=/usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log --input-directory=%(input_directory)s --log-level %(log_level)s -m %(files_per_publish)s -c %(threading)s -b ${start} -e ${end} -o %(offset)s %(synch_command)s
+  cp /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log %(log_file_dir)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log 
+  rm -f /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log) &
+done
 """ % locals()
 
 script_fh=open(executable_name,'w')
