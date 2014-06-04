@@ -9,7 +9,10 @@ import os.path
 from distutils.command import install
 from setuptools import (setup, find_packages)
 
-utils = __import__('utils', fromlist=['version'], level=1)
+try:
+    utils = __import__('utils', fromlist=['version'], level=1)
+except:
+    import utils
 
 PACKAGENAME = 'dqsegdb'
 DESCRIPTION = 'Client library for DQSegDB'
