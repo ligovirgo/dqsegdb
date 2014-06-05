@@ -6,13 +6,10 @@ from __future__ import print_function
 import sys
 import glob
 import os.path
-from distutils.command import install
+import subprocess
+from distutils import log
 from setuptools import (setup, find_packages)
-
-try:
-    utils = __import__('utils', fromlist=['version'], level=1)
-except:
-    import utils
+from setuptools.command import (build_py, install, sdist)
 
 PACKAGENAME = 'dqsegdb'
 DESCRIPTION = 'Client library for DQSegDB'
@@ -21,34 +18,50 @@ AUTHOR = 'Ryan Fisher'
 AUTHOR_EMAIL = 'ryan.fisher@ligo.org'
 LICENSE = None
 
-# set version information
-VERSION_PY = '%s/version.py' % PACKAGENAME
-vcinfo = utils.version.GitStatus()
-vcinfo(VERSION_PY, PACKAGENAME, AUTHOR, AUTHOR_EMAIL)
 
-# VERSION should be PEP386 compatible (http://www.python.org/dev/peps/pep-0386)
-VERSION = vcinfo.version
+# ------------------------------------------------------------------------------
+# VCS info
 
-# Indicates if this version is a release version
-RELEASE = vcinfo.version != vcinfo.id and 'dev' not in VERSION
+version_py = os.path.join(PACKAGENAME, 'version.py')
 
-# Use the find_packages tool to locate all packages and modules
-packagenames = find_packages(exclude=['utils', 'utils.*'])
 
-# glob for all scripts
-if os.path.isdir('bin'):
-    scripts = glob.glob(os.path.join('bin', '*'))
-else:
-    scripts = []
+def write_vcs_info(target):
+    """Generate target file with versioning information from git VCS
+    """
+    log.info("generating %s" % target)
+    import vcs
+    gitstatus = vcs.GitStatus()
+    gitstatus.run(target, PACKAGENAME, AUTHOR, AUTHOR_EMAIL)
 
-# extend install to write environment scripts
-shenv = os.path.join('etc', '%s-user-env.sh' % PACKAGENAME)
-cshenv = os.path.join('etc', '%s-user-env.csh' % PACKAGENAME)
+
+# ------------------------------------------------------------------------------
+# custom commands
+
+class DQSegDBBuildPy(build_py.build_py):
+    def run(self):
+        try:
+            write_vcs_info(version_py)
+        except subprocess.CalledProcessError:
+            # failed to generate version.py because git call did'nt work
+            if os.path.exists(version_py):
+                log.info("cannot determine git status, using existing %s"
+                         % version_py)
+        build_py.build_py.run(self)
+
+
+class DQSegDBSDist(sdist.sdist):
+    def run(self):
+        write_vcs_info(version_py)
+        sdist.sdist.run(self)
+
 
 class DQSegDBInstall(install.install):
     """Extension of setuptools install to write source script for
     users.
     """
+    shenv = os.path.join('etc', '%s-user-env.sh' % PACKAGENAME)
+    cshenv = os.path.join('etc', '%s-user-env.csh' % PACKAGENAME)
+
     def _get_install_paths(self):
         """Internal utility to get install and library paths for install.
         """
@@ -98,21 +111,48 @@ class DQSegDBInstall(install.install):
         print("DQSegDB has been installed.")
         print("If you are running csh, you can set your environment by "
               "running:\n")
-        print("source %s\n" % os.path.join(self.install_base, cshenv))
+        print("source %s\n" % os.path.join(self.install_base, self.cshenv))
         print("Otherwise, you can run:\n")
-        print("source %s" % os.path.join(self.install_base, shenv))
+        print("source %s" % os.path.join(self.install_base, self.shenv))
         print("--------------------------------------------------")
     run.__doc__ = install.install.__doc__
 
 
+# ------------------------------------------------------------------------------
+# run setup
+
+# get version metadata
+try:
+    from dqsegdb import version
+except ImportError:
+    VERSION = None
+    RELEASE = False
+else:
+    VERSION = version.version
+    RELEASE = version.version != version.git_id and 'dev' not in VERSION
+
+# Use the find_packages tool to locate all packages and modules
+packagenames = find_packages()
+
+# glob for all scripts
+if os.path.isdir('bin'):
+    scripts = glob.glob(os.path.join('bin', '*'))
+else:
+    scripts = []
+
+
 setup(name=PACKAGENAME,
-      cmdclass={'install': DQSegDBInstall},
+      cmdclass={
+          'install': DQSegDBInstall,
+          'build_py': DQSegDBBuildPy,
+          'sdist': DQSegDBSDist,
+          },
       version=VERSION,
       description=DESCRIPTION,
       packages=packagenames,
       ext_modules=[],
       scripts=scripts,
-      data_files=[('etc', [shenv, cshenv])],
+      data_files=[('etc', [DQSegDBInstall.shenv, DQSegDBInstall.cshenv])],
       install_requires=['glue', 'pyRXP'],
       provides=[PACKAGENAME],
       author=AUTHOR,
