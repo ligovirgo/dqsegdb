@@ -176,7 +176,7 @@ echo "%(run_dir)s"
 #mkdir -p %(run_dir)s/var/log
 #mkdir -p %(run_dir)s/var/run
 
-for i in {0..${repeat_runs}}
+for i in {0..%(repeat_runs)s}
 do
   (offset=$((offset_base+i))
   %(comment_cp)scp %(template_state_file)s %(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.xml
