@@ -178,7 +178,9 @@ echo "%(run_dir)s"
 
 for i in {0..%(repeat_runs)s}
 do
-  (offset=$((offset_base+i))
+  (offset=$((%(offset)s+i))
+  echo "Running job with this offset:"
+  echo "${offset}"
   %(comment_cp)scp %(template_state_file)s %(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.xml
   rm -f /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log
   /usr/bin/env python -W ignore::DeprecationWarning %(publish_executable)s --segment-url %(server)s --state-file=%(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.xml --pid-file=%(run_dir)s/var/run/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.pid --log-file=/usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log --input-directory=%(input_directory)s --log-level %(log_level)s -m %(files_per_publish)s -c %(threading)s -b ${start} -e ${end} -o %(offset)s %(synch_command)s
