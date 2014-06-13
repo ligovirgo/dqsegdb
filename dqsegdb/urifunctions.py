@@ -124,13 +124,13 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
         #print e.read()
         print e.code
         #print e.reason
-        print urlreturned
+        #print urlreturned
         print url
         raise
     except urllib2.URLError,e:
         #print e.read()
         print e.reason
-        print urlreturned
+        #print urlreturned
         print url
         raise
     if logger:
