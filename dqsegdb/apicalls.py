@@ -1003,7 +1003,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             patchWithFailCases(i,url,debug,logger,testing_options)
 
     if debug:
-        logger.debug("If we made it this far, no errors were encountered in the inserts."
+        logger.debug("If we made it this far, no errors were encountered in the inserts.")
         #print "If we made it this far, no errors were encountered in the inserts."
     ### Fix!!! Improvement: Should be more careful about error handling here.
     if debug:
