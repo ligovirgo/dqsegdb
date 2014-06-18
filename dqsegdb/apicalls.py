@@ -993,7 +993,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             #i.flagDict
             url=i.buildURL(server)
             if debug:
-                print url
+                logger.debug("Url for the following data: %s" % url)
+                #print url
                 logger.debug("json.dumps(i.flagDict):")
                 logger.debug("%s"%json.dumps(i.flagDict))
             #if hackDec11:
