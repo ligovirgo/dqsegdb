@@ -388,7 +388,7 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
         #patch to the flag/version
         if debug:
             inlogger.debug("Trying to patch alone for url: %s" % url)
-            print "Trying to patch alone for url: %s" % url 
+            #print "Trying to patch alone for url: %s" % url 
         if 'synchronize' in testing_options:
             startTime=testing_options['synchronize']
             inlogger.debug("Trying to patch synchronously at time %s" % startTime)
@@ -397,29 +397,34 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
         else:
             patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
         if debug:
-            print "Patch alone succeeded for %s" % url
+            inlogger.debug("Patch alone succeeded for %s" % url)
+            #print "Patch alone succeeded for %s" % url
     except HTTPError as e:
         if e.code!=404:
             raise e
         try: 
             #put to version
             if debug:
-                print "Trying to put alone for %s" % url
+                inlogger.debug("Trying to patch alone for url: %s" % url)
+                #print "Trying to put alone for %s" % url
             putDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
             if debug:
-                print "Put alone succeeded for %s" % url
+                inlogger.debug("Patch alone succeeded for %s" % url)
+                #print "Put alone succeeded for %s" % url
         except HTTPError as ee:
             if ee.code!=404:
                 raise ee
             #put to flag
             suburl='/'.join(url.split('/')[:-1])
             if debug:
-                print "Trying to PUT flag and version to: "+suburl
+                inlogger.debug("Trying to PUT flag and version to: %s" % suburl)
+                #print "Trying to PUT flag and version to: "+suburl
             putDataUrllib2(suburl,json.dumps(i.flagDict),logger=inlogger)
             #put to version
             putDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
             if debug:
-                print "Had to PUT flag and version"
+                inlogger.debug("Had to PUT flag and version")
+                #print "Had to PUT flag and version"
 
 
 def threadedPatchWithFailCases(q,server,debug,inputlogger=None):
@@ -443,8 +448,8 @@ def setupSegment_md(filename,xmlparser,lwtparser,debug):
     """
     segment_md = ldbd.LIGOMetadata(xmlparser,lwtparser)
 
-    if debug:
-        print "Inserting file %s." % filename
+    #if debug:
+    #    print "Inserting file %s." % filename
     fh=open(filename,'r')
     xmltext = fh.read()
     fh.close()
@@ -988,7 +993,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             #i.flagDict
             url=i.buildURL(server)
             if debug:
-                print url
+                logger.debug("Url for the following data: %s" % url)
+                #print url
                 logger.debug("json.dumps(i.flagDict):")
                 logger.debug("%s"%json.dumps(i.flagDict))
             #if hackDec11:
@@ -998,9 +1004,11 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             patchWithFailCases(i,url,debug,logger,testing_options)
 
     if debug:
-        print "If we made it this far, no errors were encountered in the inserts."
+        logger.debug("If we made it this far, no errors were encountered in the inserts.")
+        #print "If we made it this far, no errors were encountered in the inserts."
     ### Fix!!! Improvement: Should be more careful about error handling here.
     if debug:
         t2=time.time()
-        print "Time elapsed for file %s = %d." % (filename,t2-t1)
+        logger.debug("Time elapsed for file %s = %d." % (filename,t2-t1))
+        #print "Time elapsed for file %s = %d." % (filename,t2-t1)
     return True
