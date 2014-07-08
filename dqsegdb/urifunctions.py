@@ -57,16 +57,15 @@ def getDataUrllib2(url,timeout=900,logger=None):
         logger.debug("Beginning url call: %s" % url)
     try:
         if urlparse.urlparse(url).scheme == 'https':
-            print "attempting to send https query"
-            print certfile
-            print keyfile
-
+            #print "attempting to send https query"
+            #print certfile
+            #print keyfile
             opener=urllib2.build_opener(HTTPSClientAuthHandler)
-            print opener.handle_open.items()
+            #print opener.handle_open.items()
             request = urllib2.Request(url)
             output=opener.open(request)
         else:
-            print "attempting to send http query"
+            #print "attempting to send http query"
             output=urllib2.urlopen(url)
     except urllib2.HTTPError,e:
         #print e.read()
@@ -139,7 +138,8 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
     Wrapper method for urllib2 that supports PUTs to a url.
     """
     socket.setdefaulttimeout(timeout)
-    opener = urllib2.build_opener(urllib2.HTTPHandler)
+    #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
+    opener=urllib2.build_opener(HTTPSClientAuthHandler)
     request = urllib2.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PUT'
@@ -169,14 +169,16 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
     Wrapper method for urllib2 that supports PATCHs to a url.
     """
     socket.setdefaulttimeout(timeout)
-    opener = urllib2.build_opener(urllib2.HTTPHandler)
+    #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
+    opener=urllib2.build_opener(HTTPSClientAuthHandler)
+    #print opener.handle_open.items()            
     request = urllib2.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PATCH'
     if logger:
         logger.debug("Beginning url call: %s" % url)
     try:
-        url = opener.open(request)
+        urlreturned = opener.open(request)
     except urllib2.HTTPError,e:
         #print e.read()
         print e.code
