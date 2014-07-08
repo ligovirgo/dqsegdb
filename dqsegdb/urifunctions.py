@@ -3,6 +3,7 @@ import httplib
 import urlparse
 import urllib2
 import socket
+from glue import LDBDWClient
 
 #
 # =============================================================================
@@ -12,13 +13,27 @@ import socket
 # =============================================================================
 #
 
+certfile,keyfile=LDBDWClient.findCredential()
+
+class HTTPSClientAuthConnection(httplib.HTTPSConnection):
+  def __init__(self, host, timeout=None):
+      httplib.HTTPSConnection.__init__(self, host, key_file=keyfile, cert_file=certfile)
+      self.timeout = timeout # Only valid in Python 2.6
+
+class HTTPSClientAuthHandler(urllib2.HTTPSHandler):
+  def https_open(self, req):
+      return self.do_open(HTTPSClientAuthConnection, req)
+
+
 def getDataHttplib(url):
     """
+    DEPRECATED!
     Optional fall back in case of failure in getDataUrllib2
     Takes a url such as:
     url="http://segdb-test-internal/dq/H1/DMT-SCIENCE/1/active?s=10&e=20"
     Returns JSON response from server
     """
+    print "Warning: using function that my not work any more!"
     urlsplit=urlparse.urlparse(url)
     conn=httplib.HTTPConnection(urlsplit.netloc)
     conn.request("GET",'?'.join([urlsplit.path,urlsplit.query]))
@@ -36,11 +51,23 @@ def getDataUrllib2(url,timeout=900,logger=None):
     Takes a url such as:
     url="http://segdb-test-internal/dq/dq/H1/DMT-SCIENCE/1/active?s=10&e=20"
     Returns JSON response from server
+    Also handles https requests with grid certs (or proxy certs).
     """
     if logger:
         logger.debug("Beginning url call: %s" % url)
     try:
-        r1=urllib2.urlopen(url)
+        if urlparse.urlparse(url).scheme == 'https':
+            print "attempting to send https query"
+            print certfile
+            print keyfile
+
+            opener=urllib2.build_opener(HTTPSClientAuthHandler)
+            print opener.handle_open.items()
+            request = urllib2.Request(url)
+            output=opener.open(request)
+        else:
+            print "attempting to send http query"
+            output=urllib2.urlopen(url)
     except urllib2.HTTPError,e:
         #print e.read()
         print "Error accesing url: %s" % url
@@ -63,7 +90,7 @@ def getDataUrllib2(url,timeout=900,logger=None):
             raise
     if logger:
         logger.debug("Completed url call: %s" % url)
-    return r1.read()
+    return output.read()
 
 def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
     """
