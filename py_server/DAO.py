@@ -13,6 +13,7 @@ import Logging_Config
 import pyodbc
 import time
 import User
+import pprint
 
 # Instantiate logger.
 log = logging.getLogger(__name__)
@@ -98,9 +99,9 @@ class DAOHandle:
                         # Insert flag.
                         cur.execute("""
                                     INSERT INTO tbl_dq_flags
-                                    (dq_flag_name, dq_flag_description, dq_flag_ifo, dq_flag_active_means_ifo_badness, dq_flag_creator, dq_flag_date_created)
+                                    (dq_flag_name, dq_flag_description, dq_flag_ifo, dq_flag_assoc_versions, dq_flag_active_means_ifo_badness, dq_flag_creator, dq_flag_date_created)
                                     VALUES
-                                    (?,?,?,?,?,?)
+                                    (?,?,?,'',?,?,?)
                                     """, flag, comment, ifo_id, badness, uid, gps)
                         cnxn.commit()
                         # Get new flag ID.
@@ -175,6 +176,15 @@ class DAOHandle:
                         if not vid:
                             # Set HTTP code and log.
                             e = admin.log_and_set_http_code(400, 29, req_method, None, full_uri)
+                        # Otherwise.
+                        else:
+                            # Append version to list of associated versions in flag table.
+                            cur.execute("""
+                                        UPDATE tbl_dq_flags
+                                        SET dq_flag_assoc_versions = IF(dq_flag_assoc_versions='',?,CONCAT(dq_flag_assoc_versions,',',?))
+                                        WHERE dq_flag_id = ?
+                                        """, version, version, flag_id)
+                            cnxn.commit()
                         # Close ODBC cursor.
                         cur.close()
                         del cur
@@ -312,15 +322,21 @@ class DAOHandle:
                     else:
                         # Get flags.
                         cur.execute("""
-                                    SELECT dq_flag_version
-                                    FROM tbl_dq_flag_versions
-                                    WHERE dq_flag_fk = ?
-                                    ORDER BY dq_flag_version
+                                    SELECT dq_flag_assoc_versions
+                                    FROM tbl_dq_flags
+                                    WHERE dq_flag_id = ?
                                     """, flag_id)
                         # Loop.
                         for row in cur:
-                            # Set.
-                            a.append(row.dq_flag_version)
+                            assoc_versions = row.dq_flag_assoc_versions
+                            # Explode the versions.
+                            assoc_versions.split(',')
+                            # Loop versions.
+                            for dq_flag_version in assoc_versions:
+                                # If not a comma.
+                                if not dq_flag_version == ',':
+                                    # Set.
+                                    a.append(dq_flag_version)
                         # Close ODBC cursor.
                         cur.close()
                         del cur
@@ -347,17 +363,18 @@ class DAOHandle:
             else:
                 # Get.
                 cur.execute("""
-                            SELECT dq_flag_version_uri, dq_flag_version_last_modifier, insertion_time, value_txt AS 'auth_user', affected_data_start, affected_data_stop, affected_data_segment_total, pid, process_full_name, process_args, fqdn, process_time_started 
+                            SELECT process_id, dq_flag_version_uri, dq_flag_version_last_modifier, insertion_time, value_txt AS 'auth_user', affected_data_start, affected_data_stop, affected_data_segment_total, pid, process_full_name, fqdn, process_time_started 
                             FROM tbl_processes
-                            LEFT JOIN tbl_dq_flag_versions ON tbl_processes.dq_flag_version_fk = tbl_dq_flag_versions.dq_flag_version_id 
+                            LEFT JOIN tbl_dq_flag_versions ON tbl_processes.dq_flag_version_fk = tbl_dq_flag_versions.dq_flag_version_id
                             LEFT JOIN tbl_values ON tbl_processes.user_fk = tbl_values.value_id 
                             WHERE dq_flag_version_fk = ?
                             ORDER BY process_id
                             """, vid)
                 # Loop.
                 for row in cur:
+                    # Get associated args.
+                    args = self.get_process_args(row.process_id)
                     # Set.
-                    # TO ADD a.append( tomorrow morning 05/12/13.
                     a.append({"insertion_metadata" : {"uri" : row.dq_flag_version_uri,
                                                  "timestamp" : int(row.insertion_time),
                                                  "auth_user" : self.get_value_detail_from_ID(row.dq_flag_version_last_modifier),
@@ -366,7 +383,7 @@ class DAOHandle:
                                                  "insert_segment_total" : int(row.affected_data_segment_total)},
                          "process_metadata" : {"pid" : row.pid,
                                                "name" : row.process_full_name,
-                                               "args" : row.process_args.split(' '),
+                                               "args" : args,
                                                "fqdn" : row.fqdn,
                                                "uid" : row.auth_user,
                                                "process_start_timestamp" : int(row.process_time_started)}})
@@ -419,6 +436,40 @@ class DAOHandle:
         # Return.
         return a
 
+    # Get a list of all flags with versions for report.
+    def get_flags_with_versions_for_report(self):
+        # Init.
+        a = [];
+        try:
+            # Set ODBC cursor.
+            cur = cnxn.cursor()
+        except:
+            pass
+        else:
+            # Get.
+            cur.execute("""
+                        SELECT dq_flag_name, dq_flag_assoc_versions, value_txt
+                        FROM tbl_dq_flags
+                        LEFT JOIN tbl_values ON tbl_dq_flags.dq_flag_ifo = tbl_values.value_id
+                        ORDER BY value_txt, dq_flag_name
+                        """)
+            # Loop.
+            for row in cur:
+                # Set.
+                ifo = row.value_txt
+                flag = row.dq_flag_name
+                versions = row.dq_flag_assoc_versions
+                # Explode the versions.
+                versions.split(',')
+                # Loop versions.
+                for version in versions:
+                    # Add flag to available resource.
+                    a.append('/dq/' + ifo + '/' + flag + '/' + str(version))
+        # Include inside named array.
+        a = {'results' : a}
+        # Return.
+        return a
+    
     ##########################
     # VALUE HANDLING METHODS #
     ##########################
@@ -624,8 +675,6 @@ class DAOHandle:
                     except:
                         pass
                     else:
-                        # Convert process args to string.', '
-                        args = str(' '.join(key['process_metadata']['args']))
                         # Get values.
                         gps = gpstime.GpsSecondsFromPyUTC(time.time(), constant.gps_leap_secs)
         #                data_format = self.get_value_details(3, data['flag']['data_format'])
@@ -633,15 +682,112 @@ class DAOHandle:
                         # Insert process.
                         cur.execute("""
                                     INSERT INTO tbl_processes
-                                    (dq_flag_version_fk, process_full_name, pid, fqdn, process_args, data_format_fk, user_fk, insertion_time, affected_data_segment_total, affected_data_start, affected_data_stop, process_time_started)
+                                    (dq_flag_version_fk, process_full_name, pid, fqdn, data_format_fk, user_fk, insertion_time, affected_data_segment_total, affected_data_start, affected_data_stop, process_time_started)
                                     VALUES
-                                    (?,?,?,?,?,?,?,?,?,?,?,?);
-                                    """, vid, str(key['process_metadata']['name']), int(key['process_metadata']['pid']), str(key['process_metadata']['fqdn']), args, data_format, uid, gps, int(seg_tot), int(seg_start), int(seg_stop), str(key['process_metadata']['process_start_timestamp']))
+                                    (?,?,?,?,?,?,?,?,?,?,?);
+                                    """, vid, str(key['process_metadata']['name']), int(key['process_metadata']['pid']), str(key['process_metadata']['fqdn']), data_format, uid, gps, int(seg_tot), int(seg_start), int(seg_stop), str(key['process_metadata']['process_start_timestamp']))
                         cnxn.commit()
+                        # Get ID of process committed.
+                        new_process_id = self.get_new_process_id(vid, int(key['process_metadata']['pid']), uid, gps)
+                        # If new process ID found.
+                        if not new_process_id == 0:
+                            # Insert process args.
+                            self.insert_process_args(new_process_id, key['process_metadata']['args'])
                         # Close ODBC cursor.
                         cur.close()
                         del cur
     
+    # Get ID of process committed.
+    def get_new_process_id(self, vid, pid, uid, gps):
+        # Init.
+        r = 0;
+        # If args passed.
+        try:
+            vid, pid, uid, gps
+        except:
+            pass
+        else:
+            try:
+                # Set ODBC cursor.
+                cur = cnxn.cursor()
+            except:
+                pass
+            else:
+                # Get.
+                cur.execute("""
+                            SELECT process_id
+                            FROM tbl_processes
+                            WHERE dq_flag_version_fk=? AND pid=? AND user_fk=? AND insertion_time=?
+                            ORDER BY process_id DESC
+                            LIMIT 1
+                            """, vid, pid, uid, gps)
+                # Loop.
+                for row in cur:
+                    # Set.
+                    r = row.process_id
+        # Return.
+        return r
+        
+    # Insert process args.
+    def insert_process_args(self, pid, args):
+        # If args passed.
+        try:
+            pid, args
+        except:
+            pass
+        else:
+            # If database connection established.
+            try:
+                cur = cnxn.cursor()
+            except:
+                pass
+            else:
+                # Loop through args.
+                for argv in args:
+                    # Insert process.
+                    cur.execute("""
+                                 INSERT INTO tbl_process_args
+                                 (process_fk, process_argv)
+                                 VALUES
+                                 (?,?);
+                                 """, pid, str(argv))
+                    cnxn.commit()
+                # Close ODBC cursor.
+                cur.close()
+                del cur
+
+    # Get a list of all args associated to a process.
+    def get_process_args(self, pid):
+        # Init.
+        a = [];
+        # If arg passed.
+        try:
+            pid
+        except:
+            pass
+        else:
+            try:
+                # Set ODBC cursor.
+                cur = cnxn.cursor()
+            except:
+                pass
+            else:
+                # Get.
+                cur.execute("""
+                            SELECT process_argv
+                            FROM tbl_process_args
+                            WHERE process_fk=?
+                            ORDER BY process_arg_id
+                            """, pid)
+                # Loop.
+                for row in cur:
+                    # Set.
+                    argv = row.process_argv
+                    # Add process to list.
+                    a.append(argv)
+        # Return.
+        return a
+        
     # Check if a process has already been added as a row in the process table.
     def check_if_process_exists(self, vid, pid, timestamp):
         # Init.
@@ -939,6 +1085,16 @@ class DAOHandle:
                         seg_sql = ', segment_start_time, segment_stop_time '
                     # Get.
                     cur.execute("""
+                                SELECT dq_flag_version_fk""" + seg_sql + """
+                                FROM tbl_segment""" + tbl + w + """
+                                ORDER BY dq_flag_version_fk
+                                """)
+                    # Loop.
+                    for row in cur:
+                        flag_array.append(row.dq_flag_version_fk)
+                    '''
+                    # Get.
+                    cur.execute("""
                                 SELECT dq_flag_name, value_txt AS 'dq_flag_ifo_txt', dq_flag_description, dq_flag_active_means_ifo_badness, dq_flag_version_uri, dq_flag_version_deactivated, dq_flag_version, dq_flag_version_fk""" + seg_sql + """
                                 FROM
                                 (SELECT dq_flag_version_fk""" + seg_sql + """
@@ -975,6 +1131,7 @@ class DAOHandle:
                             flag_array[i][request].append([t1,t2])
                         # Set previous version FK for use in next loop. 
                         pre_v_fk = row.dq_flag_version_fk
+                    '''
                     # Close ODBC cursor.
                     cur.close()
                     del cur

@@ -295,7 +295,9 @@ class AdminHandle:
                                     31: [2, 'Incorrect use of HTTP PATCH method. Use PUT'],
                                     32: [0, 'ODBC connection successful'],
                                     33: [2, 'JSON payload element problem: '],
-                                    34: [1, 'Segments to upload']
+                                    34: [1, 'Segments to upload'],
+                                    35: [3, 'Authentication failure'],
+                                    36: [3, 'Authorisation failure']
                                 }
         # Return.
         return log_state_dictionary
@@ -306,6 +308,7 @@ class AdminHandle:
         http_state_dictionary = {
                                     200: 'OK',
                                     400: 'Bad Request',
+                                    401: 'Unauthorized',
                                     404: 'Not Found',
                                     414: 'Request-URI Too Long'
                                 }
@@ -365,36 +368,5 @@ class AdminHandle:
     def get_available_resources(self):
         # Set resource array.
         a = {"results" : ['/report/flags', '/report/known']}
-        # Return.
-        return a
-    
-    # Get a list of all flags with versions for report.
-    def get_flags_with_versions_for_report(self):
-        # Init.
-        a = [];
-        i = 0;
-        # Instantiate objects.
-        dao = DAO.DAOHandle()
-        # Get ifo list.
-        start_array = dao.get_value_list(1);
-        # Loop through to get IFO array.
-        for key_a, ifo_array in start_array.iteritems():
-            # Loop through IFO.
-            for ifo in ifo_array:
-                # Get flags available for this ifo.
-                ifo_hdr_array = dao.get_flag_list(ifo)
-#                a.append(str(flag_array))
-                # Loop through IFO flag headers.
-                for ifo_hdr, flag_array in ifo_hdr_array.iteritems():
-                    # Loop through flags.
-                    for flag in flag_array:
-                        # Get versions associated to flag.
-                        version_hdr_array = dao.get_flag_version_list(ifo, flag)
-                        # Loop through versions.
-                        for version in version_hdr_array['version']:
-                            # Add flag to available resource.
-                            a.append('/dq/' + ifo + '/' + flag + '/' + str(version))
-        # Include inside named array.
-        a = {'results' : a}
         # Return.
         return a
