@@ -16,6 +16,8 @@
 -A INPUT -s 128.230.0.0/16 -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT 
 -A INPUT -s 128.230.0.0/16 -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT 
 -A INPUT -s 128.230.0.0/16 -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT 
+-A INPUT -s 129.89.57.0/24 -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEEPT
+-A INPUT -s 129.89.61.0/24 -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEEPT
 -A INPUT -s 10.20.0.0/16 -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT 
 -A INPUT -s 10.20.0.0/16 -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT 
 -A INPUT -s 10.20.0.0/16 -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT 
