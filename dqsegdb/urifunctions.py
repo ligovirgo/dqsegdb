@@ -139,7 +139,10 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
     """
     socket.setdefaulttimeout(timeout)
     #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
-    opener=urllib2.build_opener(HTTPSClientAuthHandler)
+    if urlparse.urlparse(url).scheme == 'https':
+        opener=urllib2.build_opener(HTTPSClientAuthHandler)
+    else:
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
     request = urllib2.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PUT'
@@ -170,7 +173,10 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
     """
     socket.setdefaulttimeout(timeout)
     #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
-    opener=urllib2.build_opener(HTTPSClientAuthHandler)
+    if urlparse.urlparse(url).scheme == 'https':
+        opener=urllib2.build_opener(HTTPSClientAuthHandler)
+    else:
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
     #print opener.handle_open.items()            
     request = urllib2.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
