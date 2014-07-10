@@ -163,7 +163,8 @@ class RequestHandle():
                     request = f[1]
                     # Get list of all flags.
                     if request == 'flags':
-                        r = admin.get_flags_with_versions_for_report()
+                        #r = admin.get_flags_with_versions_for_report()
+                        r = dao.get_flags_with_versions_for_report()
                         # If dictionary not supplied.
                         if not r:
                             # Set HTTP code and log.
@@ -172,6 +173,7 @@ class RequestHandle():
                     elif admin.check_request('seg', request) == False:
                         # Set HTTP code and log.
                         e = admin.log_and_set_http_code(404, 11, req_method, None, full_uri)
+                    # Otherwise, it must be 'known' or 'active'.
                     else:
                         # If query string being passed.
                         if qs:
