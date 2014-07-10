@@ -43,6 +43,7 @@ class DAOHandle:
             connection_str = 'DRIVER=%s;SERVER=%s;SOCKET=%s;DATABASE=%s;UID=%s;PWD=%s' % constant.odbc_driver, constant.odbc_host, constant.odbc_socket, constant.odbc_db, constant.odbc_user, constant.odbc_pass
         # Attempt connection.
         try:
+            # Set HTTP code and log.
             cnxn = pyodbc.connect(connection_str) # .odbc.ini in /home/gary/    FILE DATA SOURCES..: /usr/local/etc/ODBCDataSources    USER DATA SOURCES..: /root/.odbc.ini
         except:
             conn = False
@@ -169,7 +170,7 @@ class DAOHandle:
                                     VALUES
                                     (?,?,?,?,?,?,?,?)
                                     """, flag_id, version, deactivated, uid, str(data['metadata']['version_comment']), str(data['metadata']['provenance_url']), gps, gps)
-                        cnxn.commit()
+                        #cnxn.commit()
                         # Get version ID.
                         vid = self.get_flag_version_id(flag_id, version)
                         # If no version ID found.
@@ -184,7 +185,7 @@ class DAOHandle:
                                         SET dq_flag_assoc_versions = IF(dq_flag_assoc_versions='',?,CONCAT(dq_flag_assoc_versions,',',?))
                                         WHERE dq_flag_id = ?
                                         """, version, version, flag_id)
-                            cnxn.commit()
+                            #cnxn.commit()
                         # Close ODBC cursor.
                         cur.close()
                         del cur
@@ -686,7 +687,7 @@ class DAOHandle:
                                     VALUES
                                     (?,?,?,?,?,?,?,?,?,?,?);
                                     """, vid, str(key['process_metadata']['name']), int(key['process_metadata']['pid']), str(key['process_metadata']['fqdn']), data_format, uid, gps, int(seg_tot), int(seg_start), int(seg_stop), str(key['process_metadata']['process_start_timestamp']))
-                        cnxn.commit()
+                        #cnxn.commit()
                         # Get ID of process committed.
                         new_process_id = self.get_new_process_id(vid, int(key['process_metadata']['pid']), uid, gps)
                         # If new process ID found.
@@ -751,7 +752,7 @@ class DAOHandle:
                                  VALUES
                                  (?,?);
                                  """, pid, str(argv))
-                    cnxn.commit()
+                    #cnxn.commit()
                 # Close ODBC cursor.
                 cur.close()
                 del cur
@@ -889,7 +890,7 @@ class DAOHandle:
                                 tbl = '_summary'
                             # Insert segment.
                             cur.execute("INSERT INTO tbl_segment" + tbl + " (dq_flag_version_fk, segment_start_time, segment_stop_time) VALUES" + sql)
-                            cnxn.commit()
+                            #cnxn.commit()
                             # Update version segment global values.
                             self.update_segment_global_values(request, version_id, seg_tot, seg_first_gps, seg_last_gps)
                             # Insert process.
@@ -899,6 +900,11 @@ class DAOHandle:
                             del cur
         # Return
         return e
+
+    # Commit transaction to database.
+    def commit_transaction_to_db(self):
+        # Commit transaction.
+        cnxn.commit()
 
     # Update version segment global values.
     def update_segment_global_values(self, request, vid, tot, start, stop):
@@ -936,7 +942,7 @@ class DAOHandle:
                             SET dq_flag_version_segment_total=?, dq_flag_version_earliest_segment_time=?, dq_flag_version_latest_segment_time=?
                             WHERE dq_flag_version_id=?
                             """, tot, int(start), int(stop), vid)
-                cnxn.commit()
+                #cnxn.commit()
                 # Close ODBC cursor.
                 cur.close()
                 del cur                            

@@ -76,4 +76,4 @@ class UserHandle:
                             a = True
                     # Close file.
                     f.close()
-            return a
+        return a

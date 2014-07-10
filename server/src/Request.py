@@ -319,6 +319,8 @@ class RequestHandle():
                                                 e = dao.insert_segments('known', req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, a)
                                                 # Put new 'active' segments.
                                                 e = dao.insert_segments('active', req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, a)
+                                                # Commit the transaction to the DB.
+                                                dao.commit_transaction_to_db()
                                     # Otherwise, URI too long.                
                                     elif l > 4:
                                         # Set HTTP code and log.
