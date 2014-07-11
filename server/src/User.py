@@ -55,37 +55,32 @@ class UserHandle:
             # Set HTTP code and log.
             r = admin.log_and_set_http_code(401, c, req_method, 'SSL client subject DN not found. Check if using HTTPS', full_uri)
         else:
-            # Get subject.
-            try:
-                subject = environ['SSL_CLIENT_S_DN']
-            except:
-                # Set HTTP code and log.
-                r = admin.log_and_set_http_code(401, c, req_method, 'SSL client subject unreadable', full_uri)
+            subject = environ['SSL_CLIENT_S_DN']
+            # Get GridMap file authentication location.
+            if not authorise:
+                mf = constant.grid_map_get_file
+            # Get GridMap file authorisation location.
             else:
-                # Get GridMap file authentication location.
-                if not authorise:
-                    mf = constant.grid_map_get_file
-                # Get GridMap file authorisation location.
-                else:
-                    mf = constant.grid_map_put_patch_file
-                try:
-                    # Open file.
-                    f = open(mf, 'r')
-                except:
-                    # Add unable to open file msg.
-                    r = admin.log_and_set_http_code(401, c, req_method, 'Unable to open Grid map file', full_uri)
-                else:
-                    # Loop through file lines.
-                    for l in f:
-                        # Split the line.
-                        ls = l.split('"')
-                        # If subject exists in GridMap file
-                        if ls[1] == subject:
-                            r = [200]
-                    # If certificate subject not found in GridMap file
-                    if not r[0] == 200:
-                        # Set HTTP code and log.
-                        r = admin.log_and_set_http_code(401, c, req_method, 'Certificate subject DN not found in GridMap file', full_uri)
-                    # Close file.
-                    f.close()
+                mf = constant.grid_map_put_patch_file
+            try:
+                # Open file.
+                f = open(mf, 'r')
+            except:
+                # Add unable to open file msg.
+                r = admin.log_and_set_http_code(401, c, req_method, 'Unable to open Grid map file', full_uri)
+            else:
+                # Loop through file lines.
+                for l in f:
+                    # Split the line.
+                    ls = l.split('"')
+                    # If subject exists in GridMap file
+                    if ls[1] == subject:
+                        r = [200]
+                # If certificate subject not found in GridMap file
+                if not r[0] == 200:
+                    # Set HTTP code and log.
+                    r = admin.log_and_set_http_code(401, c, req_method, 'Certificate subject DN not found in GridMap file', full_uri)
+                # Close file.
+                f.close()
+        pprint.pprint(r)
         return r

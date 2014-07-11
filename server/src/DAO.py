@@ -913,41 +913,39 @@ class DAOHandle:
         except:
             pass
         else:
-            # If appending 'known' segments.
-            if request == 'known':
-                # Instantiate objects.
-                admin = Admin.AdminHandle()
-                # Initialise ODBC cursor.
-                try:
-                    cur = cnxn.cursor()
-                except:
-                    pass
-                else:
-                    # Get.
-                    cur.execute("""
-                                SELECT dq_flag_version_segment_total, dq_flag_version_earliest_segment_time, dq_flag_version_latest_segment_time
-                                FROM tbl_dq_flag_versions
-                                WHERE dq_flag_version_id=?
-                                """, vid)
-                    # Loop.
-                    for row in cur:
-                        # Set.
-                        start = admin.set_var_if_higher_lower('l', start, row.dq_flag_version_earliest_segment_time) 
-                        stop = admin.set_var_if_higher_lower('h', stop, row.dq_flag_version_latest_segment_time)
-                        tot = tot + row.dq_flag_version_segment_total
-                # Update segment global values.
+            # Instantiate objects.
+            admin = Admin.AdminHandle()
+            # Initialise ODBC cursor.
+            try:
+                cur = cnxn.cursor()
+            except:
+                pass
+            else:
+                # Get.
                 cur.execute("""
-                            UPDATE tbl_dq_flag_versions
-                            SET dq_flag_version_segment_total=?, dq_flag_version_earliest_segment_time=?, dq_flag_version_latest_segment_time=?
+                            SELECT dq_flag_version_""" + request + """_segment_total AS 'tot', dq_flag_version_""" + request + """_earliest_segment_time AS 'earliest', dq_flag_version_""" + request + """_latest_segment_time AS 'latest'
+                            FROM tbl_dq_flag_versions
                             WHERE dq_flag_version_id=?
-                            """, tot, int(start), int(stop), vid)
-                #cnxn.commit()
-                # Close ODBC cursor.
-                cur.close()
-                del cur                            
+                            """, vid)
+                # Loop.
+                for row in cur:
+                    # Set.
+                    start = admin.set_var_if_higher_lower('l', start, row.earliest) 
+                    stop = admin.set_var_if_higher_lower('h', stop, row.latest)
+                    tot = tot + row.tot
+            # Update segment global values.
+            cur.execute("""
+                        UPDATE tbl_dq_flag_versions
+                        SET dq_flag_version_""" + request + """_segment_total=?, dq_flag_version_""" + request + """_earliest_segment_time=?, dq_flag_version_""" + request + """_latest_segment_time=?
+                        WHERE dq_flag_version_id=?
+                        """, tot, int(start), int(stop), vid)
+            #cnxn.commit()
+            # Close ODBC cursor.
+            cur.close()
+            del cur                            
 
     # Get total number of segments associated to a version.
-    def get_flag_version_segment_total(self, vid):
+    def get_flag_version_segment_total(self, request, vid):
         # Init.
         r = 0
         # If arg passed.
@@ -964,14 +962,14 @@ class DAOHandle:
             else:
                 # Get.
                 cur.execute("""
-                            SELECT dq_flag_version_segment_total
+                            SELECT dq_flag_version_""" + request + """_segment_total AS 'tot'
                             FROM tbl_dq_flag_versions
                             WHERE dq_flag_version_id=?
                             """, vid)
                 # Loop.
                 for row in cur:
                     # Set.
-                    r = row.dq_flag_version_segment_total 
+                    r = row.tot
         # Return.
         return r
 

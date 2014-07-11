@@ -310,8 +310,8 @@ class RequestHandle():
                                             # Set HTTP code and log.
                                             e = admin.log_and_set_http_code(404, 10, req_method, None, full_uri)
                                         else:
-                                            # If putting and this version already has segments associated to it.
-                                            if req_method == 'PUT' and dao.get_flag_version_segment_total(version_id) > 0:
+                                            # If putting and this version already has Known segments associated to it.
+                                            if req_method == 'PUT' and dao.get_flag_version_segment_total('known', version_id) > 0:
                                                 # Set HTTP code and log.
                                                 e = admin.log_and_set_http_code(400, 18, req_method, None, full_uri)
                                             else:
