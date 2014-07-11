@@ -13,7 +13,6 @@ import Logging_Config
 import pyodbc
 import time
 import User
-import pprint
 
 # Instantiate logger.
 log = logging.getLogger(__name__)

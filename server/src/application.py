@@ -27,16 +27,17 @@ def application(environ, start_response):
         # Respond to a GET request.
         if environ['REQUEST_METHOD'] == 'GET':
             # Authenticate.
-            if user.gridmap_authentication_authorisation(environ, False):
+            res = user.gridmap_authentication_authorisation(environ, environ['REQUEST_METHOD'], environ['REQUEST_URI'], False)
+            # If authentication successful.
+            if res[0] == 200:
                 # Get content for output.
                 res = reqhan.serve_get_uri(environ['REQUEST_METHOD'], environ['REQUEST_URI'], environ['PATH_INFO'], environ['QUERY_STRING'])
-            else:
-                # Set HTTP code and log.
-                res = admin.log_and_set_http_code(401, 35, environ['REQUEST_METHOD'], None, environ['REQUEST_URI'])
         # Respond to a PUT request.
         elif environ['REQUEST_METHOD'] == 'PUT' or environ['REQUEST_METHOD'] == 'PATCH':
             # Authorise.
-            if user.gridmap_authentication_authorisation(environ, True):
+            res = user.gridmap_authentication_authorisation(environ, environ['REQUEST_METHOD'], environ['REQUEST_URI'], True)
+            # If authorisation successful.
+            if res[0] == 200:
                 # Get the size of the requested JSON.
                 try:
                     request_body_size = int(environ.get('CONTENT_LENGTH', 0))
@@ -44,9 +45,6 @@ def application(environ, start_response):
                     request_body_size = 0
                 # Process PUT or PATCH request.
                 res = reqhan.serve_put_or_patch_uri(environ['REQUEST_METHOD'], environ['REQUEST_URI'], environ['PATH_INFO'], environ['QUERY_STRING'], environ['wsgi.input'].read(request_body_size))
-            else:
-                # Set HTTP code and log.
-                res = admin.log_and_set_http_code(401, 36, environ['REQUEST_METHOD'], None, environ['REQUEST_URI'])
     # Check first character to check content is Python dictionary converted to JSON.
     if not res[1][:1] == '{':
         # Handle error.

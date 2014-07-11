@@ -4,6 +4,7 @@ User handling class file
 '''
 
 # Import.
+import Admin
 import Constants
 import DAO
 import pprint
@@ -35,23 +36,31 @@ class UserHandle:
         return i
     
     # Check authorisation against a Grid Map-file.
-    def gridmap_authentication_authorisation(self, environ, authorise):
+    def gridmap_authentication_authorisation(self, environ, req_method, full_uri, authorise):
         # Init.
-        a = False
+        r = [401]
         subject = None
         # Instantiate objects.
+        admin = Admin.AdminHandle()
         constant = Constants.ConstantsHandle()
+        # Determine which error log status code to call.
+        if authorise:
+            c = 36
+        else:
+            c = 35
         # If SSL being used.
         try:
             environ['SSL_CLIENT_S_DN']
         except:
-            pass
+            # Set HTTP code and log.
+            r = admin.log_and_set_http_code(401, c, req_method, 'SSL client subject DN not found. Check if using HTTPS', full_uri)
         else:
             # Get subject.
             try:
                 subject = environ['SSL_CLIENT_S_DN']
             except:
-                pass
+                # Set HTTP code and log.
+                r = admin.log_and_set_http_code(401, c, req_method, 'SSL client subject unreadable', full_uri)
             else:
                 # Get GridMap file authentication location.
                 if not authorise:
@@ -64,7 +73,7 @@ class UserHandle:
                     f = open(mf, 'r')
                 except:
                     # Add unable to open file msg.
-                    pass
+                    r = admin.log_and_set_http_code(401, c, req_method, 'Unable to open Grid map file', full_uri)
                 else:
                     # Loop through file lines.
                     for l in f:
@@ -72,8 +81,11 @@ class UserHandle:
                         ls = l.split('"')
                         # If subject exists in GridMap file
                         if ls[1] == subject:
-                            #pprint.pprint(subject + ' - ' + ls[1])
-                            a = True
+                            r = [200]
+                    # If certificate subject not found in GridMap file
+                    if not r[0] == 200:
+                        # Set HTTP code and log.
+                        r = admin.log_and_set_http_code(401, c, req_method, 'Certificate subject DN not found in GridMap file', full_uri)
                     # Close file.
                     f.close()
-        return a
+        return r
