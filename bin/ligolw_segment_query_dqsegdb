@@ -351,7 +351,7 @@ def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_ti
 
 
     segment_types = {}
-
+    raise ValueError("Query-types not yet supported by dqsegdb client.")
     ### Fix!!! Make a call to /report/known?s=t1&e=t2
     ### then parse the JSON result exactly as is done below
 
