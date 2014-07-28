@@ -17,6 +17,8 @@ LONG_DESCRIPTION = ''
 AUTHOR = 'Ryan Fisher'
 AUTHOR_EMAIL = 'ryan.fisher@ligo.org'
 LICENSE = None
+rel_version="1.0"
+release=True
 
 
 # ------------------------------------------------------------------------------
@@ -141,6 +143,9 @@ if os.path.isdir('bin'):
     scripts = glob.glob(os.path.join('bin', '*'))
 else:
     scripts = []
+
+if release:
+    VERSION=rel_version
 
 
 setup(name=PACKAGENAME,
