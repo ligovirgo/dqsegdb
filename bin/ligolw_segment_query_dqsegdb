@@ -455,7 +455,7 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
                 sys.exit(1)
             # call to single version flag query goes here!
             # result is already processed into a python dict using json.loads :
-            json_result,queryurl=apicalls.dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
+            json_result,queryurl=apicalls.dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
             if debug:
                 print json_result
                 print queryurl
@@ -541,7 +541,7 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
                     sys.exit(1)
                 # call to single version flag query goes here!
                 # result is already processed into a python dict using json.loads :
-                json_result,queryurl=apicalls.dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
+                json_result,queryurl=apicalls.dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
                 excluded_JSON_results.append(json_result)
                 ex_segdefs.append((ifo, name, version, startTime, endTime, 0, 0))
                 #segment_summaries += json_result['known']&glue.segments.segmentlist(glue.segments.segment(startTime,endTime))
