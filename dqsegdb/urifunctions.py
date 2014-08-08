@@ -12,16 +12,24 @@ from glue import LDBDWClient
 #
 # =============================================================================
 #
-try:
-    certfile,keyfile=LDBDWClient.findCredential()
-except:
-    print "Warning:  No proxy found or other error encountered during check for authentication credentials, connections to https will not work."
-    certfile=""
-    keyfile=""
-    ### Fix!!! This doesn't actually seem to work because someone thought sys.exit was good error handling... Beyond that:  What does HTTPSConnection expect in this case?  The connections will fail, but we might want to report that carefully...
+
+#try:
+#    certfile,keyfile=LDBDWClient.findCredential()
+#except:
+#    print "Warning:  No proxy found or other error encountered during check for authentication credentials, connections to https will not work."
+#    certfile=""
+#    keyfile=""
+#    ### Fix!!! This doesn't actually seem to work because someone thought sys.exit was good error handling... Beyond that:  What does HTTPSConnection expect in this case?  The connections will fail, but we might want to report that carefully...
 
 class HTTPSClientAuthConnection(httplib.HTTPSConnection):
   def __init__(self, host, timeout=None):
+      try:
+          certfile,keyfile=LDBDWClient.findCredential()
+      except:
+          print "Warning:  No proxy found or other error encountered during check for authentication credentials, connections to https will not work."
+          certfile=""
+          keyfile=""
+          ### Fix!!! This doesn't actually seem to work because someone thought sys.exit was good error handling... Beyond that:  What does HTTPSConnection expect in this case?  The connections will fail, but we might want to report that carefully...
       httplib.HTTPSConnection.__init__(self, host, key_file=keyfile, cert_file=certfile)
       self.timeout = timeout # Only valid in Python 2.6
 
