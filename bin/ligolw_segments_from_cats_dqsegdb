@@ -360,7 +360,7 @@ if __name__ == '__main__':
                 endTime=i[4]
                 startpad=i[5]
                 endpad=i[6]
-                json_result,queryurl=apicalls.dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
+                json_result,queryurl=apicalls.dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
                 # This pads and truncates to the size of the queried region
                 if debug:
                     print "Known for %s" % name
