@@ -409,7 +409,8 @@ if __name__ == '__main__':
               segmentdb_utils.add_segment_info(doc, proc_id, segdefs, vetoed_segments, segment_summaries)
 
             # Form the result
-            vetoed_segments = reduce(operator.or_, vetoed_segments).coalesce()
+            if len(vetoed_segments)>0:
+                vetoed_segments = reduce(operator.or_, vetoed_segments).coalesce()
 
             # Add the result type to the segment definer table
             seg_name   = 'VETO_CAT%d%s' % (category_num, options.cumulative_categories and '_CUMULATIVE' or '')
