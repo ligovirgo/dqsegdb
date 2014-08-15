@@ -274,8 +274,8 @@ for line in fh.readlines():
      print "Invalid interval is %s" % str(sum_line)
      sys.exit(1)
   # make sure interval start time is greater than the max end time in the database
-  # unless --ignore-append-check is specified
-  elif (int(sum_line[0]) < maxEndTime) and not options.ignore_append_check:
+  # unless --ignore-append-check is specified or we are inserting a new version
+  elif (int(sum_line[0]) < maxEndTime) and (options.insert or not options.ignore_append_check:
      print "\nERROR: summary start_time MUST be greater than the max summary end_time %d in the database" % maxEndTime
      print "Invalid interval in your --summary-file row number: %d" % line_no
      print "Invalid interval is %s" % str(sum_line)
