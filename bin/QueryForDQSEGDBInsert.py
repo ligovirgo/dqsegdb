@@ -1,6 +1,19 @@
 #!/usr/bin/env python
 
+import socket
 from optparse import OptionParser
+from glue.ligolw.utils.process import get_username
+import os
+from glue.ligolw import lsctables
+import time
+
+try:
+    from lal import UTCToGPS as _UTCToGPS
+except ImportError:
+    # lal is optional    
+    from glue import gpstime
+    _UTCToGPS = lambda utc: int(gpstime.GpsSecondsFromPyUTC(time.mktime(utc)))
+
 
 def parse_command_line():
     """
@@ -68,6 +81,7 @@ def append_process_gpssane(xmldoc, program = None, version = None, cvs_repositor
     except KeyError:
             process.username = None
     process.unix_procid = os.getpid()
+    ### Fix!!!  This GPS time is just plain wrong....:  I think it's not taking into account the time zone.
     process.start_time = _UTCToGPS(time.gmtime())
     process.end_time = None
     process.jobid = jobid
