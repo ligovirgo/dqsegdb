@@ -31,6 +31,7 @@ class ConstantsHandle():
     odbc_user = None    # Database connection user.
     odbc_pass = None    # Database connection user password.
     odbc_socket = None  # Socket used when connecting to database.
+    odbc_autocommit = False  # Boolean controlling whether connections autocommit (False = manual commits).
     
     ######################
     # Request constants #
