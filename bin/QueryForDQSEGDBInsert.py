@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+from dqsegdb import apicalls
+from glue.segmentdb import segmentdb_utils
+from glue.ligolw import ligolw
+from glue import segments
+import DB2
+import logging
+import logging.handlers
+import StringIO
 import socket
 from optparse import OptionParser
 from glue.ligolw.utils.process import get_username
@@ -92,6 +100,18 @@ def append_process_gpssane(xmldoc, program = None, version = None, cvs_repositor
     return process
 
 
+def callInsertMultipleDQXMLThreaded(filepath,segment_url):
+    logger = logging.getLogger('ligolw_publish_dqxml_dqsegdb')
+    log_file=filepath.split('.xml')[0]+'.log'
+    handler = logging.handlers.RotatingFileHandler(log_file, 'a', 1024**3, 3)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(eval("logging." + "DEBUG"))
+    infiles=[filepath]
+    result=apicalls.InsertMultipleDQXMLFileThreaded(infiles,logger,segment_url,hackDec11=False,debug=False,threads=1)
+    return result
+
 
 if __name__ == "__main__":
     # Flag we want:
@@ -108,7 +128,7 @@ if __name__ == "__main__":
     
     # DB2 connection
     
-    import DB2
+    #import DB2
     conn=DB2.connect(dsn='seg_cit',uid='',pwd='')
     curs=conn.cursor()
     
@@ -149,7 +169,7 @@ if __name__ == "__main__":
     
     # Create a ligolw document to start adding information to:
     
-    from glue.ligolw import ligolw
+    #from glue.ligolw import ligolw
     doc = ligolw.Document()
     doc.appendChild(ligolw.LIGO_LW())
     
@@ -203,7 +223,7 @@ if __name__ == "__main__":
     
     sumresult=curs.fetchall()
     
-    from glue import segments
+    #from glue import segments
     
     sum_result_segments=[segments.segment(i) for i in sumresult]
     
@@ -212,7 +232,7 @@ if __name__ == "__main__":
     sum_result_segments_list.coalesce()
     
     #using seg_def_id from above
-    from glue.segmentdb import segmentdb_utils
+    #from glue.segmentdb import segmentdb_utils
     segmentdb_utils.add_to_segment_summary(doc, proc_out.process_id, seg_def_id, sum_result_segments_list)
     
     # Now add  segments to doc
@@ -220,7 +240,7 @@ if __name__ == "__main__":
     
     segresult=curs.fetchall()
     
-    from glue import segments
+    #from glue import segments
     
     seg_result_segments=[segments.segment(i) for i in segresult]
     
@@ -232,22 +252,9 @@ if __name__ == "__main__":
     
     # Now publish the doc after writing it to disk temporarily
     
-    import logging
-    import logging.handlers
+    #import logging
+    #import logging.handlers
     
-    def callInsertMultipleDQXMLThreaded(filepath,segment_url):
-        logger = logging.getLogger('ligolw_publish_dqxml_dqsegdb')
-        log_file=filepath.split('.xml')[0]+'.log'
-        handler = logging.handlers.RotatingFileHandler(log_file, 'a', 1024**3, 3)
-        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(eval("logging." + "DEBUG"))
-        infiles=[filepath]
-        result=apicalls.InsertMultipleDQXMLFileThreaded(infiles,logger,segment_url,hackDec11=False,debug=False,threads=1)
-        return result
-    
-    import StringIO
     
     fake_file = StringIO.StringIO()
     doc.write(fake_file)
@@ -260,7 +267,7 @@ if __name__ == "__main__":
     #segment_url="http://dqsegdb6.phy.syr.edu"
     filepath # for checking output
     
+    #import StringIO
     
-    from dqsegdb import apicalls
     
     result=callInsertMultipleDQXMLThreaded(filepath,segment_url)

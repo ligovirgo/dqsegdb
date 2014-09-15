@@ -221,7 +221,6 @@ if debug:
 if maxVersion == 0:
   # Flag doesn't exist in db
   # If I use my publisher, this is fine, since it will take care of it for me
-  ### Fix!!! the determination and use of max_end_time should go here:
   maxEndTime=0 ## Because this flag doesn't exist yet!
 elif maxVersion > version:
   # Fail!
@@ -247,7 +246,7 @@ else:
 #data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
 #maxEndTime=max([i[1] for i in data_dict['known']])
 
-### Fix!!!:  If I'm going to allow an xml file input, I'm going to have to do the following check on the xml file instead, implement that when I allow that.  
+### Fix!!! (future upgrade):  If I'm going to allow an xml file input, I'm going to have to do the following check on the xml file instead, implement that when I allow that.  
 
 #-----------------Check summary-file---------------------------------
 # get and check the summary intervals to be inserted
