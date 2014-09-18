@@ -265,7 +265,7 @@ def parseKnown(jsonResult):
         flag=i['name']
         version=i['version']
         comment=i['metadata']['comment']
-        summary_comment=''
+        summary_comment='-'
         for j in i['known']:
             start=j[0]
             stop=j[1]
