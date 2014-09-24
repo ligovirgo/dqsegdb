@@ -300,8 +300,7 @@ def run_show_types(doc, protocol, server, gps_start_time, gps_end_time, included
 
     includeSegments=True
     result,queryurl=apicalls.reportKnown(protocol,server,includeSegments,True,gps_start_time,gps_end_time)
-    ## Fix!!! Parse JSON result like rows is parsed below
-    ## Fix!!! decide if we should still cut on included or excluded segments
+    ## Fix (future change)!!! decide if we should still cut on included or excluded segments:  current decision is to not cut
     rows=apicalls.parseKnown(result)
 
     for row in rows:
