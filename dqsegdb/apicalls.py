@@ -855,6 +855,26 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         # insertion_metadata start and stop time
         
         ### Fix!!! Get the args from the *other* process table... yikes
+        # First pass: 
+        #if debug:
+        #    import pdb
+        #    pdb.set_trace()
+
+        temp_process_params_process_id=None
+        for j in range(len(segment_md.table['process_params']['stream'])):
+            process_id_index = segment_md.table['process_params']['orderedcol'].index('process_id')
+            temp_process_params_process_id=segment_md.table['process_params']['stream'][j][process_id_index]
+            for i, entry in enumerate(segment_md.table['process_params']['orderedcol']):
+                if entry=="param":
+                    temp_param=str(segment_md.table['process_params']['stream'][j][i])
+                if entry=="value":
+                    temp_value=str(segment_md.table['process_params']['stream'][j][i])
+            process_dict[temp_process_params_process_id]['process_metadata']['args'].append(str(temp_param))
+            process_dict[temp_process_params_process_id]['process_metadata']['args'].append(str(temp_value))
+
+        #if debug:
+        #    import pdb
+        #    pdb.set_trace()
         
         temp_id_to_flag_version = {}
         

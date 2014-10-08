@@ -157,6 +157,16 @@ def dtd_uri_callback(uri):
     # otherwise just use the uri in the file
     return uri
 
+def publishAndExit(filepath,debug=False):
+  result=callInsertMultipleDQXMLThreaded(filepath)
+  if not result:
+    raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
+  else:
+    # We're done here
+    if debug:
+      print "Insert worked!"
+    sys.exit()
+
 def del_file(name):
   os.remove(name)
 
@@ -398,17 +408,19 @@ if options.insert or options.append:
     if debug:
       print "Writing to temporary file, then calling callInsertMultipleDQXMLThreaded"
     filepath='/tmp/ligolw_segment_insert_'+str(time.time())+'.xml'
-    atexit.register(del_file,filepath) # 
+    if not debug:
+      atexit.register(del_file,filepath) # 
     fp = open(filepath,'w')
     fp.write(fake_file.getvalue())
     fp.close()
-    result=callInsertMultipleDQXMLThreaded(filepath)
-    if not result:
-        raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
-    else:
-        # We're done here
-        if debug:
-          print "Insert worked!"
-        sys.exit()
+    publishAndExit(filepath,debug)
+    #result=callInsertMultipleDQXMLThreaded(filepath)
+    #if not result:
+    #    raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
+    #else:
+    #    # We're done here
+    #    if debug:
+    #      print "Insert worked!"
+    #    sys.exit()
 
 
