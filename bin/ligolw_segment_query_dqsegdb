@@ -52,7 +52,9 @@ import socket
 import tempfile
 import urllib
 import urlparse
+import json
 from dqsegdb import apicalls
+from dqsegdb import urifunctions
 from dqsegdb import clientutils
 
 import glue.segments
@@ -331,7 +333,7 @@ def run_show_types(doc, protocol, server, gps_start_time, gps_end_time, included
 
 
 
-def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments):
+def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments):
 #def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_time, included_segments):
     query_segment = glue.segments.segmentlist([glue.segments.segment(gps_start_time, gps_end_time)])
 
@@ -355,8 +357,7 @@ def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_t
         spec = included.split(':')
 
         if len(spec) < 2 or len(spec) > 3:
-            print >>sys.stderr, "Included segements must be of the form ifo:name
-:version or ifo:name:*"
+            print "Included segements must be of the form ifo:name:version or ifo:name:*"
             sys.exit(1)
         ifo     = spec[0]
         name    = spec[1]        # segdefs are actually segment summaries and need to look like this:
@@ -367,7 +368,8 @@ def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_t
                 print "Bad version specification, please provide a valid integer."
                 raise
             if version < 1:
-                print >>sys.stderr, "Segment version numbers must be greater than zero"
+                ### Fix!!!  These print statements need to be turned into proper errors!
+                print "Segment version numbers must be greater than zero"
                 sys.exit(1)
             # Ok, we got a properly versioned query item, add it to the list:
             segments_to_query.append(spec)
