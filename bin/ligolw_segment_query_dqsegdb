@@ -32,7 +32,7 @@ This provides the means to answer several questions posed against either the
 segment database or a collection of DMT XML files.  Output should match 
 exactly the format returned by S6 style segment database tools.
 
-  * (Not yet operational): What DQ flags exist in the database? ligolw_segment_query --show-types
+  * What DQ flags exist in the database? ligolw_segment_query --show-types
   * (Not yet operational): When was a given DQ flag defined? ligolw_segment_query --query-types 
   * When was a given flag active? ligolw_segment_query --query-segments
     * Example: ligolw_segment_query_dqsegdb --segment-url=http://slwebtest.virgo.infn.it --query-segments --gps-start-time 1070612448 --gps-end-time 1070613448 --include-segments="H1:ODC-PSL_SUMMARY:1" -o example.xml
@@ -129,7 +129,7 @@ def parse_command_line():
     # Other options
     parser.add_option("-a", "--include-segments", metavar = "include_segments", help = "This option expects a comma separated list of a colon separated sublist of interferometer, segment type, and version. The union of segments from all types and versions specified is returned. Use --show-types to see what types are available.   For example: --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-INJECTION:2 will return the segments for which H1 is in either SCIENCE version 1 or INJECTION version 2 mode. If version information is not provided, the union of the segments of the latest version of requested segment type(s) will be returned.")
 
-    parser.add_option("-b", "--exclude-segments", metavar = "exclude_segments", help = "This option has to be used in conjunction with --include-segment-types --exclude-segment-types subtracts the union of unwanted segments from the specified types from the results of --include-segment-types. If version information is not provided, --exclude-segment-types subtracts the union of segments from the latest version of the specified segment types. For example, --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-INJECTION:2 --exclude-segment-types H1:DMT-WIND:1,H1:DMT-NOT_LOCKED:2,H2:DMT-NOT_LOCKED:2 will subtract the union of segments which H1 is in version 1 WIND and H1,H2 is version 2 NOT_LOCKED from the result of --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-INJECTION:2")
+    parser.add_option("-b", "--exclude-segments", metavar = "exclude_segments", help = "This option has to be used in conjunction with --include-segment-types and --query-segments.  --exclude-segment-types subtracts the union of unwanted segments from the specified types from the results of --include-segment-types. If version information is not provided, --exclude-segment-types subtracts the union of segments from the latest version of the specified segment types. For example, --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-INJECTION:2 --exclude-segment-types H1:DMT-WIND:1,H1:DMT-NOT_LOCKED:2,H2:DMT-NOT_LOCKED:2 will subtract the union of segments which H1 is in version 1 WIND and H1,H2 is version 2 NOT_LOCKED from the result of --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-INJECTION:2")
 
     parser.add_option("-S", "--strict-off", metavar = "use_strict", action = "store_true", help = "The default behavior is to truncate segments so that returned segments are entirely in the interval [gps-start-time, gps-end-time).  However if this option is given, the entire non-truncated segment is returned if any part of it overlaps the interval.")
 
@@ -331,38 +331,86 @@ def run_show_types(doc, protocol, server, gps_start_time, gps_end_time, included
 
 
 
-def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_time, included_segments):
+def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments):
+#def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_time, included_segments):
     query_segment = glue.segments.segmentlist([glue.segments.segment(gps_start_time, gps_end_time)])
 
-    sql = """SELECT segment_definer.ifos, segment_definer.name,segment_definer.version,
-           (CASE WHEN segment_definer.comment IS NULL THEN '-' WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),
-           segment_summary.start_time, segment_summary.end_time,
-           (CASE WHEN segment_summary.comment IS NULL THEN '-' WHEN segment_summary.comment IS NOT NULL THEN segment_summary.comment END)
-    FROM segment_definer, segment_summary
-    WHERE segment_definer.segment_def_id = segment_summary.segment_def_id
-    AND NOT(%d > segment_summary.end_time OR segment_summary.start_time > %d)
-    """ % (gps_start_time, gps_end_time)
+    #sql = """SELECT segment_definer.ifos, segment_definer.name,segment_definer.version,
+    #       (CASE WHEN segment_definer.comment IS NULL THEN '-' WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),
+    #       segment_summary.start_time, segment_summary.end_time,
+    #       (CASE WHEN segment_summary.comment IS NULL THEN '-' WHEN segment_summary.comment IS NOT NULL THEN segment_summary.comment END)
+    #FROM segment_definer, segment_summary
+    #WHERE segment_definer.segment_def_id = segment_summary.segment_def_id
+    #AND NOT(%d > segment_summary.end_time OR segment_summary.start_time > %d)
+    #""" % (gps_start_time, gps_end_time)
 
-    type_clauses = map(seg_spec_to_sql, included_segments.split(','))
+    #type_clauses = map(seg_spec_to_sql, included_segments.split(','))
 
-    if type_clauses != []:
-        sql += " AND (" + "OR ".join(type_clauses) + ")"
+    #dqsegdb:  I need to allow for cascaded queries in this format:
+    #  This just means that I need to filter my results to include things that match the query, with the option to wildcard the version number
 
+    segments_to_query=[] # This is a list of 3 element lists ifo,name,version when completed
+
+    for included in include_segments.split(','):
+        spec = included.split(':')
+
+        if len(spec) < 2 or len(spec) > 3:
+            print >>sys.stderr, "Included segements must be of the form ifo:name
+:version or ifo:name:*"
+            sys.exit(1)
+        ifo     = spec[0]
+        name    = spec[1]        # segdefs are actually segment summaries and need to look like this:
+        if len(spec) is 3 and spec[2] is not '*':
+            # This is a versioned query
+            try:                version = int(spec[2])
+            except ValueError:
+                print "Bad version specification, please provide a valid integer."
+                raise
+            if version < 1:
+                print >>sys.stderr, "Segment version numbers must be greater than zero"
+                sys.exit(1)
+            # Ok, we got a properly versioned query item, add it to the list:
+            segments_to_query.append(spec)
+        else:
+            versionQueryURL=urifunctions.constructVersionQueryURL(protocol,server,ifo,name) 
+            if debug:
+                print versionQueryURL
+            versionResult=urifunctions.getDataUrllib2(versionQueryURL)
+            versionData=json.loads(versionResult)  #JSON is nice... :)
+            ## Construct urls and issue queries for the multiple versions and dump the results to disk locally for careful provenance
+            jsonResults=[]
+            #urlList=versionData['resource_type']
+            version_list=versionData['version']
+            for version in version_list:
+                segments_to_query.append([ifo,name,version])
 
     segment_types = {}
-    raise ValueError("Query-types not yet supported by dqsegdb client.")
     ### Fix!!! Make a call to /report/known?s=t1&e=t2
     ### then parse the JSON result exactly as is done below
+    includeSegments=True
+    result,queryurl=apicalls.reportKnown(protocol,server,includeSegments,True,gps_start_time,gps_end_time)
+    ## Fix (future change)!!! decide if we should still cut on included or excluded segments:  current decision is to not cut
+    rows=apicalls.parseKnown(result)
 
-    for row in engine.query(sql):
-        sd_ifo, sd_name, sd_vers, sd_comment, ss_start, ss_end, ss_comment = row
-        key = (sd_ifo, sd_name, sd_vers, sd_comment, ss_comment)
-        if key not in segment_types:
-            segment_types[key] = glue.segments.segmentlist([])
-        segment_types[key] |= glue.segments.segmentlist([glue.segments.segment(ss_start, ss_end)])
+    for row in rows:
+        ifo, name, version, segment_definer_comment, segment_summary_start_time, segment_summary_end_time, segment_summary_comment = row
+        if [ifo,name,version] in segments_to_query:
+            key=(ifo,name,version,segment_definer_comment,segment_summary_comment)
+            if key not in segment_types:
+                segment_types[key] = glue.segments.segmentlist([])
+            segment_types[key] |= glue.segments.segmentlist([glue.segments.segment(segment_summary_start_time, segment_summary_end_time)])
+        
 
-    engine.close()
-
+#  old s6 query:
+#    for row in engine.query(sql):
+#        sd_ifo, sd_name, sd_vers, sd_comment, ss_start, ss_end, ss_comment = row
+#        key = (sd_ifo, sd_name, sd_vers, sd_comment, ss_comment)
+#        if key not in segment_types:
+#            segment_types[key] = glue.segments.segmentlist([])
+#        segment_types[key] |= glue.segments.segmentlist([glue.segments.segment(ss_start, ss_end)])
+#
+#    engine.close()
+#
     # Create segment definer and segment_summary tables
     seg_def_table = lsctables.New(lsctables.SegmentDefTable, columns = ["process_id", "segment_def_id", "ifos", "name", "version", "comment"])
     doc.childNodes[0].appendChild(seg_def_table)
