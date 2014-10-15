@@ -428,7 +428,7 @@ def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_t
 
         seg_def_id                     = seg_def_table.get_next_id()
         segment_definer                = lsctables.SegmentDef()
-        segment_definer.process_id     = proc_id
+        segment_definer.process_id     = process_id 
         segment_definer.segment_def_id = seg_def_id
         segment_definer.ifos           = key[0]
         segment_definer.name           = key[1]
@@ -442,7 +442,7 @@ def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_t
         for seg in segment_types[key]:
             segment_sum            = lsctables.SegmentSum()
             segment_sum.comment    = key[4]
-            segment_sum.process_id = proc_id
+            segment_sum.process_id = process_id
             segment_sum.segment_def_id = seg_def_id
             segment_sum.segment_sum_id = seg_sum_table.get_next_id()
             segment_sum.start_time = seg[0]
