@@ -102,7 +102,6 @@ def dqsegdbFindEndTime(flag_dict):
     maxEndTime=max([i[1] for i in flag_dict['known']])
     return maxEndTime
 
-
 def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
     """ 
     Issue query to server for ifo:name:version with start and end time
@@ -117,6 +116,31 @@ def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,start
     result=urifunctions.getDataUrllib2(queryurl)
     result_json=json.loads(result)
     return result_json,queryurl
+
+#dqsegdbQueryTimesCompatible
+def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
+    """ 
+    Issue query to server for ifo:name:version with start and end time
+    Returns the python loaded JSON response!
+
+    Parameters
+    ----------
+    variable : `type`
+        docstring for variable
+    """
+    queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
+    try:
+        result=urifunctions.getDataUrllib2(queryurl)
+        result_json=json.loads(result)
+    except HTTPError as e:
+        if e.code==404:
+            # For S6 executable compatibility, we need to return something anyway to make ligolw_segments_from_cats and segment_query work properly, in this case, we'll return a faked up dictionary with empty lists for keys 'known' and 'active', which the calling functions will correctly interperet (because it's the equivalent of asking for a flag outside known time for the S6 calls)
+            result_json={"known":[],"active":[]}
+        else: 
+            raise
+
+    return result_json,queryurl
+
 
 def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string):
     """ 
@@ -241,7 +265,7 @@ def parseKnown(jsonResult):
         flag=i['name']
         version=i['version']
         comment=i['metadata']['comment']
-        summary_comment=''
+        summary_comment='-'
         for j in i['known']:
             start=j[0]
             stop=j[1]
@@ -831,6 +855,26 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         # insertion_metadata start and stop time
         
         ### Fix!!! Get the args from the *other* process table... yikes
+        # First pass: 
+        #if debug:
+        #    import pdb
+        #    pdb.set_trace()
+
+        temp_process_params_process_id=None
+        for j in range(len(segment_md.table['process_params']['stream'])):
+            process_id_index = segment_md.table['process_params']['orderedcol'].index('process_id')
+            temp_process_params_process_id=segment_md.table['process_params']['stream'][j][process_id_index]
+            for i, entry in enumerate(segment_md.table['process_params']['orderedcol']):
+                if entry=="param":
+                    temp_param=str(segment_md.table['process_params']['stream'][j][i])
+                if entry=="value":
+                    temp_value=str(segment_md.table['process_params']['stream'][j][i])
+            process_dict[temp_process_params_process_id]['process_metadata']['args'].append(str(temp_param))
+            process_dict[temp_process_params_process_id]['process_metadata']['args'].append(str(temp_value))
+
+        #if debug:
+        #    import pdb
+        #    pdb.set_trace()
         
         temp_id_to_flag_version = {}
         

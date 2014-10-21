@@ -15,7 +15,7 @@ class ConstantsHandle():
     # Server version constants #
     ###########################
     
-    py_server_version = 'v1r7'
+    py_server_version = 'v1r16'
 
     ##############################
     # ODBC connection constants #
@@ -31,6 +31,7 @@ class ConstantsHandle():
     odbc_user = None    # Database connection user.
     odbc_pass = None    # Database connection user password.
     odbc_socket = None  # Socket used when connecting to database.
+    odbc_autocommit = False  # Boolean controlling whether connections autocommit (False = manual commits).
     
     ######################
     # Request constants #
@@ -44,6 +45,13 @@ class ConstantsHandle():
     ####################
     
     log_file_location = '/opt/dqsegdb/python_server/logs/'  # Log-file write directory.
+
+    ###################
+    # GRID constants #
+    #################
+    
+    grid_map_get_file = '/etc/grid-security/grid-mapfile'               # Grid Map file used in authentication.
+    grid_map_put_patch_file = '/etc/grid-security/grid-mapfile-insert'  # Grid Map file used in authorisation.
 
     ###################
     # Time constants #

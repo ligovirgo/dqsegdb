@@ -163,7 +163,8 @@ class RequestHandle():
                     request = f[1]
                     # Get list of all flags.
                     if request == 'flags':
-                        r = admin.get_flags_with_versions_for_report()
+                        #r = admin.get_flags_with_versions_for_report()
+                        r = dao.get_flags_with_versions_for_report()
                         # If dictionary not supplied.
                         if not r:
                             # Set HTTP code and log.
@@ -172,6 +173,7 @@ class RequestHandle():
                     elif admin.check_request('seg', request) == False:
                         # Set HTTP code and log.
                         e = admin.log_and_set_http_code(404, 11, req_method, None, full_uri)
+                    # Otherwise, it must be 'known' or 'active'.
                     else:
                         # If query string being passed.
                         if qs:
@@ -308,8 +310,8 @@ class RequestHandle():
                                             # Set HTTP code and log.
                                             e = admin.log_and_set_http_code(404, 10, req_method, None, full_uri)
                                         else:
-                                            # If putting and this version already has segments associated to it.
-                                            if req_method == 'PUT' and dao.get_flag_version_segment_total(version_id) > 0:
+                                            # If putting and this version already has Known segments associated to it.
+                                            if req_method == 'PUT' and dao.get_flag_version_segment_total('known', version_id) > 0:
                                                 # Set HTTP code and log.
                                                 e = admin.log_and_set_http_code(400, 18, req_method, None, full_uri)
                                             else:
@@ -317,6 +319,8 @@ class RequestHandle():
                                                 e = dao.insert_segments('known', req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, a)
                                                 # Put new 'active' segments.
                                                 e = dao.insert_segments('active', req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, a)
+                                                # Commit the transaction to the DB.
+                                                dao.commit_transaction_to_db()
                                     # Otherwise, URI too long.                
                                     elif l > 4:
                                         # Set HTTP code and log.
