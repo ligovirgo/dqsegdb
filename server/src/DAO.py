@@ -43,7 +43,7 @@ class DAOHandle:
         # Attempt connection.
         try:
             # Set HTTP code and log.
-            cnxn = pyodbc.connect(connection_str, autocommit=constant.odbc_autocommit) # .odbc.ini in /home/gary/    FILE DATA SOURCES..: /usr/local/etc/ODBCDataSources    USER DATA SOURCES..: /root/.odbc.ini
+            cnxn = pyodbc.connect(connection_str) # .odbc.ini in /home/gary/    FILE DATA SOURCES..: /usr/local/etc/ODBCDataSources    USER DATA SOURCES..: /root/.odbc.ini
         except:
             conn = False
             # Set HTTP code and log.
@@ -328,15 +328,12 @@ class DAOHandle:
                                     """, flag_id)
                         # Loop.
                         for row in cur:
-                            assoc_versions = row.dq_flag_assoc_versions
                             # Explode the versions.
-                            assoc_versions.split(',')
+			    assoc_versions = [int(x) for x in row.dq_flag_assoc_versions.split(",")]
                             # Loop versions.
                             for dq_flag_version in assoc_versions:
-                                # If not a comma.
-                                if not dq_flag_version == ',':
-                                    # Set.
-                                    a.append(dq_flag_version)
+                                # Set.
+                                a.append(dq_flag_version)
                         # Close ODBC cursor.
                         cur.close()
                         del cur
@@ -458,13 +455,12 @@ class DAOHandle:
                 # Set.
                 ifo = row.value_txt
                 flag = row.dq_flag_name
-                versions = row.dq_flag_assoc_versions
                 # Explode the versions.
-                versions.split(',')
+		assoc_versions = [int(x) for x in row.dq_flag_assoc_versions.split(",")]
                 # Loop versions.
-                for version in versions:
+		for dq_flag_version in assoc_versions:
                     # Add flag to available resource.
-                    a.append('/dq/' + ifo + '/' + flag + '/' + str(version))
+                    a.append('/dq/' + ifo + '/' + flag + '/' + str(dq_flag_version))
         # Include inside named array.
         a = {'results' : a}
         # Return.
@@ -1086,6 +1082,7 @@ class DAOHandle:
                     if 'known' in request_array or 'active' in request_array or not request_array:
                         # Get the additional fields from the DB.
                         seg_sql = ', segment_start_time, segment_stop_time '
+		    '''
                     # Get.
                     cur.execute("""
                                 SELECT dq_flag_version_fk""" + seg_sql + """
@@ -1134,7 +1131,6 @@ class DAOHandle:
                             flag_array[i][request].append([t1,t2])
                         # Set previous version FK for use in next loop. 
                         pre_v_fk = row.dq_flag_version_fk
-                    '''
                     # Close ODBC cursor.
                     cur.close()
                     del cur

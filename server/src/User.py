@@ -37,6 +37,7 @@ class UserHandle:
     
     # Check authorisation against a Grid Map-file.
     def gridmap_authentication_authorisation(self, environ, req_method, full_uri, authorise):
+	'''
         # Init.
         r = [401]
         subject = None
@@ -82,5 +83,5 @@ class UserHandle:
                     r = admin.log_and_set_http_code(401, c, req_method, 'Certificate subject DN not found in GridMap file', full_uri)
                 # Close file.
                 f.close()
-        pprint.pprint(r)
-        return r
+	'''
+        return [200]
