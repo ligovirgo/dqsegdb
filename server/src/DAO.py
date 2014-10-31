@@ -1082,17 +1082,6 @@ class DAOHandle:
                     if 'known' in request_array or 'active' in request_array or not request_array:
                         # Get the additional fields from the DB.
                         seg_sql = ', segment_start_time, segment_stop_time '
-		    '''
-                    # Get.
-                    cur.execute("""
-                                SELECT dq_flag_version_fk""" + seg_sql + """
-                                FROM tbl_segment""" + tbl + w + """
-                                ORDER BY dq_flag_version_fk
-                                """)
-                    # Loop.
-                    for row in cur:
-                        flag_array.append(row.dq_flag_version_fk)
-                    '''
                     # Get.
                     cur.execute("""
                                 SELECT dq_flag_name, value_txt AS 'dq_flag_ifo_txt', dq_flag_description, dq_flag_active_means_ifo_badness, dq_flag_version_uri, dq_flag_version_deactivated, dq_flag_version, dq_flag_version_fk""" + seg_sql + """

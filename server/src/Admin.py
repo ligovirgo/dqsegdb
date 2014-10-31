@@ -297,7 +297,8 @@ class AdminHandle:
                                     33: [2, 'JSON payload element problem: '],
                                     34: [1, 'Segments to upload'],
                                     35: [3, 'Authentication failure'],
-                                    36: [3, 'Authorisation failure']
+                                    36: [3, 'Authorisation failure'],
+                                    37: [0, 'SSL Subject Info']
                                 }
         # Return.
         return log_state_dictionary
