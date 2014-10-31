@@ -91,7 +91,7 @@ else:
 if synch:
     synch_command="-x "+synch
 else:
-    synch_commmand=""
+    synch_command=""
 
 if S6:
     gps_range_L1=(937035615,972535615)
