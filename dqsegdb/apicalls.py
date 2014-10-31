@@ -762,6 +762,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
     returns True if it completes sucessfully
     - options is a dictionary including (optionally):offset(int),synchronize(time in 'HH:MM' format (string))
     """
+    logger.info("Beginning call to InsertMultipleDQXMLFileThreaded.  This message last updated 10-31-2014, Happy Halloween"
     from threading import Thread
     from Queue import Queue
     import sys

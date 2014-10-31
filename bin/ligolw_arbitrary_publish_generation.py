@@ -60,6 +60,7 @@ publish_executable=dqsegdb_code_DIR+"/bin/ligolw_publish_threaded_dqxml_dqsegdb_
 #dqxml_dir="/archive/frames/online/DQ/V1" # /archive/frames/dmt/L${inf}O/triggers/DQ_Segments
 offset_base=71 # time offset to publish segmetns
 mode="local" # single?, local
+S6=True
 start_time=968654528# ignored if not > 928787010
 end_time = 969454528 # 16(s)*5000(files) # ignored if not < 975287010
 #log_file = run_dir+"/var/log/"+
@@ -74,6 +75,7 @@ files_per_publish=5000
 threading=1
 synch="14:30"
 repeat_runs=0
+
 
 
 if debug:
@@ -91,9 +93,14 @@ if synch:
 else:
     synch_commmand=""
 
-gps_range_L1=(937035615,972535615)
-gps_range_H1=(944535616,973035616)
-gps_range_V1=(928787010,975287010)
+if S6:
+    gps_range_L1=(937035615,972535615)
+    gps_range_H1=(944535616,973035616)
+    gps_range_V1=(928787010,975287010)
+else:
+    gps_range_L1=(1073822416,1098816870)
+    gps_range_H1=(1073822416,1098816870)
+    gps_range_V1=(1073822416,1098816870)
 
 gps_range=[start_time,end_time]
 if interferometer=="V":
@@ -140,16 +147,21 @@ except OSError as e:
 #locals() now contains a dictionary of all the keys I need to fill in in the scripts below!
 
 #I need to make this a script that can take 3 inputs still!!! I shouldn't be settin the inf or start or end in the text below! I should just be setting the directory structure up!
-if site=='CIT':
+if site=='CIT' and S6:
     if interferometer=="V":
         input_directory="/archive/frames/online/DQ/V1"
     elif interferometer=="H" or interferometer=="L":
         input_directory="/archive/frames/dmt/L${inf}O/triggers/DQ_Segments"
-if site=='SYR':
+elif site=='CIT': 
+    input_directory="/archive/frames/dmt/ER5/DQ/${inf}1" #assume ER5
+elif site=='SYR' and S6:
     if interferometer=="V":
         input_directory="/frames/dmt/V1"
     elif interferometer=="H" or interferometer=="L":
         input_directory="/frames/dmt/L${inf}O/triggers/DQ_Segments"
+else:
+    print "ER5 DQXML not at SYR for all times"
+    raise ValueError
 
 
 
