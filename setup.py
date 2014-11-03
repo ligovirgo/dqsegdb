@@ -74,6 +74,9 @@ class DQSegDBInstall(install.install):
         else:
             pythonpath = os.pathsep.join([self.install_platlib,
                                           self.install_purelib])
+        if self.root:
+            installpath = os.path.normpath(installpath.replace(self.root, ''))
+            pythonpath = os.path.normpath(pythonpath.replace(self.root, ''))
         return installpath, pythonpath
 
     def write_env_sh(self, fp=shenv):
@@ -110,14 +113,15 @@ class DQSegDBInstall(install.install):
         self.write_env_sh()
         self.write_env_csh()
         install.install.run(self)
-        print("\n--------------------------------------------------")
-        print("DQSegDB has been installed.")
-        print("If you are running csh, you can set your environment by "
-              "running:\n")
-        print("source %s\n" % os.path.join(self.install_base, self.cshenv))
-        print("Otherwise, you can run:\n")
-        print("source %s" % os.path.join(self.install_base, self.shenv))
-        print("--------------------------------------------------")
+        if not self.root:
+            print("\n--------------------------------------------------")
+            print("DQSegDB has been installed.")
+            print("If you are running csh, you can set your environment by "
+                  "running:\n")
+            print("source %s\n" % os.path.join(self.install_base, self.cshenv))
+            print("Otherwise, you can run:\n")
+            print("source %s" % os.path.join(self.install_base, self.shenv))
+            print("--------------------------------------------------")
     run.__doc__ = install.install.__doc__
 
 
