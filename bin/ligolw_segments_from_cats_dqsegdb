@@ -277,7 +277,8 @@ def kludge_get_column_info(connection, table_name):
     return [(coldef.groupdict()["name"], coldef.groupdict()["type"]) for coldef in re.finditer(dbtables._sql_coldef_pattern, coldefs) if coldef.groupdict()["name"].upper() not in ("PRIMARY", "UNIQUE", "CHECK")]
 
 
-
+class ContentHandler(ligolw.LIGOLWContentHandler):
+    connection = None
 
 
 #
@@ -321,7 +322,10 @@ if __name__ == '__main__':
         segment_connection   = segmentdb_utils.setup_database(db_location)
         segment_query_engine = query_engine.LdbdQueryEngine(segment_connection)
 
-    ligolw_sqlite.insert_from_urls(veto_connection, xml_files)
+    # old before Kipp changed APIs:  ligolw_sqlite.insert_from_urls(veto_connection, xml_files)
+    ContentHandler.connection = veto_connection
+    dbtables.use_in(ContentHandler)
+    ligolw_sqlite.insert_from_urls(xml_files, ContentHandler)
 
     # If we're working with DMT files make sure we have a segment table
     if file_location:
