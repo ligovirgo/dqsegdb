@@ -75,13 +75,18 @@ class RequestHandle():
                                 # Set HTTP code and log.
                                 e = admin.log_and_set_http_code(404, 8, req_method, None, full_uri)
                             else:
-                                # Get flag version list
+                                # If three URI array elements supplied.
                                 if l == 3:
-                                    r = dao.get_flag_version_list(ifo, flag, req_method, full_uri)
+                                    # Get version list.
+                                    v_l = dao.get_flag_version_list(ifo, flag)
                                     # If list not supplied.
-                                    if not r:
+                                    if not v_l:
                                         # Set HTTP code and log.
-                                        admin.log_and_set_http_code(200, 23, req_method, None, full_uri)
+                                        e = admin.log_and_set_http_code(404, 38, req_method, None, full_uri)
+                                    # Otherwise.
+                                    else:
+                                        # Put list into response dictionary.
+                                        r = admin.put_version_list_into_dict(v_l)
                                 # Otherwise, get version and segment info. Ensuring URI is not ended with a trailing slash.
                                 elif l == 4:
                                     version = f[3]

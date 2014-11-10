@@ -15,7 +15,7 @@ class ConstantsHandle():
     # Server version constants #
     ###########################
     
-    py_server_version = 'v1r20'
+    py_server_version = 'v1r21'
 
     ##############################
     # ODBC connection constants #

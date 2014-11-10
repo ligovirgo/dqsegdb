@@ -38,6 +38,21 @@ class AdminHandle:
         # Return.
         return a
 
+    # Put the version list into a dictionary. The list is checked to ensure versions are available. This point is reached only if versions are available.
+    def put_version_list_into_dict(self, l):
+        # Init.
+        d = {}
+        # If URI passed.
+        try:
+            l
+        except:
+            pass
+        else:
+            # Include inside named list.
+            d = {"resource_type" : "version", "version" : l}
+        # Return.
+        return d         
+
     # Convert a boolean value to an integer.
     def convert_boolean_to_int(self, v):
         # Init.

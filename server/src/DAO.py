@@ -297,17 +297,15 @@ class DAOHandle:
         return a
             
     # Get a list of flag versions.
-    def get_flag_version_list(self, ifo, flag, req_method, full_uri):
+    def get_flag_version_list(self, ifo, flag):
         # Init.
         a = []
         # If args passed.
         try:
-            ifo, flag, req_method, full_uri
+            ifo, flag
         except:
             pass
         else:
-            # Instantiate objects.
-            admin = Admin.AdminHandle()
             # Get IFO ID.
             ifo_id = self.get_value_details(1,ifo)
             # If Ifo ID exists.
@@ -332,12 +330,8 @@ class DAOHandle:
                         for row in cur:
                             # Set.
                             versions = row.dq_flag_assoc_versions
-                            # If no associated versions are available.
-                            if versions == '':
-                                # Set HTTP code and log.
-                                admin.log_and_set_http_code(404, 38, req_method, None, full_uri)
-                            # Otherwise, associated versions are available.
-                            else:
+                            # If associated versions are available.
+                            if not versions == '':
                                 # Explode the versions.
                                 assoc_versions = [int(x) for x in versions.split(",")]
                                 # Loop versions.
@@ -347,8 +341,6 @@ class DAOHandle:
                         # Close ODBC cursor.
                         cur.close()
                         del cur
-                        # Include inside named list.
-                        a = {"resource_type" : "version", "version" : a}
         # Return.
         return a
 
@@ -474,10 +466,11 @@ class DAOHandle:
                     ifo = row.value_txt
                     flag = row.dq_flag_name
                     versions = row.dq_flag_assoc_versions
+                    call_uri = '/dq/' + ifo + '/' + flag + '/'
                     # If no associated versions are available.
                     if versions == '':
                         # Set HTTP code and log.
-                        admin.log_and_set_http_code(404, 38, req_method, None, full_uri)
+                        admin.log_and_set_http_code(404, 38, req_method, 'Check: ' + call_uri, full_uri)
                     # Otherwise, associated versions are available.
                     else:
                         # Explode the versions.
@@ -485,7 +478,7 @@ class DAOHandle:
                         # Loop versions.
                         for dq_flag_version in assoc_versions:
                             # Add flag to available resource.
-                            a.append('/dq/' + ifo + '/' + flag + '/' + str(dq_flag_version))
+                            a.append(call_uri + str(dq_flag_version))
             # Include inside named array.
             a = {'results' : a}
         # Return.
