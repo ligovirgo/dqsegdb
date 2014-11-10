@@ -77,7 +77,7 @@ class RequestHandle():
                             else:
                                 # Get flag version list
                                 if l == 3:
-                                    r = dao.get_flag_version_list(ifo, flag)
+                                    r = dao.get_flag_version_list(ifo, flag, req_method, full_uri)
                                     # If list not supplied.
                                     if not r:
                                         # Set HTTP code and log.
@@ -161,10 +161,10 @@ class RequestHandle():
                 # Otherwise, prepare more complex requests. Ensuring URI is not ended with a trailing slash.
                 elif l == 2:
                     request = f[1]
-                    # Get list of all flags.
+                    # If request is flags.
                     if request == 'flags':
-                        #r = admin.get_flags_with_versions_for_report()
-                        r = dao.get_flags_with_versions_for_report()
+                        # Get list of all flags.
+                        r = dao.get_flags_with_versions_for_report(req_method, full_uri)
                         # If dictionary not supplied.
                         if not r:
                             # Set HTTP code and log.

@@ -297,15 +297,17 @@ class DAOHandle:
         return a
             
     # Get a list of flag versions.
-    def get_flag_version_list(self, ifo, flag):
+    def get_flag_version_list(self, ifo, flag, req_method, full_uri):
         # Init.
         a = []
-        # If arg passed.
+        # If args passed.
         try:
-            ifo, flag
+            ifo, flag, req_method, full_uri
         except:
             pass
         else:
+            # Instantiate objects.
+            admin = Admin.AdminHandle()
             # Get IFO ID.
             ifo_id = self.get_value_details(1,ifo)
             # If Ifo ID exists.
@@ -328,12 +330,20 @@ class DAOHandle:
                                     """, flag_id)
                         # Loop.
                         for row in cur:
-                            # Explode the versions.
-			    assoc_versions = [int(x) for x in row.dq_flag_assoc_versions.split(",")]
-                            # Loop versions.
-                            for dq_flag_version in assoc_versions:
-                                # Set.
-                                a.append(dq_flag_version)
+                            # Set.
+                            versions = row.dq_flag_assoc_versions
+                            # If no associated versions are available.
+                            if versions == '':
+                                # Set HTTP code and log.
+                                admin.log_and_set_http_code(404, 38, req_method, None, full_uri)
+                            # Otherwise, associated versions are available.
+                            else:
+                                # Explode the versions.
+                                assoc_versions = [int(x) for x in versions.split(",")]
+                                # Loop versions.
+                                for dq_flag_version in assoc_versions:
+                                    # Set.
+                                    a.append(dq_flag_version)
                         # Close ODBC cursor.
                         cur.close()
                         del cur
@@ -434,35 +444,50 @@ class DAOHandle:
         return a
 
     # Get a list of all flags with versions for report.
-    def get_flags_with_versions_for_report(self):
+    def get_flags_with_versions_for_report(self, req_method, full_uri):
         # Init.
         a = [];
+        # If args passed.
         try:
-            # Set ODBC cursor.
-            cur = cnxn.cursor()
+            req_method, full_uri
         except:
             pass
         else:
-            # Get.
-            cur.execute("""
-                        SELECT dq_flag_name, dq_flag_assoc_versions, value_txt
-                        FROM tbl_dq_flags
-                        LEFT JOIN tbl_values ON tbl_dq_flags.dq_flag_ifo = tbl_values.value_id
-                        ORDER BY value_txt, dq_flag_name
-                        """)
-            # Loop.
-            for row in cur:
-                # Set.
-                ifo = row.value_txt
-                flag = row.dq_flag_name
-                # Explode the versions.
-		assoc_versions = [int(x) for x in row.dq_flag_assoc_versions.split(",")]
-                # Loop versions.
-		for dq_flag_version in assoc_versions:
-                    # Add flag to available resource.
-                    a.append('/dq/' + ifo + '/' + flag + '/' + str(dq_flag_version))
-        # Include inside named array.
-        a = {'results' : a}
+            # Instantiate objects.
+            admin = Admin.AdminHandle()
+            try:
+                # Set ODBC cursor.
+                cur = cnxn.cursor()
+            except:
+                pass
+            else:
+                # Get.
+                cur.execute("""
+                            SELECT dq_flag_name, dq_flag_assoc_versions, value_txt
+                            FROM tbl_dq_flags
+                            LEFT JOIN tbl_values ON tbl_dq_flags.dq_flag_ifo = tbl_values.value_id
+                            ORDER BY value_txt, dq_flag_name
+                            """)
+                # Loop.
+                for row in cur:
+                    # Set.
+                    ifo = row.value_txt
+                    flag = row.dq_flag_name
+                    versions = row.dq_flag_assoc_versions
+                    # If no associated versions are available.
+                    if versions == '':
+                        # Set HTTP code and log.
+                        admin.log_and_set_http_code(404, 38, req_method, None, full_uri)
+                    # Otherwise, associated versions are available.
+                    else:
+                        # Explode the versions.
+                        assoc_versions = [int(x) for x in versions.split(",")]
+                        # Loop versions.
+                        for dq_flag_version in assoc_versions:
+                            # Add flag to available resource.
+                            a.append('/dq/' + ifo + '/' + flag + '/' + str(dq_flag_version))
+            # Include inside named array.
+            a = {'results' : a}
         # Return.
         return a
     
@@ -489,7 +514,7 @@ class DAOHandle:
                 cur.execute("""
                             SELECT value_id
                             FROM tbl_values
-                            WHERE value_group_fk = ? AND value_txt = ?
+                            WHERE value_group_fk=? AND value_txt LIKE ?
                             """, g, str(v))
                 # Loop.
                 for row in cur:
@@ -535,6 +560,7 @@ class DAOHandle:
     
     # Get a value group name using its ID.
     def get_value_group_details(self, g):
+	print g
         # Init.
         res = None
         # If args passed.
@@ -553,7 +579,7 @@ class DAOHandle:
                 cur.execute("""
                             SELECT value_group
                             FROM tbl_value_groups
-                            WHERE value_group_id = ?
+                            WHERE value_group_id=?
                             """, g)
                 # Loop.
                 for row in cur:

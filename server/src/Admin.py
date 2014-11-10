@@ -298,7 +298,8 @@ class AdminHandle:
                                     34: [1, 'Segments to upload'],
                                     35: [3, 'Authentication failure'],
                                     36: [3, 'Authorisation failure'],
-                                    37: [0, 'SSL Subject Info']
+                                    37: [0, 'SSL Subject Info'],
+                                    38: [2, 'No versions are available for this flag']
                                 }
         # Return.
         return log_state_dictionary
