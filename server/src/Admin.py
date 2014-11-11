@@ -314,7 +314,7 @@ class AdminHandle:
                                     35: [3, 'Authentication failure'],
                                     36: [3, 'Authorisation failure'],
                                     37: [0, 'SSL Subject Info'],
-                                    38: [2, 'No versions are available for this flag']
+                                    38: [2, 'No versions are available for this flag, but the flag exists in the database. Please contact the database administrators']
                                 }
         # Return.
         return log_state_dictionary
@@ -327,6 +327,7 @@ class AdminHandle:
                                     400: 'Bad Request',
                                     401: 'Unauthorized',
                                     404: 'Not Found',
+                                    409: 'Conflict',
                                     414: 'Request-URI Too Long'
                                 }
         # Return.

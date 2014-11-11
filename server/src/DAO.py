@@ -470,7 +470,7 @@ class DAOHandle:
                     # If no associated versions are available.
                     if versions == '':
                         # Set HTTP code and log.
-                        admin.log_and_set_http_code(404, 38, req_method, 'Check: ' + call_uri, full_uri)
+                        admin.log_and_set_http_code(409, 38, req_method, 'Check: ' + call_uri, full_uri)
                     # Otherwise, associated versions are available.
                     else:
                         # Explode the versions.

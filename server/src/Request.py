@@ -82,7 +82,7 @@ class RequestHandle():
                                     # If list not supplied.
                                     if not v_l:
                                         # Set HTTP code and log.
-                                        e = admin.log_and_set_http_code(404, 38, req_method, None, full_uri)
+                                        e = admin.log_and_set_http_code(409, 38, req_method, None, full_uri)
                                     # Otherwise.
                                     else:
                                         # Put list into response dictionary.
