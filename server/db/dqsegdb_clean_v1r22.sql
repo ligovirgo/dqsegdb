@@ -17,7 +17,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tbl_dq_flags`
+-- Table structure for table `tbl_dq_flags`.
 --
 
 CREATE TABLE IF NOT EXISTS `tbl_dq_flags` (
