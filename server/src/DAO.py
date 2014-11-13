@@ -693,7 +693,7 @@ class DAOHandle:
                         # Get values.
                         gps = gpstime.GpsSecondsFromPyUTC(time.time(), constant.gps_leap_secs)
         #                data_format = self.get_value_details(3, data['flag']['data_format'])
-                        data_format = 8
+                        data_format = 5 # Was 8, fixed until removal
                         # Insert process.
                         cur.execute("""
                                     INSERT INTO tbl_processes
