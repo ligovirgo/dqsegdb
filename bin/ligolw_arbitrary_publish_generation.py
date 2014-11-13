@@ -174,7 +174,7 @@ script_text="""#!/bin/bash
 DIR=%(dqsegdb_code_DIR)s
 
 #echo "Setting PYTHONPATH to point to $DIR/lib"
-export PYTHONPATH=$PYTHONPATH:$DIR/dqsegdb
+export PYTHONPATH=$PYTHONPATH:$DIR
 export PATH=$PATH:$DIR/bin/
 
 inf=$1

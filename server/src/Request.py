@@ -75,13 +75,18 @@ class RequestHandle():
                                 # Set HTTP code and log.
                                 e = admin.log_and_set_http_code(404, 8, req_method, None, full_uri)
                             else:
-                                # Get flag version list
+                                # If three URI array elements supplied.
                                 if l == 3:
-                                    r = dao.get_flag_version_list(ifo, flag)
+                                    # Get version list.
+                                    v_l = dao.get_flag_version_list(ifo, flag)
                                     # If list not supplied.
-                                    if not r:
+                                    if not v_l:
                                         # Set HTTP code and log.
-                                        admin.log_and_set_http_code(200, 23, req_method, None, full_uri)
+                                        e = admin.log_and_set_http_code(409, 38, req_method, None, full_uri)
+                                    # Otherwise.
+                                    else:
+                                        # Put list into response dictionary.
+                                        r = admin.put_version_list_into_dict(v_l)
                                 # Otherwise, get version and segment info. Ensuring URI is not ended with a trailing slash.
                                 elif l == 4:
                                     version = f[3]
@@ -161,10 +166,10 @@ class RequestHandle():
                 # Otherwise, prepare more complex requests. Ensuring URI is not ended with a trailing slash.
                 elif l == 2:
                     request = f[1]
-                    # Get list of all flags.
+                    # If request is flags.
                     if request == 'flags':
-                        #r = admin.get_flags_with_versions_for_report()
-                        r = dao.get_flags_with_versions_for_report()
+                        # Get list of all flags.
+                        r = dao.get_flags_with_versions_for_report(req_method, full_uri)
                         # If dictionary not supplied.
                         if not r:
                             # Set HTTP code and log.

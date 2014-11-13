@@ -93,10 +93,14 @@ def getDataUrllib2(url,timeout=900,logger=None):
         print "Error accesing url: %s" % url
         print e.reason
         try:
-            type, value, traceback = sys.exc_info()
+            type, value, traceback_stack = sys.exc_info()
             print "Trying custom URLError."
-            print url
-            raise urllib2.URLError, ("Unable to get data",type,value),traceback
+            print type
+            print value
+            import traceback
+            traceback.print_tb(traceback_stack)
+            raise e
+
         except:
             print url
             raise

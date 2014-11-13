@@ -38,6 +38,21 @@ class AdminHandle:
         # Return.
         return a
 
+    # Put the version list into a dictionary. The list is checked to ensure versions are available. This point is reached only if versions are available.
+    def put_version_list_into_dict(self, l):
+        # Init.
+        d = {}
+        # If URI passed.
+        try:
+            l
+        except:
+            pass
+        else:
+            # Include inside named list.
+            d = {"resource_type" : "version", "version" : l}
+        # Return.
+        return d         
+
     # Convert a boolean value to an integer.
     def convert_boolean_to_int(self, v):
         # Init.
@@ -298,7 +313,8 @@ class AdminHandle:
                                     34: [1, 'Segments to upload'],
                                     35: [3, 'Authentication failure'],
                                     36: [3, 'Authorisation failure'],
-                                    37: [0, 'SSL Subject Info']
+                                    37: [0, 'SSL Subject Info'],
+                                    38: [2, 'No versions are available for this flag, but the flag exists in the database. Please contact the database administrators']
                                 }
         # Return.
         return log_state_dictionary
@@ -311,6 +327,7 @@ class AdminHandle:
                                     400: 'Bad Request',
                                     401: 'Unauthorized',
                                     404: 'Not Found',
+                                    409: 'Conflict',
                                     414: 'Request-URI Too Long'
                                 }
         # Return.

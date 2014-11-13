@@ -292,50 +292,56 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     versionQueryURL=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
     if verbose:
         print versionQueryURL
-    versionResult=urifunctions.getDataUrllib2(versionQueryURL)
+    try:
+        versionResult=urifunctions.getDataUrllib2(versionQueryURL)
+    except HTTPError as e:
+        if e.code==404:
+            import warnings
+            warnings.warn("Provided IFO:FLAG: %s:%s not found in database, returning empty result" % (ifo,name))
+            jsonResults=[]
+    else:
+        # Parse the result
+        # Results should be a JSON object like this:
+        #{
+        # "meta": {
+        #    query_uri" : "uri",   // contains the URI specified with the GET HTTP method
+        #    "query_time" : gpstime,    // when the query was issued
+        #    // optional query parameters
+        #    "query_start" : t1,
+        #    "query_end" : t2
+        #    },
+        #  "resource_type" : ["resource_uri_1", "resource_uri_2"]
+        #}
+        versionData=json.loads(versionResult)  #JSON is nice... :)
 
-    # Parse the result
-    # Results should be a JSON object like this:
-    #{
-    # "meta": {
-    #    query_uri" : "uri",   // contains the URI specified with the GET HTTP method
-    #    "query_time" : gpstime,    // when the query was issued
-    #    // optional query parameters
-    #    "query_start" : t1,
-    #    "query_end" : t2
-    #    },
-    #  "resource_type" : ["resource_uri_1", "resource_uri_2"]
-    #}
-    versionData=json.loads(versionResult)  #JSON is nice... :)
+        ## Construct urls and issue queries for the multiple versions and dump the results to disk locally for careful provenance
+        jsonResults=[]
+        #urlList=versionData['resource_type']
+        version_list=versionData['version']
+        urlList=[versionQueryURL+'/'+str(version) for version in version_list]
 
-    ## Construct urls and issue queries for the multiple versions and dump the results to disk locally for careful provenance
-    jsonResults=[]
-    #urlList=versionData['resource_type']
-    version_list=versionData['version']
-    urlList=[versionQueryURL+'/'+str(version) for version in version_list]
-
-    # sort list by decreasing version number and call each URL:
-    sortedurlList=sorted(urlList, key=lambda url: url.split('/')[-1], reverse=True)
-    for versioned_url in sortedurlList:
-        # I am assuming I need to pull off the versions from the urls to use my existing library function.  
-        # Alternatively, we could make a new library function that starts from the end of the version and takes the include_list_string and start and end times as inputs
-        version=versioned_url.split('/')[-1]
-        queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
-        if verbose:
-            print queryurl
-        result=urifunctions.getDataUrllib2(queryurl)
-        result_parsed=json.loads(result)
-        jsonResults.append(result_parsed)
-        # Fix!!! Improvement: Executive Decision:  Should we force these intermediate results to hit disk?  
-        # For now, I say yes:
-        # Fix!!! Improvement: Choose a better location for files to go automatically, so this can be run from other directories
-        filename=queryurl.replace('/','_').split(':')[-1]+'.json'
-        try:
-            tmpfile=open(filename,'w')
-            json.dump(result_parsed,tmpfile)
-            tmpfile.close()
-        except:
-            print "Couldn't save partial results to disk.... continuing anyway."
+        # sort list by decreasing version number and call each URL:
+        sortedurlList=sorted(urlList, key=lambda url: url.split('/')[-1], reverse=True)
+        for versioned_url in sortedurlList:
+            # I am assuming I need to pull off the versions from the urls to use my existing library function.  
+            # Alternatively, we could make a new library function that starts from the end of the version and takes the include_list_string and start and end times as inputs
+            version=versioned_url.split('/')[-1]
+            queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
+            if verbose:
+                print queryurl
+            result=urifunctions.getDataUrllib2(queryurl)
+            result_parsed=json.loads(result)
+            jsonResults.append(result_parsed)
+            # Fix!!! Improvement: Executive Decision:  Should we force these intermediate results to hit disk?  
+            # For now, I say yes:
+            # Fix!!! Improvement: Choose a better location for files to go automatically, so this can be run from other directories
+            filename=queryurl.replace('/','_').split(':')[-1]+'.json'
+            try:
+                tmpfile=open(filename,'w')
+                json.dump(result_parsed,tmpfile)
+                tmpfile.close()
+            except:
+                print "Couldn't save partial results to disk.... continuing anyway."
 
     ## Construct output segments lists from multiple JSON objects
     # The jsonResults are in order of decreasing versions, 
@@ -344,7 +350,7 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     # total_known_list across all versions, cascaded
     # and we have the total active list across all versions, cascaded
     # so we're done the math! : 
-    result_flag,affected_results=clientutils.calculate_versionless_result(jsonResults,startTime,endTime)
+    result_flag,affected_results=clientutils.calculate_versionless_result(jsonResults,startTime,endTime,ifo_input=ifo)
     if verbose:
         print "active segments:", result_flag['active']
         print "known segments:", result_flag['known']
