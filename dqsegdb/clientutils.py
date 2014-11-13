@@ -87,7 +87,7 @@ def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
     result_flag=jsonhelper.buildFlagDict(ifo,name,version,known_segments,active_segments)
     return result_flag
 
-def calculate_versionless_result(jsonResults,startTime,endTime):
+def calculate_versionless_result(jsonResults,startTime,endTime,ifo_input=None):
     """
     Construct output segments lists from multiple JSON objects.
     The jsonResults input is a list of json ojbects and 
@@ -133,8 +133,17 @@ def calculate_versionless_result(jsonResults,startTime,endTime):
             # Note that the order matters here!  we use the total_known_list from the previous iteration of the loop step to figure out which active segments to use in this iteration of the loop, so the above line must come before the next
             total_known_list |= known_segments
             total_known_list.coalesce()
-    
-    ifo=result['ifo']
+    if ifo_input==None:
+        if len(jsonResults)==0:
+            import exceptions
+            exceptions.RuntimeError("No versions for flag in versionless query")
+        else:
+            ifo=result['ifo']
+    else:  #Only use ifo_input if we can't extract the ifo from the json result (usually because json result is empty)
+        try:
+            ifo=result['ifo']
+        except:
+            ifo=ifo_input
     name='RESULT' # Fix!!! Executive decision to make this clear that this is not a specific IFO:FLAG:VERSION resource, but rather a contrived result
     version=1 # Fix!!! Executive decision to make this match what old clients expect
     # I would prefer that this is more clear that this is not a specific IFO:FLAG:VERSION resource, but rather a contrived result, possibly by making it version 0
