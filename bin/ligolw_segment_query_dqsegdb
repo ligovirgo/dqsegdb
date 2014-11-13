@@ -527,6 +527,7 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
             # This replicates the S6 behavior:
             included_JSON_results.append(json_result)
             for i_result in versioned_JSON:
+                # Note: doesn't run if versioned_JSON is empty due to flag not existing
                 included_intermediate_JSON.append(i_result)
                 for seg in affected_results[i_result['version']]:
                     segdefs.append((ifo, name, i_result['version'], seg[0], seg[1], 0, 0))
