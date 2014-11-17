@@ -280,7 +280,7 @@ ShowTypesResultTable.RowType = ShowTypesResult
 #
 # =============================================================================
 #
-def run_show_types(doc, protocol, server, gps_start_time, gps_end_time, included_segments_string, excluded_segments_string):
+def run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time, included_segments_string, excluded_segments_string):
     resulttable = lsctables.New(ShowTypesResultTable)
     doc.childNodes[0].appendChild(resulttable)
     
@@ -334,7 +334,7 @@ def run_show_types(doc, protocol, server, gps_start_time, gps_end_time, included
 
 
 
-def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments):
+def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments):
 #def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_time, included_segments):
     query_segment = glue.segments.segmentlist([glue.segments.segment(gps_start_time, gps_end_time)])
 
@@ -455,7 +455,7 @@ def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_t
 
 
 
-def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments, exclude_segments, result_name):
+def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments, exclude_segments, result_name):
     include_list_string='active,known,metadata'
     segdefs = []
     startTime=gps_start_time
@@ -712,14 +712,14 @@ if __name__ == '__main__':
 
     
     if options.show_types:
-        run_show_types(doc, protocol, server, gps_start_time, gps_end_time,
+        run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time,
                        options.include_segments,options.exclude_segments)
         #run_show_types(doc, connection, engine, gps_start_time, gps_end_time,
         #               options.include_segments,options.exclude_segments)
         
 
     if options.query_segments:
-        run_query_segments(doc, process_id, protocol, server, gps_start_time, 
+        run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time, 
                 gps_end_time, options.include_segments, 
                 options.exclude_segments, options.result_name)
         #n run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time,
@@ -728,7 +728,7 @@ if __name__ == '__main__':
 
 
     if options.query_types:
-        run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments)
+        run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments)
         #n run_query_types(doc, process_id, connection, engine, gps_start_time, gps_end_time, options.include_segments)
 
 
