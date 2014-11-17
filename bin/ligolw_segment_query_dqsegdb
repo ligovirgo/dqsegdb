@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
-#
+# Copyright (C) 2014  Ryan Fisher
+# Adapted from ligolw_segment_query:
 # Copyright (C) 2009  Larne Pekowsky, Ping Wei
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -33,9 +34,9 @@ segment database or a collection of DMT XML files.  Output should match
 exactly the format returned by S6 style segment database tools.
 
   * What DQ flags exist in the database? ligolw_segment_query --show-types
-  * (Not yet operational): When was a given DQ flag defined? ligolw_segment_query --query-types 
+  * When was a given DQ flag defined? ligolw_segment_query --query-types 
   * When was a given flag active? ligolw_segment_query --query-segments
-    * Example: ligolw_segment_query_dqsegdb --segment-url=http://slwebtest.virgo.infn.it --query-segments --gps-start-time 1070612448 --gps-end-time 1070613448 --include-segments="H1:ODC-PSL_SUMMARY:1" -o example.xml
+* Example: ligolw_segment_query_dqsegdb --segment-url=http://dqsegdb4.phy.syr.edu --query-segments --gps-start-time 987654321 --gps-end-time 987654333 --include-segments="H1:DMT-SCIENCE:1" -o example.xml
 """
 
 
