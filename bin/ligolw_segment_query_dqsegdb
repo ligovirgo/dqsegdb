@@ -686,9 +686,24 @@ if __name__ == '__main__':
     # Ping the database and exit if requested
     # Fix!!! Make a ping do something
     if options.ping:
-        connection = segmentdb_utils.setup_database(database_location)
-        print connection.ping()
-        sys.exit( 0 )
+        if options.use_s6:
+            connection = segmentdb_utils.setup_database(database_location)
+            print connection.ping()
+            sys.exit( 0 )
+        else:
+            # DQSEGDB 'ping'
+            o=urlparse.urlparse(options.segment_url)
+            protocol=o.scheme
+            server=o.netloc
+            ifo="L1"
+            url_result=urifunctions.constructFlagQueryURL(protocol,server,ifo)
+            json_out=urifunctions.getDataUrllib2(url_result)
+            flags_information=json.loads(json_out)
+            server_version=flags_information['query_information']['server_code_version']
+            print "Server version is %s" % server_version
+            sys.exit(0)
+            
+
 
     gps_start_time = int(options.gps_start_time)
     gps_end_time   = int(options.gps_end_time)
