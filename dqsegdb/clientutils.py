@@ -1,3 +1,22 @@
+import sys
+import os
+import operator
+import tempfile
+
+import glue.segments
+
+from glue.ligolw import ligolw
+from glue.ligolw import table
+from glue.ligolw import lsctables
+from glue.ligolw import utils
+
+from glue.ligolw.utils import ligolw_add
+from glue.ligolw.utils import process
+from glue.segmentdb import query_engine
+from glue.segmentdb import segmentdb_utils
+
+from glue.ligolw.utils import ligolw_sqlite
+from glue.ligolw import dbtables
 from glue import segments
 import json
 from dqsegdb import jsonhelper
@@ -391,6 +410,8 @@ def run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time, in
 
     # and store the segments
     segmentdb_utils.add_to_segment(doc, process_id, seg_def_id, found_segments)
+    print "Made it to the end of the query code"
+    print doc
            
 
 
