@@ -286,6 +286,7 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     """
 
     #verbose=True
+    verbose=False
 
     ## Construct url and issue query to determine highest version from list 
     ## of versions
