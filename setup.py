@@ -18,7 +18,7 @@ AUTHOR = 'Ryan Fisher'
 AUTHOR_EMAIL = 'ryan.fisher@ligo.org'
 LICENSE = None
 #rel_version="0.9"
-rel_version="0.91"
+rel_version="1.0"
 release=True
 
 

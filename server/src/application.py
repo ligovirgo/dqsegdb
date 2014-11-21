@@ -6,9 +6,9 @@ Applcation class file
 import Admin
 import DAO
 import Request
+import LDBDWAuth
 import logging
 import Logging_Config
-import User
 
 # Instantiate logger.
 log = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ def application(environ, start_response):
     admin = Admin.AdminHandle()
     dao = DAO.DAOHandle()
     reqhan = Request.RequestHandle()
-    user = User.UserHandle()
+    ldbdwauth = LDBDWAuth.GridmapAuthorization()
     # Set HTTP code and log.
     res = admin.log_and_set_http_code(400, 0, environ['REQUEST_METHOD'], None, environ['REQUEST_URI'])
     # Connect to DB.
@@ -27,7 +27,7 @@ def application(environ, start_response):
         # Respond to a GET request.
         if environ['REQUEST_METHOD'] == 'GET':
             # Authenticate.
-            res = user.gridmap_authentication_authorisation(environ, environ['REQUEST_METHOD'], environ['REQUEST_URI'], False)
+            res = ldbdwauth.check_authorization_gridmap(environ, environ['REQUEST_METHOD'], environ['REQUEST_URI'], False)
             # If authentication successful.
             if res[0] == 200:
                 # Get content for output.
@@ -35,7 +35,7 @@ def application(environ, start_response):
         # Respond to a PUT request.
         elif environ['REQUEST_METHOD'] == 'PUT' or environ['REQUEST_METHOD'] == 'PATCH':
             # Authorise.
-            res = user.gridmap_authentication_authorisation(environ, environ['REQUEST_METHOD'], environ['REQUEST_URI'], True)
+            res = ldbdwauth.check_authorization_gridmap(environ, environ['REQUEST_METHOD'], environ['REQUEST_URI'], True)
             # If authorisation successful.
             if res[0] == 200:
                 # Get the size of the requested JSON.

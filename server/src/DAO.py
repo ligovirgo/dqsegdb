@@ -47,7 +47,7 @@ class DAOHandle:
         except:
             conn = False
             # Set HTTP code and log.
-            admin.log_and_set_http_code(404, 3, req_method, None, full_uri)
+            admin.log_and_set_http_code(500, 3, req_method, None, full_uri)
         else:
             # If connection established.
             conn = True
