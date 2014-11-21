@@ -111,7 +111,7 @@ def parse_command_line():
 
     parser.add_option("-t", "--segment-url",  metavar = "segment_url", help = "Segment URL")
     parser.add_option("-d", "--database",     metavar = "use_database", action = "store_true", help = "use database specified by environment variable S6_SEGMENT_SERVER")
-    parser.add_option("-f", "--dmt-file",     metavar = "use_files", action = "store_true", help = "use files in directory specified by environment variable ONLINEDQ")
+    parser.add_option("-f", "--dmt-file",     metavar = "use_files", action = "store_true", help = "Warning: NOT UPDATED FOR DQSEGDB CLIENT YET! use files in directory specified by environment variable ONLINEDQ")
     parser.add_option("-c", "--cumulative-categories",   action = "store_true", help = "If set the category N files will contain all segments in categories <= N")
     parser.add_option("-p", "--separate-categories",     action = "store_true", help = "If set the category N files will contain only category N")
     parser.add_option("-i", "--individual-results",      action = "store_true", help = "If set include information on each veto individually.")
@@ -192,6 +192,8 @@ def parse_command_line():
             raise ValueError( "--database specified by S6_SEGMENT_SERVER not set" )
         database_location = os.environ['S6_SEGMENT_SERVER']
     elif options.dmt_file:
+        # Fix!!! Easy to add dmt files and s6 server compatibility, but requires time to test them before deploying them!
+        raise ValueError("DMT files method not yet suppported for this client in ER6, please use ligolw_segments_from_cats (S6 client)")
         if 'ONLINEDQ' not in os.environ:
             raise ValueError( "--dmt-file specified but ONLINEDQ not set" )
 
@@ -355,11 +357,13 @@ if __name__ == '__main__':
                     segdefs.append( (ifo, name, version, veto_interval[0][0], veto_interval[0][1], start_pad, end_pad) )
 
             # Old:
-            # vetoed_segments   = segmentdb_utils.query_segments(segment_query_engine, 'segment', segdefs)
-            # segment_summaries = segmentdb_utils.query_segments(segment_query_engine, 'segment_summary', segdefs)
-            # import pdb
-            # pdb.set_trace()
-            # With the correct call to this:
+            # if options.use_s6 or options.dmt_files:
+            #     vetoed_segments   = segmentdb_utils.query_segments(segment_query_engine, 'segment', segdefs)
+            #     segment_summaries = segmentdb_utils.query_segments(segment_query_engine, 'segment_summary', segdefs)
+            #     #import pdb
+            #     #pdb.set_trace()
+            # else:
+            # New DQSEGDB client:
             o=urlparse.urlparse(options.segment_url)
             protocol=o.scheme
             server=o.netloc
@@ -407,10 +411,9 @@ if __name__ == '__main__':
                 vetoed_segments.append(cur_vetoed_segments)
 
 
-            # We could write out everything we found.  This might help tracking down why a time
-            # or trigger was vetoed.
+            # We could write out everything we found.  This might help tracking down why a time or trigger was vetoed.
             if options.individual_results:
-              segmentdb_utils.add_segment_info(doc, proc_id, segdefs, vetoed_segments, segment_summaries)
+                segmentdb_utils.add_segment_info(doc, proc_id, segdefs, vetoed_segments, segment_summaries)
 
             # Form the result
             if len(vetoed_segments)>0:

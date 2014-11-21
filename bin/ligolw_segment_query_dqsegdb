@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
-#
+# Copyright (C) 2014  Ryan Fisher
+# Adapted from ligolw_segment_query:
 # Copyright (C) 2009  Larne Pekowsky, Ping Wei
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -33,9 +34,9 @@ segment database or a collection of DMT XML files.  Output should match
 exactly the format returned by S6 style segment database tools.
 
   * What DQ flags exist in the database? ligolw_segment_query --show-types
-  * (Not yet operational): When was a given DQ flag defined? ligolw_segment_query --query-types 
+  * When was a given DQ flag defined? ligolw_segment_query --query-types 
   * When was a given flag active? ligolw_segment_query --query-segments
-    * Example: ligolw_segment_query_dqsegdb --segment-url=http://slwebtest.virgo.infn.it --query-segments --gps-start-time 1070612448 --gps-end-time 1070613448 --include-segments="H1:ODC-PSL_SUMMARY:1" -o example.xml
+* Example: ligolw_segment_query_dqsegdb --segment-url=http://dqsegdb4.phy.syr.edu --query-segments --gps-start-time 987654321 --gps-end-time 987654333 --include-segments="H1:DMT-SCIENCE:1" -o example.xml
 """
 
 
@@ -43,6 +44,7 @@ from optparse import OptionParser
 
 
 import sys
+import warnings
 import os
 import operator
 import pwd
@@ -85,7 +87,7 @@ except:
         USER_NAME = pwd.getpwuid(os.getuid())[0]
 
 
-__author__  = "Larne Pekowsky <lppekows@physics.syr.edu>, Ping Wei <piwei@syr.edu>"
+__author__  = "Ryan Fisher <rpfisher@syr.edu>, Larne Pekowsky <lppekows@physics.syr.edu>, Ping Wei <piwei@syr.edu>"
 __version__ = "git id %s" % git_version.id
 __date__ = git_version.date
 
@@ -140,6 +142,8 @@ def parse_command_line():
     parser.add_option("-o", "--output-file",   metavar = "output_file", help = "File to which output should be written.  Defaults to stdout.")
     #parser.add_option("-v", "--debug", metavar="debug", help= "Turn on debugging.")
 
+    parser.add_option("-l", "--use-s6", metavar="use_s6", action = "store_true", help="Use old s6 style client code.  This is needed to connect to S6 style segdb servers using DB2.  Note that this code is duplicated from the old client, and may become deprecated over time.")
+
     
     options, others = parser.parse_args()
 
@@ -159,7 +163,7 @@ def parse_command_line():
 
     # Make sure we know who to contact for data
     if options.segment_url:
-        if options.segment_url.startswith('ldbd') or options.segment_url.startswith('http'):
+        if options.segment_url.startswith('http'):
             database_location = options.segment_url
         elif options.segment_url.startswith('file:'):
             file_location = options.segment_url[len('file://'):]
@@ -198,11 +202,11 @@ def parse_command_line():
         if not database_location:
             raise ValueError("--ping requires [ --segment-url https://... | --database ]")
     else:
-#n        if not options.gps_start_time:
-#n            raise ValueError( "missing required argument --gps-start-time" )
-#n    
-#n        if not options.gps_end_time:
-#n            raise ValueError( "missing required argument --gps-end-time" )
+        if not options.gps_start_time:
+            raise ValueError( "missing required argument --gps-start-time" )
+    
+        if not options.gps_end_time:
+            raise ValueError( "missing required argument --gps-end-time" )
 
         if not options.show_types and not options.include_segments:
             raise ValueError( "missing required argument --include-segments")
@@ -279,7 +283,7 @@ ShowTypesResultTable.RowType = ShowTypesResult
 #
 # =============================================================================
 #
-def run_show_types(doc, protocol, server, gps_start_time, gps_end_time, included_segments_string, excluded_segments_string):
+def run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time, included_segments_string, excluded_segments_string):
     resulttable = lsctables.New(ShowTypesResultTable)
     doc.childNodes[0].appendChild(resulttable)
     
@@ -333,7 +337,7 @@ def run_show_types(doc, protocol, server, gps_start_time, gps_end_time, included
 
 
 
-def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments):
+def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments):
 #def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_time, included_segments):
     query_segment = glue.segments.segmentlist([glue.segments.segment(gps_start_time, gps_end_time)])
 
@@ -368,8 +372,7 @@ def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_t
                 print "Bad version specification, please provide a valid integer."
                 raise
             if version < 1:
-                ### Fix!!!  These print statements need to be turned into proper errors!
-                print "Segment version numbers must be greater than zero"
+                raise ValueError("Segment version numbers must be greater than zero")
                 sys.exit(1)
             # Ok, we got a properly versioned query item, add it to the list:
             segments_to_query.append(spec)
@@ -420,6 +423,8 @@ def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_t
     seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = ["process_id", "segment_sum_id", "start_time", "start_time_ns", "end_time", "end_time_ns", "comment", "segment_def_id"])
 
     doc.childNodes[0].appendChild(seg_sum_table)
+    if debug:
+        print segment_types
 
     for key in segment_types:
         # Make sure the intervals fall within the query window and coalesce
@@ -454,7 +459,7 @@ def run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_t
 
 
 
-def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments, exclude_segments, result_name):
+def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments, exclude_segments, result_name):
     include_list_string='active,known,metadata'
     segdefs = []
     startTime=gps_start_time
@@ -527,6 +532,7 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
             # This replicates the S6 behavior:
             included_JSON_results.append(json_result)
             for i_result in versioned_JSON:
+                # Note: doesn't run if versioned_JSON is empty due to flag not existing
                 included_intermediate_JSON.append(i_result)
                 for seg in affected_results[i_result['version']]:
                     segdefs.append((ifo, name, i_result['version'], seg[0], seg[1], 0, 0))
@@ -648,7 +654,25 @@ def run_query_segments(doc, process_id, protocol, server, gps_start_time, gps_en
 # =============================================================================
 #
 
-
+# ER6 Kipp API CHANGES FIX!!!:
+#+class ContentHandler(ligolw.LIGOLWContentHandler):
+#+    connection = None
+# 
+# def setup_files(dir_name, gps_start_time, gps_end_time):
+#     # Filter out the ones that are outside our time range
+#@@ -477,7 +478,13 @@ def setup_files(dir_name, gps_start_time, gps_end_time):
+#     target     = dbtables.get_connection_filename(temp_db, None, True, False)
+#     connection = ligolw_sqlite.setup(target)
+# 
+#-    ligolw_sqlite.insert_from_urls(connection, xml_files) # [temp_xml])
+#+    ContentHandler.connection = connection
+#+    dbtables.use_in(ContentHandler)
+#+    # With ER6 Glue change:
+#+    ligolw_sqlite.insert_from_urls(xml_files, ContentHandler)
+#+
+#+    # Pre-ER6 Kipp Glue change:
+#+    #ligolw_sqlite.insert_from_urls(connection, xml_files) # [temp_xml])
+####
 def setup_files(dir_name, gps_start_time, gps_end_time):
     # Filter out the ones that are outside our time range
     xml_files = segmentdb_utils.get_all_files_in_range(dir_name, gps_start_time, gps_end_time)
@@ -680,11 +704,25 @@ if __name__ == '__main__':
     options, database_location, file_location  = parse_command_line()    
 
     # Ping the database and exit if requested
-    # Fix!!! Make a ping do something
     if options.ping:
-        connection = segmentdb_utils.setup_database(database_location)
-        print connection.ping()
-        sys.exit( 0 )
+        if options.use_s6:
+            connection = segmentdb_utils.setup_database(database_location)
+            print connection.ping()
+            sys.exit( 0 )
+        else:
+            # DQSEGDB 'ping'
+            o=urlparse.urlparse(options.segment_url)
+            protocol=o.scheme
+            server=o.netloc
+            ifo="L1"
+            url_result=urifunctions.constructFlagQueryURL(protocol,server,ifo)
+            json_out=urifunctions.getDataUrllib2(url_result)
+            flags_information=json.loads(json_out)
+            server_version=flags_information['query_information']['server_code_version']
+            print "Server version is %s" % server_version
+            sys.exit(0)
+            
+
 
     gps_start_time = int(options.gps_start_time)
     gps_end_time   = int(options.gps_end_time)
@@ -696,40 +734,41 @@ if __name__ == '__main__':
 
     temp_files = False
 
-    if database_location:
+    if database_location and not options.use_s6:
+        # Use new dqsegdb client 
         o=urlparse.urlparse(options.segment_url)
         protocol=o.scheme
         server=o.netloc
+        if options.show_types:
+            run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time, options.include_segments,options.exclude_segments)
 
-#n        connection = segmentdb_utils.setup_database(database_location)
-#n        engine     = query_engine.LdbdQueryEngine(connection)
-    else:
-        temp_db, connection = setup_files(file_location, gps_start_time, gps_end_time)
-        engine     = query_engine.SqliteQueryEngine(connection)
-        temp_files = True
-
-    
-    if options.show_types:
-        run_show_types(doc, protocol, server, gps_start_time, gps_end_time,
-                       options.include_segments,options.exclude_segments)
-        #run_show_types(doc, connection, engine, gps_start_time, gps_end_time,
-        #               options.include_segments,options.exclude_segments)
+        if options.query_segments:
+            run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments, options.exclude_segments, options.result_name)
         
+        if options.query_types:
+            warnings.warn("Notice: This call has not been optimized for DQSEGDB yet, and may take a few minutes.")
+            run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments)
+    
+    else:
+        # Run old client
+        warnings.warn('Warning: using old client code that may be less carefully maintained than DQSEGDB clients.')
+        if database_location and options.use_s6:
+            connection = segmentdb_utils.setup_database(database_location)
+            engine     = query_engine.LdbdQueryEngine(connection)
+        else:
+            temp_db, connection = setup_files(file_location, gps_start_time, gps_end_time) 
+            engine     = query_engine.SqliteQueryEngine(connection)
+            temp_files = True
+        if options.show_types:
+            clientutils.run_show_types(doc, connection, engine, gps_start_time, gps_end_time, options.include_segments,options.exclude_segments)
+    
+        if options.query_segments:
+            clientutils.run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time, options.include_segments, options.exclude_segments, options.result_name)
+    
+        if options.query_types:
+            clientutils.run_query_types(doc, process_id, connection, engine, gps_start_time, gps_end_time, options.include_segments)
 
-    if options.query_segments:
-        run_query_segments(doc, process_id, protocol, server, gps_start_time, 
-                gps_end_time, options.include_segments, 
-                options.exclude_segments, options.result_name)
-        #n run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time,
-        #n                    options.include_segments, options.exclude_segments,
-        #n                    options.result_name)
-
-
-    if options.query_types:
-        run_query_types(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments)
-        #n run_query_types(doc, process_id, connection, engine, gps_start_time, gps_end_time, options.include_segments)
-
-
+    # Write results
     gz = (options.output_file is not None and
           options.output_file.endswith(".gz"))
     utils.write_filename(doc, options.output_file, gz=gz)

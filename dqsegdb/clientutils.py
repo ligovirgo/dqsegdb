@@ -1,3 +1,22 @@
+import sys
+import os
+import operator
+import tempfile
+
+import glue.segments
+
+from glue.ligolw import ligolw
+from glue.ligolw import table
+from glue.ligolw import lsctables
+from glue.ligolw import utils
+
+from glue.ligolw.utils import ligolw_add
+from glue.ligolw.utils import process
+from glue.segmentdb import query_engine
+from glue.segmentdb import segmentdb_utils
+
+from glue.ligolw.utils import ligolw_sqlite
+from glue.ligolw import dbtables
 from glue import segments
 import json
 from dqsegdb import jsonhelper
@@ -152,7 +171,272 @@ def calculate_versionless_result(jsonResults,startTime,endTime,ifo_input=None):
     result_flag=jsonhelper.buildFlagDict(ifo,name,version,total_known_list,total_active_list)
     return result_flag,affected_results
 
+################################
+#
+#  S6 Client Utilities
+# 
+################################
+
+def seg_spec_to_sql(spec):
+    """Given a string of the form ifo:name:version, ifo:name:* or ifo:name
+    constructs a SQL caluse to restrict a search to that segment definer"""
+
+    parts = spec.split(':')
+    sql   = "(segment_definer.ifos = '%s'" % parts[0]
+
+    if len(parts) > 1 and parts[1] != '*':
+        sql += " AND segment_definer.name = '%s'" % parts[1]
+        if len(parts) > 2 and parts[2] != '*':
+            sql += " AND segment_definer.version = %s" % parts[2]
+
+    sql += ')'
+
+    return sql
 
 
 
+#
+# The results of show-types is a join against segment_definer and segment
+# summary, and so does not fit into an existing table type.  So here we
+# define a new type so that the ligolw routines can generate the XML
+#
+class ShowTypesResultTable(table.Table):
+    tableName = "show_types_result:table"
 
+    validcolumns = {
+        "ifos": "lstring",
+        "name": "lstring",
+        "version": "int_4s",
+        "segment_definer_comment": "lstring",
+        "segment_summary_start_time": "int_4s",
+        "segment_summary_end_time": "int_4s",
+        "segment_summary_comment": "lstring"
+        }
+    
+
+
+class ShowTypesResult(object):
+    __slots__ = ShowTypesResultTable.validcolumns.keys()
+
+    def get_pyvalue(self):
+        if self.value is None:
+            return None
+        return ligolwtypes.ToPyType[self.type or "lstring"](self.value)
+
+
+ShowTypesResultTable.RowType = ShowTypesResult
+
+
+
+#
+# =============================================================================
+#
+#                          Methods that implement major modes
+#
+# =============================================================================
+#
+def run_show_types(doc, connection, engine, gps_start_time, gps_end_time, included_segments_string, excluded_segments_string):
+    resulttable = lsctables.New(ShowTypesResultTable)
+    doc.childNodes[0].appendChild(resulttable)
+    
+    sql = """SELECT segment_definer.ifos, segment_definer.name, segment_definer.version,
+                 (CASE WHEN segment_definer.comment IS NULL THEN '-' WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),
+                 segment_summary.start_time, segment_summary.end_time,
+                 (CASE WHEN segment_summary.comment IS NULL THEN '-' WHEN segment_summary.comment IS NOT NULL THEN segment_summary.comment END)
+          FROM  segment_definer, segment_summary
+          WHERE segment_definer.segment_def_id = segment_summary.segment_def_id
+          AND   NOT (segment_summary.start_time > %d OR %d > segment_summary.end_time)
+          """ % (gps_end_time, gps_start_time)
+
+    rows = engine.query(sql)
+
+    seg_dict = {}
+
+    for row in rows:
+        ifos, name, version, segment_definer_comment, segment_summary_start_time, segment_summary_end_time, segment_summary_comment = row
+        key = (ifos, name, version, segment_definer_comment, segment_summary_comment)
+        if key not in seg_dict:
+            seg_dict[key] = []
+
+        seg_dict[key].append(glue.segments.segment(segment_summary_start_time, segment_summary_end_time))
+
+    for key, value in seg_dict.iteritems():
+        segmentlist = glue.segments.segmentlist(value)
+        segmentlist.coalesce()
+
+        for segment in segmentlist:
+            result = ShowTypesResult()
+            result.ifos, result.name, result.version, result.segment_definer_comment, result.segment_summary_comment = key
+            result.segment_summary_start_time, result.segment_summary_end_time = segment
+            result.ifos = result.ifos.strip()
+        
+            resulttable.append(result)
+
+    engine.close()
+
+
+def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_time, included_segments):
+    query_segment = glue.segments.segmentlist([glue.segments.segment(gps_start_time, gps_end_time)])
+
+    sql = """SELECT segment_definer.ifos, segment_definer.name,segment_definer.version,
+           (CASE WHEN segment_definer.comment IS NULL THEN '-' WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),
+           segment_summary.start_time, segment_summary.end_time,
+           (CASE WHEN segment_summary.comment IS NULL THEN '-' WHEN segment_summary.comment IS NOT NULL THEN segment_summary.comment END)
+    FROM segment_definer, segment_summary
+    WHERE segment_definer.segment_def_id = segment_summary.segment_def_id
+    AND NOT(%d > segment_summary.end_time OR segment_summary.start_time > %d)
+    """ % (gps_start_time, gps_end_time)
+
+    type_clauses = map(seg_spec_to_sql, included_segments.split(','))
+
+    if type_clauses != []:
+        sql += " AND (" + "OR ".join(type_clauses) + ")"
+
+
+    segment_types = {}
+
+    for row in engine.query(sql):
+        sd_ifo, sd_name, sd_vers, sd_comment, ss_start, ss_end, ss_comment = row
+        key = (sd_ifo, sd_name, sd_vers, sd_comment, ss_comment)
+        if key not in segment_types:
+            segment_types[key] = glue.segments.segmentlist([])
+        segment_types[key] |= glue.segments.segmentlist([glue.segments.segment(ss_start, ss_end)])
+
+    engine.close()
+
+    # Create segment definer and segment_summary tables
+    seg_def_table = lsctables.New(lsctables.SegmentDefTable, columns = ["process_id", "segment_def_id", "ifos", "name", "version", "comment"])
+    doc.childNodes[0].appendChild(seg_def_table)
+
+    seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = ["process_id", "segment_sum_id", "start_time", "start_time_ns", "end_time", "end_time_ns", "comment", "segment_def_id"])
+
+    doc.childNodes[0].appendChild(seg_sum_table)
+
+    for key in segment_types:
+        # Make sure the intervals fall within the query window and coalesce
+        segment_types[key].coalesce()
+        segment_types[key] &= query_segment
+
+        seg_def_id                     = seg_def_table.get_next_id()
+        segment_definer                = lsctables.SegmentDef()
+        segment_definer.process_id     = proc_id
+        segment_definer.segment_def_id = seg_def_id
+        segment_definer.ifos           = key[0]
+        segment_definer.name           = key[1]
+        segment_definer.version        = key[2]
+        segment_definer.comment        = key[3]
+
+        seg_def_table.append(segment_definer)
+
+        # add each segment summary to the segment_summary_table
+
+        for seg in segment_types[key]:
+            segment_sum            = lsctables.SegmentSum()
+            segment_sum.comment    = key[4]
+            segment_sum.process_id = proc_id
+            segment_sum.segment_def_id = seg_def_id
+            segment_sum.segment_sum_id = seg_sum_table.get_next_id()
+            segment_sum.start_time = seg[0]
+            segment_sum.start_time_ns = 0
+            segment_sum.end_time   = seg[1]
+            segment_sum.end_time_ns = 0
+
+            seg_sum_table.append(segment_sum)
+
+def run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time, include_segments, exclude_segments, result_name):
+    segdefs = []
+
+    for included in include_segments.split(','):
+        spec = included.split(':')
+
+        if len(spec) < 2 or len(spec) > 3:
+            print >>sys.stderr, "Included segements must be of the form ifo:name:version or ifo:name:*"
+            sys.exit(1)
+
+        ifo     = spec[0]
+        name    = spec[1]
+        if len(spec) is 3 and spec[2] is not '*':
+            version = int(spec[2])
+            if version < 1:
+                print >>sys.stderr, "Segment version numbers must be greater than zero"
+                sys.exit(1)
+        else:
+            version = '*'
+
+        segdefs += segmentdb_utils.expand_version_number(engine, (ifo, name, version, gps_start_time, gps_end_time, 0, 0) )
+
+    found_segments = segmentdb_utils.query_segments(engine, 'segment', segdefs)
+    found_segments = reduce(operator.or_, found_segments).coalesce()
+
+    # We could also do:
+    segment_summaries = segmentdb_utils.query_segments(engine, 'segment_summary', segdefs)
+
+    # And we could write out everything we found
+    segmentdb_utils.add_segment_info(doc, process_id, segdefs, None, segment_summaries)
+
+
+    # Do the same for excluded
+    if exclude_segments:
+        ex_segdefs = []
+
+        for excluded in exclude_segments.split(','):
+            spec = excluded.split(':')
+
+            if len(spec) < 2:
+                print >>sys.stderr, "Excluded segements must be of the form ifo:name:version or ifo:name:*"
+                sys.exit(1)
+
+            ifo     = spec[0]
+            name    = spec[1]
+            version = len(spec) > 2 and spec[2] or '*'
+
+            ex_segdefs += segmentdb_utils.expand_version_number(engine, (ifo, name, version, gps_start_time, gps_end_time, 0, 0) )
+
+
+        excluded_segments = segmentdb_utils.query_segments(engine, 'segment', ex_segdefs)
+        excluded_segments = reduce(operator.or_, excluded_segments).coalesce()
+
+        found_segments.coalesce()
+        found_segments -= excluded_segments
+
+
+
+    # Add the result type to the segment definer table
+    seg_name   = result_name
+    seg_def_id = segmentdb_utils.add_to_segment_definer(doc, process_id, ifo, seg_name, 1)
+
+    # and segment summary
+    segmentdb_utils.add_to_segment_summary(doc, process_id, seg_def_id, [[gps_start_time, gps_end_time]])
+
+    # and store the segments
+    segmentdb_utils.add_to_segment(doc, process_id, seg_def_id, found_segments)
+    print "Made it to the end of the query code"
+    print doc
+           
+
+
+#
+# =============================================================================
+#
+#                                 XML/File routines
+#
+# =============================================================================
+#
+
+
+def setup_files(dir_name, gps_start_time, gps_end_time):
+    # Filter out the ones that are outside our time range
+    xml_files = segmentdb_utils.get_all_files_in_range(dir_name, gps_start_time, gps_end_time)
+
+    handle, temp_db  = tempfile.mkstemp(suffix='.sqlite')
+    os.close(handle)
+
+    target     = dbtables.get_connection_filename(temp_db, None, True, False)
+    connection = ligolw_sqlite.setup(target)
+
+    ligolw_sqlite.insert_from_urls(connection, xml_files) # [temp_xml])
+
+    segmentdb_utils.ensure_segment_table(connection)
+        
+    return temp_db, connection
+    
