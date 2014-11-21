@@ -423,6 +423,8 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
     seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = ["process_id", "segment_sum_id", "start_time", "start_time_ns", "end_time", "end_time_ns", "comment", "segment_def_id"])
 
     doc.childNodes[0].appendChild(seg_sum_table)
+    if debug:
+        print segment_types
 
     for key in segment_types:
         # Make sure the intervals fall within the query window and coalesce
