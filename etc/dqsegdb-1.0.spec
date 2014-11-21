@@ -9,7 +9,7 @@ Name: %{name}
 Version: %{version}
 Release: %{release}
 Source0: %{name}-%{unmangled_version}.tar.gz
-License: UNKNOWN
+License: None
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
@@ -18,7 +18,8 @@ BuildArch: noarch
 Vendor: Ryan Fisher <ryan.fisher@ligo.org>
 
 %description
-UNKNOWN
+This package provides the client tools to connect to LIGO/VIRGO
+DQSEGDB server instances.
 
 %prep
 %setup -n %{name}-%{unmangled_version} -n %{name}-%{unmangled_version}
