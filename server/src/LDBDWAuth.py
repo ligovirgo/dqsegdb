@@ -113,7 +113,7 @@ class GridmapAuthorization:
                 except:
                     #print "SSL_CLIENT_VERIFY not found"
                     # Set HTTP code and log.
-                    r = admin.log_and_set_http_code(401, c, req_method, 'SSL_CLIENT_VERIFY key unavailable. Check you are using HTTPS', full_uri)
+                    r = admin.log_and_set_http_code(505, c, req_method, 'SSL_CLIENT_VERIFY key unavailable. Check you are using HTTPS', full_uri)
                 else:
                     # If SSL_CLIENT_CERT found.
                     try:

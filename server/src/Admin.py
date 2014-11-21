@@ -328,7 +328,9 @@ class AdminHandle:
                                     401: 'Unauthorized',
                                     404: 'Not Found',
                                     409: 'Conflict',
-                                    414: 'Request-URI Too Long'
+                                    414: 'Request-URI Too Long',
+                                    500: 'Internal Server Error',
+                                    505: 'HTTP Version Not Supported'
                                 }
         # Return.
         return http_state_dictionary
