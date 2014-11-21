@@ -1,0 +1,17 @@
+dqsegdb (1.0-1) unstable; urgency=low
+
+  * ER6 pre-release of DQSEGDB client code, first formal release.
+
+ -- Ryan Fisher <ryan.fisher@ligo.org>  Fri, 21 Nov 2014 15:08:30 +0200
+
+dqsegdb (0.9-1+deb7u0) unstable; urgency=low
+
+  * build for Wheezy
+
+ -- Steffen Grunewald <steffen.grunewald@ligo.org>  Thu, 21 Aug 2014 16:48:30 +0200
+
+dqsegdb (0.9-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Steffen Grunewald <steffen.grunewald@ligo.org>  Thu, 21 Aug 2014 14:40:00 +0200
