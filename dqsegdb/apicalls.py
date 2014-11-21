@@ -182,7 +182,7 @@ def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_t
     queryurl=protocol+"://"+server+"/report/known"+includeText+timeText
     if verbose:
         print queryurl
-    result=urifunctions.getDataUrllib2(queryurl)
+    result=urifunctions.getDataUrllib2(queryurl,timeout=1200)
     return result,queryurl
 
 def parseKnown(jsonResult):
