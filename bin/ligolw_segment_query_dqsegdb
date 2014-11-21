@@ -76,8 +76,8 @@ from glue.ligolw import dbtables
 
 from glue import git_version
 
-#debug=False
-debug=True
+debug=False
+#debug=True
 
 PROGRAM_NAME = sys.argv[0].replace('./','')
 PROGRAM_PID  = os.getpid()
