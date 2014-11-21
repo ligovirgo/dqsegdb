@@ -76,8 +76,8 @@ from glue.ligolw import dbtables
 
 from glue import git_version
 
-debug=False
-#debug=True
+#debug=False
+debug=True
 
 PROGRAM_NAME = sys.argv[0].replace('./','')
 PROGRAM_PID  = os.getpid()
@@ -116,7 +116,7 @@ def parse_command_line():
     # Major modes
     parser.add_option("-p", "--ping",           action = "store_true", help = "Ping the target server")
     parser.add_option("-y", "--show-types",     action = "store_true", help = "Returns a xml table containing segment type information: ifos, name, version, segment_definer.comment, segment_summary.start_time, segment_summary.end_time, segment_summary.comment")
-    parser.add_option("-u", "--query-types",    action = "store_true", help = "Returns a ligolw document whose segment_definer table includes all segment types defined in the given period and included by include-segments and whose segment_summary table indicates the times for which those segments are defined.")
+    parser.add_option("-u", "--query-types",    action = "store_true", help = "Returns a ligolw document whose segment_definer table includes all segment types defined in the given period and included by include-segments and whose segment_summary table indicates the times for which those segments are defined. Warning: Currently only support unversioned include-segments strings!")
     parser.add_option("-q", "--query-segments", action = "store_true", help = "Returns a ligolw document whose segment table contains the times included by the include-segments flag and excluded by exclude-segments")
 
     # Time options
@@ -305,7 +305,8 @@ def run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time, 
     seg_dict = {}
 
     includeSegments=True
-    result,queryurl=apicalls.reportKnown(protocol,server,includeSegments,True,gps_start_time,gps_end_time)
+    # Note: 4th argument is verbosity of call, prints url, etc.
+    result,queryurl=apicalls.reportKnown(protocol,server,includeSegments,False,gps_start_time,gps_end_time)
     ## Fix (future change)!!! decide if we should still cut on included or excluded segments:  current decision is to not cut
     rows=apicalls.parseKnown(result)
 
@@ -339,6 +340,7 @@ def run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time, 
 
 def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments):
 #def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_time, included_segments):
+    warnings.warn("Warning: Currently only support unversioned include-segments strings!  Versioned queries will return incorrect results.")
     query_segment = glue.segments.segmentlist([glue.segments.segment(gps_start_time, gps_end_time)])
 
     #sql = """SELECT segment_definer.ifos, segment_definer.name,segment_definer.version,
@@ -393,7 +395,8 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
     ### Fix!!! Make a call to /report/known?s=t1&e=t2
     ### then parse the JSON result exactly as is done below
     includeSegments=True
-    result,queryurl=apicalls.reportKnown(protocol,server,includeSegments,True,gps_start_time,gps_end_time)
+    # Note: 4th argument is verbosity of call, prints url, etc.
+    result,queryurl=apicalls.reportKnown(protocol,server,includeSegments,False,gps_start_time,gps_end_time)
     ## Fix (future change)!!! decide if we should still cut on included or excluded segments:  current decision is to not cut
     rows=apicalls.parseKnown(result)
 
