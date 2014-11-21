@@ -1,3 +1,7 @@
 include MANIFEST.in
 include etc/*
 include vcs.py
+prune dqsegdb.egg-info
+exclude etc/.gitignore
+exclude etc/dqsegdb-0.91.spec
+exclude etc/dqsegdb_template.spec

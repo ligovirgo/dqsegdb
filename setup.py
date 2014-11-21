@@ -151,6 +151,8 @@ if release:
     VERSION=rel_version
 
 
+# old: packages=packagenames,
+
 setup(name=PACKAGENAME,
       cmdclass={
           'install': DQSegDBInstall,
@@ -159,7 +161,7 @@ setup(name=PACKAGENAME,
           },
       version=VERSION,
       description=DESCRIPTION,
-      packages=packagenames,
+      packages=['dqsegdb'],
       ext_modules=[],
       scripts=scripts,
       data_files=[('etc', [DQSegDBInstall.shenv, DQSegDBInstall.cshenv])],
