@@ -44,6 +44,7 @@ from optparse import OptionParser
 
 
 import sys
+import warnings
 import os
 import operator
 import pwd
@@ -141,7 +142,7 @@ def parse_command_line():
     parser.add_option("-o", "--output-file",   metavar = "output_file", help = "File to which output should be written.  Defaults to stdout.")
     #parser.add_option("-v", "--debug", metavar="debug", help= "Turn on debugging.")
 
-    parser.add_option("-l", "--use-s6", metavar="use_s6", action = "store_true", help="Use old s6 style client code.  This is needed to connect to S6 style segdb servers using DB2.")
+    parser.add_option("-l", "--use-s6", metavar="use_s6", action = "store_true", help="Use old s6 style client code.  This is needed to connect to S6 style segdb servers using DB2.  Note that this code is duplicated from the old client, and may become deprecated over time.")
 
     
     options, others = parser.parse_args()
@@ -371,8 +372,7 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
                 print "Bad version specification, please provide a valid integer."
                 raise
             if version < 1:
-                ### Fix!!!  These print statements need to be turned into proper errors!
-                print "Segment version numbers must be greater than zero"
+                raise ValueError("Segment version numbers must be greater than zero")
                 sys.exit(1)
             # Ok, we got a properly versioned query item, add it to the list:
             segments_to_query.append(spec)
@@ -702,7 +702,6 @@ if __name__ == '__main__':
     options, database_location, file_location  = parse_command_line()    
 
     # Ping the database and exit if requested
-    # Fix!!! Make a ping do something
     if options.ping:
         if options.use_s6:
             connection = segmentdb_utils.setup_database(database_location)
@@ -745,10 +744,12 @@ if __name__ == '__main__':
             run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments, options.exclude_segments, options.result_name)
         
         if options.query_types:
+            warnings.warn("Notice: This call has not been optimized for DQSEGDB yet, and may take a few minutes.")
             run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments)
     
     else:
         # Run old client
+        warnings.warn('Warning: using old client code that may be less carefully maintained than DQSEGDB clients.')
         if database_location and options.use_s6:
             connection = segmentdb_utils.setup_database(database_location)
             engine     = query_engine.LdbdQueryEngine(connection)
