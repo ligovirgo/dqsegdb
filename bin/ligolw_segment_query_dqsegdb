@@ -658,8 +658,8 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
 #
 
 # ER6 Kipp API CHANGES:
-+class ContentHandler(ligolw.LIGOLWContentHandler):
-+    connection = None
+class ContentHandler(ligolw.LIGOLWContentHandler):
+    connection = None
 # 
 # def setup_files(dir_name, gps_start_time, gps_end_time):
 #     # Filter out the ones that are outside our time range
