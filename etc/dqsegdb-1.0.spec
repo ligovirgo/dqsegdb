@@ -1,7 +1,7 @@
 %define name dqsegdb
-%define version 1.0
-%define unmangled_version 1.0
-%define unmangled_version 1.0
+%define version 1.0.1
+%define unmangled_version 1.0.1
+%define unmangled_version 1.0.1
 %define release 1
 
 Summary: Client library for DQSegDB
@@ -13,7 +13,7 @@ License: None
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
-Requires: python glue
+Requires: python, glue >= 1.47
 BuildArch: noarch
 Vendor: Ryan Fisher <ryan.fisher@ligo.org>
 
