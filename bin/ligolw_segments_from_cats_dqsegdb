@@ -298,8 +298,8 @@ if __name__ == '__main__':
     ContentHandler.connection = veto_connection
     dbtables.use_in(ContentHandler)
     # ER6 Glue fix for Kipp API Changes!!
-    #ligolw_sqlite.insert_from_urls(xml_files, ContentHandler)
-    ligolw_sqlite.insert_from_urls(veto_connection, xml_files, contenthandler=ContentHandler)
+    ligolw_sqlite.insert_from_urls(xml_files, ContentHandler)
+    #ligolw_sqlite.insert_from_urls(veto_connection, xml_files, contenthandler=ContentHandler)
 
     # If we're working with DMT files make sure we have a segment table
     if file_location:
