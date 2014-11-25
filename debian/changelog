@@ -1,14 +1,21 @@
+dqsegdb (1.0.2-1) unstable; urgency=low
+
+  * ER6 pre-release of DQSEGDB client code, third formal release with
+    compatibility fix to new Glue API for ligolw_segments_from_cats_dqsegdb.
+
+ -- Ryan Fisher <ryan.fisher@ligo.org>  Tue, 25 Nov 2014 12:13:30 +0500
+
 dqsegdb (1.0.1-1) unstable; urgency=low
 
   * ER6 pre-release of DQSEGDB client code, second formal release with bug fix.
 
- -- Ryan Fisher <ryan.fisher@ligo.org>  Sat, 22 Nov 2014 22:41:30 +0200
+ -- Ryan Fisher <ryan.fisher@ligo.org>  Sat, 22 Nov 2014 22:41:30 +0500
 
 dqsegdb (1.0-1) unstable; urgency=low
 
   * ER6 pre-release of DQSEGDB client code, first formal release.
 
- -- Ryan Fisher <ryan.fisher@ligo.org>  Fri, 21 Nov 2014 15:08:30 +0200
+ -- Ryan Fisher <ryan.fisher@ligo.org>  Fri, 21 Nov 2014 15:08:30 +0500
 
 dqsegdb (0.9-1+deb7u0) unstable; urgency=low
 
