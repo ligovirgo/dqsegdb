@@ -23,7 +23,7 @@ service mysqld start
 chkconfig mysqld on
 
 # Install PHP (for web interface).
-install php php-mysql
+yum -y install php php-mysql
 
 # Install pyodbc library for Python. N.B. This also installs unixODBC as a
 # dependency.
