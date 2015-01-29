@@ -99,8 +99,13 @@ def dqsegdbFindEndTime(flag_dict):
 
     Returns max_end_time: `int`
     """
-    maxEndTime=max([i[1] for i in flag_dict['known']])
-    return maxEndTime
+    if len(flag_dict['known']!=0:
+        maxEndTime=max([i[1] for i in flag_dict['known']])
+        return maxEndTime
+    else:
+        import warnings
+        warnings.warn("Function used to find max known_time from a flag was handed a flag with an empty set of known times.  Returning None")
+        return None
 
 def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
     """ 
