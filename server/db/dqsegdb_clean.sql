@@ -1,5 +1,23 @@
+-- phpMyAdmin SQL Dump
+-- version 4.0.10.5
+-- http://www.phpmyadmin.net
 --
--- Table structure for table `tbl_dq_flags`
+-- Host: localhost
+-- Generation Time: Nov 13, 2014 at 03:36 AM
+-- Server version: 5.1.73
+-- PHP Version: 5.3.3
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+--
+-- Database: `dqsegdb_v1r22`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_dq_flags`.
 --
 
 CREATE TABLE IF NOT EXISTS `tbl_dq_flags` (
@@ -27,9 +45,12 @@ CREATE TABLE IF NOT EXISTS `tbl_dq_flag_versions` (
   `dq_flag_version_id` int(11) NOT NULL AUTO_INCREMENT,
   `dq_flag_fk` int(11) NOT NULL DEFAULT '0',
   `dq_flag_version` int(11) NOT NULL DEFAULT '0',
-  `dq_flag_version_segment_total` int(11) NOT NULL DEFAULT '0',
-  `dq_flag_version_earliest_segment_time` double NOT NULL DEFAULT '0',
-  `dq_flag_version_latest_segment_time` double NOT NULL DEFAULT '0',
+  `dq_flag_version_known_segment_total` int(11) NOT NULL DEFAULT '0',
+  `dq_flag_version_known_earliest_segment_time` double NOT NULL DEFAULT '0',
+  `dq_flag_version_known_latest_segment_time` double NOT NULL DEFAULT '0',
+  `dq_flag_version_active_segment_total` int(11) NOT NULL DEFAULT '0',
+  `dq_flag_version_active_earliest_segment_time` double NOT NULL DEFAULT '0',
+  `dq_flag_version_active_latest_segment_time` double NOT NULL DEFAULT '0',
   `dq_flag_version_deactivated` int(1) NOT NULL DEFAULT '0' COMMENT 'Is\r\nthis version unavailable?',
   `dq_flag_version_description` text NOT NULL,
   `dq_flag_version_uri` text NOT NULL,
@@ -55,7 +76,7 @@ CREATE TABLE IF NOT EXISTS `tbl_processes` (
   `process_full_name` text NOT NULL,
   `pid` int(11) NOT NULL DEFAULT '0',
   `fqdn` text NOT NULL,
-  `data_format_fk` int(11) NOT NULL DEFAULT '0',
+  `data_format_fk` int(11) NOT NULL DEFAULT '5',
   `user_fk` int(11) NOT NULL DEFAULT '0',
   `insertion_time` double NOT NULL,
   `affected_data_segment_total` double NOT NULL,
@@ -155,6 +176,7 @@ INSERT INTO `tbl_value_groups` (`value_group_id`, `value_group`) VALUES
 (1, 'IFO'),
 (2, 'User'),
 (3, 'Data format');
+
 
 --
 -- Constraints for dumped tables
