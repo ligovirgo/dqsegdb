@@ -12,9 +12,9 @@ class Constants {
 	public $db_user;
 	public $db_pass;
 
-	public $log_file;
-	
 	public $source_dir;
+	
+	public $package_version;
 	
 	// DB & server connection constants.
 	public function db_connection_constants() {
@@ -27,6 +27,11 @@ class Constants {
 	// Source file constants.
 	public function source_constants() {
 		$this->source_dir = "/root/imports/geosegdb/Feb112015/";
+	}
+
+	// Package version constants.
+	public function package_version_constants() {
+		$this->package_version = "v1r2";
 	}
 }
 

@@ -1670,6 +1670,10 @@ class DAO {
 			// Set.
 			$v_id = $loop['dq_flag_version_fk'];
 			$PROCESS_ID = $loop['PROCESS_ID'];
+			$pfn = $p_a[$PROCESS_ID]['process_full_name'];
+			if(empty($pfn)) {
+				$pfn = '-';
+			}
 			// Insert version with process info to database.
 			if(($stmt = $this->pdo->prepare("INSERT INTO tbl_processes_tmp
 									  		 (dq_flag_version_fk, process_full_name, pid, fqdn, data_format_fk, user_fk, insertion_time, process_time_started, process_time_last_used, PROCESS_ID_OLD)
@@ -1677,8 +1681,7 @@ class DAO {
 							  				 (:v,:n,:p,:f,5,:u,:i,:sta,:sto,:po)"))) {
 				// Execute.
 				if($stmt->execute(array(':v' => $v_id,
-										':n' => $p_a[$PROCESS_ID]['process_full_name'],
-										':p' => $p_a[$PROCESS_ID]['pid'],
+										':n' => $pfn,
 										':f' => $p_a[$PROCESS_ID]['fqdn'],
 										':u' => $p_a[$PROCESS_ID]['user_fk'],
 										':i' => $p_a[$PROCESS_ID]['insertion_time'],
