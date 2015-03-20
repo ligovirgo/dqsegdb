@@ -15,7 +15,7 @@ class ConstantsHandle():
     # Server version constants #
     ###########################
     
-    py_server_version = 'v1r25'
+    py_server_version = 'v1r26'
 
     ##############################
     # ODBC connection constants #
@@ -49,7 +49,7 @@ class ConstantsHandle():
     # HTTP(S) & GRID constants #
     ###########################
     
-    use_https = True # False = Use HTTP; True = Use HTTPS.
+    use_https = False # False = Use HTTP; True = Use HTTPS.
     grid_map_get_file = '/etc/grid-security/grid-mapfile'  # Grid Map file used in authentication.
     grid_map_put_patch_file = '/etc/grid-security/grid-mapfile-insert'  # Grid Map file used in authorisation.
 

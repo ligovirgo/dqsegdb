@@ -4,10 +4,7 @@ User handling class file
 '''
 
 # Import.
-import Admin
-import Constants
 import DAO
-import pprint
 
 class UserHandle:
 

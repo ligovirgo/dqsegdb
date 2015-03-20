@@ -188,7 +188,6 @@ class GridmapAuthorization:
                                 g = GridMap(mapfile)
                                 # If subject found.
                                 if g.has_key(subject):
-                                    r = admin.log_and_set_http_code(200,37,req_method, "Subject authorized against Grid mapfile: %s" % (subject),full_uri)
                                     r = [200]
                                 # Otherwise, if subject not found.
                                 else:
@@ -197,7 +196,6 @@ class GridmapAuthorization:
                             # If unable to parse Grid mapfile
                             except Exception, e:
                                 # Set HTTP code and log.
-                                c=35 # logging state code for authorization
                                 r = admin.log_and_set_http_code(401, c, req_method, "Unable to check authorization in grid-mapfile %s: %s" % (mapfile, e), full_uri)
         # Return.
         return r

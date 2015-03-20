@@ -5,23 +5,15 @@ Administrative task handling class file
 
 # Import.
 import Constants
-import DAO
 import gpstime
 import logging
-import Logging_Config
-import os
-import re
 import socket
 import time
-
-# Instantiate logger.
-log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 class AdminHandle:
     
     # Get flag metadata.
-    def get_flag_metadata(self, ifo, flag, version, comment, uri, deactivated, badness):
+    def get_flag_metadata(self, ifo, flag, version, description, comment, uri, deactivated, badness):
         # Init.
         a = []
         # If Ifo, flag and version passed.
@@ -31,8 +23,9 @@ class AdminHandle:
             a = {"ifo" : ifo,
                 "name" : flag,
                  "version" : int(version),
-                 "metadata" : {"comment" : comment,
-                               "provenance_url" : uri,
+                 "metadata" : {"flag_description" : description,
+                               "flag_version_comment" : comment,
+                               "further_info_url" : uri,
                                "deactivated" : bool(deactivated),
                                "active_indicates_ifo_badness" : bool(badness)}}
         # Return.
@@ -220,9 +213,9 @@ class AdminHandle:
             # Add required metadata dictionary.
             d.update({
                       "metadata" : {
-                                    "flag_comment" : '',
-                                    "version_comment" : '',
-                                    "provenance_url" : '',
+                                    "flag_description" : '',
+                                    "flag_version_comment" : '',
+                                    "further_info_url" : '',
                                     "deactivated" : False,
                                     "active_indicates_ifo_badness" : False
                                     }
@@ -254,19 +247,19 @@ class AdminHandle:
             log_message = req_method + ' ' + uri + ' - ' + str(d[state][1]) + add_info
             # If reply exists, but this is just logging.
             if log_group == 0:
-                log.info(log_message)
+                logging.info(log_message)
             # Otherwise, if reply exists, but debug.
             elif log_group == 1:
-                log.debug(log_message)
+                logging.debug(log_message)
             # Otherwise, if reply exists, but warning.
             elif log_group == 2:
-                log.warning(log_message)
+                logging.warning(log_message)
             # Otherwise, if reply exists, but error.
             elif log_group == 3:
-                log.error(log_message)
+                logging.error(log_message)
             # Otherwise, if reply exists, but critical.
             elif log_group == 4:
-                log.critical(log_message)
+                logging.critical(log_message)
             # Set list.
             r = [str(code) + ' ' + h[code], log_message]
             
