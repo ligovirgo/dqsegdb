@@ -30,3 +30,9 @@ img.green_arrow
 	top: 4px;
 	margin: 0 6px 0 0;
 }
+
+/* === Tutorial image === */
+img.img_tutorial {
+	position: relative;
+	border: 1px solid #CCC;
+}

@@ -505,3 +505,20 @@ span.span_version_no:hover, span.span_version_no_deselected:hover {
 span.span_version_no_deselected {
 	top: -1px;
 }
+span.span_change_host {
+	color: #5FAFD9;
+}
+span.span_change_host:hover {
+	color: #92C7E8;
+	cursor: pointer;
+}
+/* === SEGMENT RETRIEVAL === */
+#div_retrieval_msg {
+	position: absolute;
+	display: block;
+	visibility: hidden;
+}
+#input_retrieve_segments_hdr {
+	height: 18px;
+	visibility: hidden;
+}

@@ -148,22 +148,24 @@ textarea
 {
 	border: 1px solid #E2E2E2;
 }
-textarea.ckeditorTA
-{
+textarea.ckeditorTA {
  	position: relative;
 	width: 100%;
 	height: 300px;
 }
-textarea.ta_long
-{
+textarea.ta_long {
  	position: relative;
 	width: 100%;
 	height: 80px;
 }
+textarea#ta_dq_flag {
+ 	position: relative;
+	width: 100%;
+	height: 140px;
+}
 
 /* === Tables === */
-table.tblTasks
-{
+table.tblTasks {
 	position: relative;
 	width: 100%;
 	border-left: solid #CCC 1px;
@@ -251,4 +253,76 @@ line
 }
 .uri_like {
 	color: #CEF6F5;
+}
+
+/******************
+** Button styles **
+****************/
+.buttonContainerRight, .buttonContainerLeft, .buttonContainerLeftFaded,
+.buttonContainerRightHidden, .buttonContainerLeftHidden
+{
+	position: relative;
+	float: right;
+	cursor: pointer;
+	font-size: 11px;
+	visibility: visible;
+}
+.buttonContainerLeft, .buttonContainerLeftFaded
+{
+	float: left;
+}
+.buttonContainerLeftFaded
+{
+	cursor: default;
+	filter: alpha(opacity:=20);
+	opacity: 0.2;
+}
+.buttonLeft
+{
+	float: left;
+	height: 19px;
+	margin: 0 0 0 2px;
+	border: solid #C2C2C2;
+	border-width: 1px 0 1px 1px;
+}
+.buttonRight, .buttonRightWhite
+{
+	float: left;
+	height: 17px;
+	text-align: center;
+	color: #000;
+	padding: 2px 10px 0 10px;
+	border: solid #C2C2C2;
+	border-width: 1px 1px 1px 0;
+	background: url(../images/button_bg.png) repeat-x top left;
+}
+.buttonRightWhite
+{
+	color: #FFF;
+}
+
+/*******************
+** Query results **
+*****************/
+#tbl_query_results {
+	position: relative;
+	width: 100%;
+}
+.query_results, .query_results_hl, .query_results_hdr {
+	padding: 3px;
+	margin: 1px;
+	text-align: center;
+	background: rgb(223, 233, 248);
+}
+.query_results_hl {
+	background: #FFF;
+}
+.query_results_hdr {
+	background: rgb(181, 210, 246);
+}
+.span_frm_info {
+	font-size: 10px;
+	font-weight: normal;
+	color: #406793;
+	text-align: left;
 }

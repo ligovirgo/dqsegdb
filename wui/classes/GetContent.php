@@ -11,11 +11,9 @@ class GetContent
 	public $contents;
 	
 	private $page;
-	private $log_file_info;
 
 	// Get content.
-	public function buildContent($tabs)
-	{
+	public function buildContent($tabs) {
 		// Initiate.
 		$dao = new DAO();
 		$structure = new GetStructure();
@@ -24,17 +22,16 @@ class GetContent
 		$variable->getContentCallID();
 		$c = $variable->c;
 		$this->contents = NULL;
+		// Init sessions.
+		$variable->initialise_sessions();
  	 	// Check that content actually exists in the database.
- 	 	if($dao->checkContentExists($c))
-		{
+ 	 	if($dao->checkContentExists($c)) {
 			// Get contents.
-			if($c == 1)
-			{
+			if($c == 1) {
 				// Get homepage.
 				$this->getHomepage($tabs);
 			}
-			else
-			{
+			else {
 				// Get sub-page.
 				$this->getSubpage($c,$tabs);
 			}
@@ -44,8 +41,7 @@ class GetContent
 	}
 
 	// Get homepage.
-	function getHomepage($tabs)
-	{
+	function getHomepage($tabs) {
 		// Instantiate.
 		$dao = new DAO();
 		$serverdata = new GetServerData();
@@ -69,24 +65,33 @@ class GetContent
 		$res->bindColumn('content_name', $content_name);
 		$res->bindColumn('content_details', $content_details);
 		// Loop.
-		while($res->fetch())
-		{
+		while($res->fetch()) {
 			// Set.
 			$i++;
 			$content_name = strtoupper($content_name);
+			// If outputting query form.
+			if($content_id == 24) {
+				$content_details .= $serverdata->get_query_form_div($tabs+2);
+			}
+			// Current status.
+			elseif($content_id == 30) {
+				$serverdata->get_current_server_status($content_id);
+				$content_details .= $serverdata->server_status;
+			}
+			// Recent query results.
+			elseif($content_id == 27) {
+				$content_details .= $this->get_recent_query_result_div($tabs+2);
+			}
 			if($i == 2)
 			{
-				// Get all resources.
-				$serverdata->get_current_server_status($content_id);
 				// Get enclosed display div.
-				$structure->getFlatLightBlueDiv('lx_'.$content_id,$content_name,$content_details.$serverdata->server_status,NULL,"_on_white",$tabs+2);
+				$structure->getFlatLightBlueDiv('lx_'.$content_id,$content_name,$content_details,NULL,"_on_white",$tabs+2);
 				$this->page .= $structure->div;
 				$i = 0;
 			}
-			else
-			{
+			else {
 				// Get enclosed display div.
-				$structure->getAzzureDiv('lx_'.$content_id,$content_name,$content_details.$serverdata->get_query_form_div($tabs+2),NULL,$tabs+2);
+				$structure->getAzzureDiv('lx_'.$content_id,$content_name,$content_details,NULL,$tabs+2);
 				$this->page .= $structure->div;
 			}
 		}
@@ -105,8 +110,9 @@ class GetContent
 		$res->bindColumn('content_name', $content_name);
 		$res->bindColumn('content_details', $content_details);
 		// Loop.
-		while($res->fetch())
-		{
+		while($res->fetch()) {
+			// Add current server statistics.
+			$content_details .= $serverdata->get_server_statistics($content_id, $_SESSION['default_host'], NULL, $tabs+2);
 			// Get enclosed display div.
 			$structure->getFlatLightBlueDiv('lx_'.$content_id,$content_name,$content_details,NULL,NULL,$tabs+3);
 			$rxStr .= $structure->div;
@@ -123,8 +129,7 @@ class GetContent
 	}
 
 	// Get sub-page.
-	function getSubpage($c,$tabs)
-	{
+	function getSubpage($c,$tabs) {
 		// Instantiate.
 		$dao = new DAO();
 		$structure = new GetStructure();
@@ -143,11 +148,13 @@ class GetContent
 		$res->bindColumn('content_name', $content_name);
 		$res->bindColumn('content_details', $content_details);
 		// Loop.
-		while($res->fetch())
-		{
+		while($res->fetch()) {
+			// Add authentication form.
+			$content_details .= $this->get_authentication_form($content_id, $tabs);
 			// Add server log files.
-			$this->get_server_log_files($content_id, $tabs);
-			$content_details .= $this->log_file_info;
+			$content_details .= $this->get_server_log_files($content_id, $tabs);
+			// Add server statistics for all available IFO on all available hosts.
+			$content_details .= $this->get_all_server_statistics($content_id, $tabs+2);
 			// Get enclosed display div.
 			$structure->getFlatLightBlueDiv('div_content_'.$content_id,$content_name,$content_details,NULL,"_on_white",$tabs+1);
 		}
@@ -157,11 +164,50 @@ class GetContent
 		$this->page .= $structure->div;
 	}
 
+	// Get authentication form.
+	private function get_authentication_form($c, $tabs) {
+		// Init.
+		$r = NULL;
+		// If in the correct area.
+		if($c == 18) {
+			// Init.
+			$str = NULL;
+			// Instantiate.
+			$structure = new structure();
+			$user = new user();
+			// Add number of tabs required.
+		 	$tab_str = $structure->getRequiredTabs($tabs);
+			// If not yet logged-in.
+			if(1) {
+				// Open form.
+				$r .= $tab_str."<form id=\"frm_aut\" name=\"frm_aut\" method=\"post\" >\n";
+				// Get username row.
+				$r .= $structure->getFormElement("user","Username","username","text",NULL,"inp_med",NULL,NULL,NULL,NULL,FALSE,$tabs+1);
+				// Get Password row.
+				$r .= $structure->getFormElement("pass","Password","password","password",NULL,"inp_med",NULL,NULL,NULL,NULL,FALSE,$tabs+1);
+				// Get button row.
+				$r .= $structure->getFormElement("submit",NULL,"submit","image",NULL,"no_border","onclick=\"redirect('frm_aut','includes/authenticate.php?aut_type=TRUE')\"", NULL, NULL, FALSE, $tabs+1);
+				// Close form.
+				$r .= $tab_str."</form>\n";
+			}
+			// Otherwise, if logged-in.
+			else {
+				$r .= "<p>You are already logged-in to the DQSEGDB WUI Intranet. Click on the icon below to log-out.</p>";
+				$r .= "<p><a href=\"includes/authenticate.php\"><img src=\"images/logout.png\" id=\"img_logout\" /></a></p>";
+			}
+		}
+		// Return.
+		return $r;
+	}
+
 	// Get server log files.
 	function get_server_log_files($c,$tabs) {
+		// Init.
+		$r = NULL;
 		// If in the correct area.
 		if($c == 29) {
 			// Init.
+			$r = NULL;
 			$i = 0;
 			$e = 0;
 			$get_f = NULL;
@@ -204,7 +250,7 @@ class GetContent
 				if($i == 1 || $f == $get_f) {
 					// If on first loop.
 					if($i == 1) {
-						$this->log_file_info .= "<p><strong>".$max_events." most recently logged events (".$f."):</strong></p>\n";
+						$r .= "<p><strong>".$max_events." most recently logged events (".$f."):</strong></p>\n";
 					}
 					// Get individual rows.
 					$b = explode("\n", file_get_contents($file));
@@ -227,23 +273,89 @@ class GetContent
 					// If on first loop.
 					if($i == 1) {
 						// Incorporate in p tag.
-						$this->log_file_info .= "<code>".substr($events, 0, -7)."</code>\n";
-						$this->log_file_info .= "<p><strong>Most recent log files:</strong></p>\n";
+						$r .= "<code>".substr($events, 0, -7)."</code>\n";
+						$r .= "<p><strong>Most recent log files:</strong></p>\n";
 						// If not viewing an individual file.
 						if(!$get_f) {
-							$this->log_file_info .= "<p>Click on a filename to view the contents.</p>\n";
+							$r .= "<p>Click on a filename to view the contents.</p>\n";
 						}
 						else {
-							$this->log_file_info .= "<p><a href=\"?c=".$c."\">Stop viewing file contents</a></p>\n";
+							$r .= "<p><a href=\"?c=".$c."\">Stop viewing file contents</a></p>\n";
 						}
 					}
 				}
 			}
 			// Incorporate in code tag.
-			$this->log_file_info .= "<code>".substr($log_files, 0, -7)."</code>\n";
+			$r .= "<code>".substr($log_files, 0, -7)."</code>\n";
 		}
+		// Return.
+		return $r;
 	}
 
+	// Get recent query results div.
+	public function get_recent_query_result_div($tabs) {
+		// Init.
+		$r = NULL;
+		// Instantiate.
+		$dao = new DAO();
+		$structure = new GetStructure();
+		// Open div.
+		$structure->openDiv('recent_query_results', $tabs,'');
+		$r .= $structure->div;
+		// Get results.
+		$r .= $dao->get_recent_query_results($tabs+1);
+		// Close div.
+		$structure->closeDiv('recent_query_results', $tabs);
+		$r .= $structure->div;
+		// Return.
+		return $r;
+	}
+
+	// Get server statistics for all available IFO on all available hosts.
+	private function get_all_server_statistics($c, $tabs) {
+		// Init.
+		$r = NULL;
+		// If in correct section.
+		if($c == 34) {
+			// Instantiate.
+			$dao = new DAO();
+			$serverdata = new GetServerData();
+			$structure = new GetStructure();
+			// Add number of tabs required.
+		 	$structure->getRequiredTabs($tabs);
+			// Get all available hosts.
+			$a = $dao->get_value_array(2);
+			// Loop through host array.
+			foreach($a as $key => $host) {
+				// Get additional text available for this host.
+				$add_info = $dao->get_value_add_info($host);
+				// If passed.
+				if(isset($add_info)) {
+					// Set.
+					$add_info = " (".$add_info." data)";
+				}
+				// Output header.
+				$r .= $structure->tabStr."<h3>".$host.$add_info."</h3>\n";
+				// Get host statistics.
+				$r .= $serverdata->get_server_statistics($c, $host, NULL, $tabs);
+				// Get array of IFO available on this host.
+				$a_i = $serverdata->get_ifo_array($host);
+				// If array has been returned.
+				if(isset($a_i['Ifos']) && is_array($a_i['Ifos'])) {
+					// Loop through each IFO.
+					foreach($a_i['Ifos'] as $key_i => $ifo) {
+						// Output header.
+						$r .= $structure->tabStr."<h4>".$ifo."</h4>\n";
+						// Get IFO statistics.
+						$r .= $serverdata->get_server_statistics($c, $host, $ifo, $tabs);
+					}
+				}
+			}
+		}
+		// Return.
+		return $r;
+	}
+	
 }
 
 ?>

@@ -20,8 +20,11 @@ class BuildPage
 		$variable->getContentCallID();
 		// If on homepage.
 		if($variable->c == 1) {
-			// Set default host.
-			$_SESSION['default_host'] = $serverdata->get_quickest_host();
+			// If the default host has not been set.
+			if(!isset($_SESSION['default_host']) || empty($_SESSION['default_host'])) {
+				// Set default host.
+				$_SESSION['default_host'] = $serverdata->get_quickest_host();
+			}
 		}
 		// Instantiate.
 		$structure = new GetStructure();

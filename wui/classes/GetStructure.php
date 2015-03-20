@@ -23,8 +23,7 @@ class GetStructure
 	private $searchBox;
 
 	// Get header.
-	public function getHeader()
- 	{
+	public function getHeader() {
  	 	// Set hdr.
 		$this->hdr = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">";
 		$this->hdr .= "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n\n";
@@ -61,8 +60,7 @@ class GetStructure
 	}
 
 	// Get body.
-	public function getBody()
-	{
+	public function getBody() {
 		// Instantiate.
 		$content = new GetContent();
 		// Open main structure divs.
@@ -111,8 +109,7 @@ class GetStructure
 	}
 
 	// Get footer.
-	public function getFooter()
-	{
+	public function getFooter() {
 		// Open footer div.
 		$this->openDiv('footer',3,'');
 		$this->ftr .= $this->div;
@@ -124,8 +121,7 @@ class GetStructure
 		$res->bindColumn('content_id', $content_id);
 		$res->bindColumn('content_name', $content_name);
 		// Loop.
-		while($res->fetch())
-		{
+		while($res->fetch()) {
 			// Build.
 			$this->ftr .= "<a href=\"?c=".$content_id."\" class=\"footer_link\">".strtoupper($content_name)."</a>\n\n";
 		}
@@ -162,8 +158,7 @@ class GetStructure
 	}
 
 	// Get required tabs.
-	public function getRequiredTabs($tabs)
-	{
+	public function getRequiredTabs($tabs) {
 		// Init.
 		$this->tabStr = NULL;
 		// Add number of tabs required.
@@ -174,8 +169,7 @@ class GetStructure
 	}
 
 	// Get a break.
-	public function getBreak($tabs)
-	{
+	public function getBreak($tabs) {
 		// Add number of tabs required.
 	 	$this->getRequiredTabs($tabs);
 	 	// Build break.
@@ -184,11 +178,9 @@ class GetStructure
 	}
 
 	// Open div.
-	public function openDiv($name,$tabs,$class)
-	{
+	public function openDiv($name,$tabs,$class) {
 	 	// Set class.
-	 	if($class != NULL)
-	 	{
+	 	if($class != NULL) {
 			$class = " class=\"$class\"";
 		}
 		// Add number of tabs required.
@@ -451,6 +443,7 @@ class GetStructure
 	// Get current host div.
 	private function get_current_host_div($tabs) {
 		// Instantiate.
+		$dao = new DAO();
 		$variable = new Variables();
 		// Set content call ID.
 		$variable->getContentCallID();
@@ -459,33 +452,122 @@ class GetStructure
 			// Open.
 			$this->openDiv('current_host',$tabs,'');
 			$this->current_host_div = $this->div;
-			$this->current_host_div .= "Currently using: <span class=\"uri_like\">".$_SESSION['default_host']."</span>";
+			// Get current-host div contents.
+			$this->current_host_div .= $this->get_current_host_div_contents($tabs);
 			// Close.
 			$this->closeDiv('current_host',$tabs);
 			$this->current_host_div .= $this->div;
 			// Open.
 			$this->openDiv('change_host',$tabs,'');
 			$this->current_host_div .= $this->div;
-			$this->current_host_div .= "<a href=\"\">Change this host</a>";
+			$this->current_host_div .= "<span id=\"span_change_host\" class=\"span_change_host\" onclick=\"activate_host_change_option()\">Change this host</span>";
 			// Close.
 			$this->closeDiv('change_host',$tabs);
 			$this->current_host_div .= $this->div;
 		}
 	}
 
-
+	// Get current-host div contents.
+	public function get_current_host_div_contents($tabs) {
+		// Init.
+		$r = NULL;
+		// Instantiate.
+		$dao = new DAO();
+		// If changing host.
+		if(isset($_SESSION['changing_current_host']) && $_SESSION['changing_current_host']) {
+			// Add number of tabs required.
+		 	$this->getRequiredTabs($tabs);
+			// Open select.
+			$r .= $this->tabStr."<select id=\"sel_change_host\" name=\"sel_change_host\" onchange=\"update_host()\">\n";
+			// Get array of hosts.
+			$a = $dao->get_value_array(2);
+			// Loop array.
+			foreach($a as $id => $host) {
+				// Get additional text available for this host.
+				$add_info = $dao->get_value_add_info($host);
+				// If passed.
+				if(isset($add_info)) {
+					// Set.
+					$add_info = " (".$add_info." data)";
+				}
+				// Set selected.
+				$sel = NULL;
+				// If host is current default host.
+				if($host == $_SESSION['default_host']) {
+					// Set selected option.
+					$sel = " selected=\"selected\"";
+				}
+				// Set option.
+				$r .= $this->tabStr."	<option value=\"".$host."\"".$sel.">".$host.$add_info."</option>\n";
+			}
+			// Close select.
+			$r .= $this->tabStr."</select>\n";
+		}
+		// Otherwise, if not changing host.
+		else {
+			// Get additional text available for this host.
+			$add_info = $dao->get_value_add_info($_SESSION['default_host']);
+			// If additional information available.
+			if(isset($add_info)) {
+				// Set.
+				$add_info = " (".$add_info." data)";
+			}
+			// Set.
+			$r .= "Currently using: <span class=\"uri_like\">".$_SESSION['default_host'].$add_info."</span>";
+		}
+		// Return.
+		return $r;
+	}
+	
 	// Output a form type structure.
-	function get_form_structure($f, $i) {
+	function get_form_structure($f, $i, $t) {
+		// If explanatory text sent.
+		if(isset($t)) {
+			// Add required style.
+			$t = "<br />\n<span class=\"span_frm_info\">(".$t.")</span>\n";
+		}
 	 	// Set.
 		$r = "<div class=\"div_row_cover\">\n".
-			   "	<div class=\"div_row_hdr\">".$f."</div>\n".
-			   "	<div class=\"div_row_details\">".$i."</div>\n".
+			   "	<div class=\"div_row_hdr\" id=\"input_".$f."_hdr\">".$f.$t."</div>\n".
+			   "	<div class=\"div_row_details\" id=\"input_".$f."_val\">".$i."</div>\n".
 			   "</div>\n";
 		// Return.
 		return $r;
 	}
 
-
+	// Get a button.
+	function get_button($id, $txt, $form, $way, $direction, $callJS, $tabs, $txtClass) {
+		// Init.
+		$str = NULL;
+		// Add number of tabs required.
+		$this->getRequiredTabs($tabs);
+		// Handle direction order.
+	 	$defDir = "Left";
+	 	if($direction != NULL) {
+			$defDir = $direction;
+		}
+		// Decide which Javascript to use.
+		if($callJS != NULL) {
+			$js = $callJS;
+		}
+		// Otherwise, set to redirect.
+		else {
+			$js = "redirect('$form','$way')";
+		}
+		// Incorporate Javascript in onclick.
+		$js = "onclick=\"$js\"";
+		// Set the button.
+		$str .= $this->tabStr."<!-- Open $txt button. -->\n";
+		$str .= $this->tabStr."<div id=\"divFor$id\" class=\"buttonContainer$defDir$txtClass\" $js>\n";
+		$str .= $this->tabStr."	<!-- Output button arrow. -->\n";
+		$str .= $this->tabStr."	<img id=\"imgFor$id\" src=\"images/button_lx.png\" class=\"buttonLeft\" alt=\"\" />\n";
+		$str .= $this->tabStr."	<!-- Output button text. -->\n";
+		$str .= $this->tabStr."	<div id=\"$id\" class=\"buttonRight\">".strtoupper($txt)."</div>\n";
+		$str .= $this->tabStr."<!-- Close $txt button. -->\n";
+		$str .= $this->tabStr."</div>\n\n";
+		// Return.
+		return $str;
+	}
 }
 
 ?>
