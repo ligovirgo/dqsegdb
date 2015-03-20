@@ -164,55 +164,81 @@ class RequestHandle():
                         # Set HTTP code and log.
                         e = admin.log_and_set_http_code(404, 26, req_method, None, full_uri)
                 # Otherwise, prepare more complex requests. Ensuring URI is not ended with a trailing slash.
-                elif l == 2:
+                elif l > 1:
                     request = f[1]
-                    # If request is flags.
-                    if request == 'flags':
-                        # Get list of all flags.
-                        r = dao.get_flags_with_versions_for_report(req_method, full_uri)
-                        # If dictionary not supplied.
-                        if not r:
+                    if l == 2:
+                        # If request is flags.
+                        if request == 'flags':
+                            # Get list of all flags.
+                            r = dao.get_flags_with_versions_for_report(req_method, full_uri)
+                            # If dictionary not supplied.
+                            if not r:
+                                # Set HTTP code and log.
+                                admin.log_and_set_http_code(200, 27, req_method, None, full_uri)
+                        # If request is db.
+                        elif request == 'db':
+                            # Get DB-related statistics.
+                            r = admin.get_db_statistics_payload(None)
+                            # If dictionary not supplied.
+                            if not r:
+                                # Set HTTP code and log.
+                                admin.log_and_set_http_code(200, 39, req_method, None, full_uri)
+                        # If request within acceptable range, i.e. 'active', 'known', etc., get list of all flags over period requested by args.
+                        elif admin.check_request('seg', request) == False:
                             # Set HTTP code and log.
-                            admin.log_and_set_http_code(200, 27, req_method, None, full_uri)
-                    # If request within acceptable range, i.e. 'active', 'known', etc., get list of all flags over period requested by args.
-                    elif admin.check_request('seg', request) == False:
+                            e = admin.log_and_set_http_code(404, 11, req_method, None, full_uri)
+                        # Otherwise, it must be 'known' or 'active'.
+                        else:
+                            # If query string being passed.
+                            if qs:
+                                arg = parse_qs(urlparse(full_uri).query)
+                                # If include exists.
+                                try:
+                                    arg['include']
+                                except:
+                                    pass
+                                else:
+                                    request_array = arg['include'][0].split(',')
+                                # Get t1 and t2.
+                                try:
+                                    arg['s'][0]
+                                except:
+                                    pass
+                                else:
+                                    t1 = arg['s'][0]
+                                try:
+                                    arg['e'][0]
+                                except:
+                                    pass
+                                else:
+                                    t2 = arg['e'][0]
+                            # Get report segments.
+                            r = dao.get_report_segments(request, t1, t2, request_array)
+                            # If no segments supplied.
+                            if not r:
+                                # Set HTTP code and log.
+                                admin.log_and_set_http_code(200, 28, req_method, None, full_uri)
+                    # Otherwise, if handling DB-statistics request.
+                    elif l == 3:
+                        # Report error if not in report.
+                        if not request == 'db':
+                            # Set HTTP code and log.
+                            admin.log_and_set_http_code(200, 13, req_method, None, full_uri)
+                        else:
+                            # Get IFO id.
+                            ifo = f[2]
+                            ifo_id = dao.get_value_details(1,ifo) 
+                            # Check IFO exists in database.
+                            if ifo_id == None:
+                                # Set HTTP code and log.
+                                e = admin.log_and_set_http_code(404, 5, req_method, None, full_uri)
+                            else:
+                                # Get DB-related statistics for this IFO.
+                                r = admin.get_db_statistics_payload(ifo_id)                            
+                    # Otherwise, request is too long.
+                    elif l > 3:
                         # Set HTTP code and log.
-                        e = admin.log_and_set_http_code(404, 11, req_method, None, full_uri)
-                    # Otherwise, it must be 'known' or 'active'.
-                    else:
-                        # If query string being passed.
-                        if qs:
-                            arg = parse_qs(urlparse(full_uri).query)
-                            # If include exists.
-                            try:
-                                arg['include']
-                            except:
-                                pass
-                            else:
-                                request_array = arg['include'][0].split(',')
-                            # Get t1 and t2.
-                            try:
-                                arg['s'][0]
-                            except:
-                                pass
-                            else:
-                                t1 = arg['s'][0]
-                            try:
-                                arg['e'][0]
-                            except:
-                                pass
-                            else:
-                                t2 = arg['e'][0]
-                        # Get report segments.
-                        r = dao.get_report_segments(request, t1, t2, request_array)
-                        # If no segments supplied.
-                        if not r:
-                            # Set HTTP code and log.
-                            admin.log_and_set_http_code(200, 28, req_method, None, full_uri)
-                # Otherwise, request is too long.
-                elif l > 2:
-                    # Set HTTP code and log.
-                    e = admin.log_and_set_http_code(414, 19, req_method, None, full_uri)
+                        e = admin.log_and_set_http_code(414, 19, req_method, None, full_uri)
         # If results have been found and there are no errors.
         if r and not e:
             # Add query info to results.

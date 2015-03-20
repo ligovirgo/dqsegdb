@@ -48,6 +48,207 @@ class DAOHandle:
         return conn
     
     #########################
+    # DB-STATISTICS METHODS #
+    #########################
+
+    # Get earliest/latest segment boundaries.
+    def get_segment_boundaries(self, ak, w, ifo):
+        # Init.
+        res = 0
+        # If args passed.
+        try:
+            ak, w, ifo
+        except:
+            pass
+        else:
+            # Set ODBC cursor.
+            try:
+                cur = cnxn.cursor()
+            except:
+                pass
+            else:
+                # Set MIN/MAX.
+                m = 'MIN'
+                el = 'earliest'
+                if w:
+                    m = 'MAX'
+                    el = 'latest'
+                # Set IFO.
+                j = ''
+                iw = ''
+                if not ifo == None:
+                    j = ' LEFT JOIN tbl_dq_flags ON tbl_dq_flag_versions.dq_flag_fk = tbl_dq_flags.dq_flag_id '
+                    iw = ' WHERE dq_flag_ifo=' + str(ifo)
+                # Get.
+                cur.execute("""
+                            SELECT """ + m + """(dq_flag_version_""" + ak + """_""" + el + """_segment_time) AS 'tot'
+                            FROM tbl_dq_flag_versions """ + j + iw)
+                # Loop.
+                for row in cur:
+                    # If tot exists.
+                    if not row.tot == None:
+                        # Set.
+                        res = int(row.tot)
+                # Close ODBC cursor.
+                cur.close()
+                del cur
+        # Return.
+        return res
+    
+    # Get segment totals.
+    def get_segment_totals(self, ak, ifo):
+        # Init.
+        res = 0
+        # If args passed.
+        try:
+            ak, ifo
+        except:
+            pass
+        else:
+            # Set ODBC cursor.
+            try:
+                cur = cnxn.cursor()
+            except:
+                pass
+            else:
+                # Set IFO.
+                j = ''
+                iw = ''
+                if not ifo == None:
+                    j = ' LEFT JOIN tbl_dq_flags ON tbl_dq_flag_versions.dq_flag_fk = tbl_dq_flags.dq_flag_id '
+                    iw = ' WHERE dq_flag_ifo=' + str(ifo)
+                # Get.
+                cur.execute("""
+                            SELECT SUM(dq_flag_version_""" + ak + """_segment_total) AS 'tot'
+                            FROM tbl_dq_flag_versions """ + j  + iw)
+                # Loop.
+                for row in cur:
+                    # If tot exists.
+                    if not row.tot == None:
+                        # Set.
+                        res = int(row.tot)
+                # Close ODBC cursor.
+                cur.close()
+                del cur
+        # Return.
+        return res
+    
+    # Get last segment insert time.
+    def get_last_segment_insert_time(self, ifo):
+        # Init.
+        res = 0
+        # If args passed.
+        try:
+            ifo
+        except:
+            pass
+        else:
+            # Set ODBC cursor.
+            try:
+                cur = cnxn.cursor()
+            except:
+                pass
+            else:
+                # Set IFO.
+                j = ''
+                iw = ''
+                if not ifo == None:
+                    j = """
+                        LEFT JOIN tbl_dq_flag_versions ON tbl_processes.dq_flag_version_fk = tbl_dq_flag_versions.dq_flag_version_id
+                        LEFT JOIN tbl_dq_flags ON tbl_dq_flag_versions.dq_flag_fk = tbl_dq_flags.dq_flag_id
+                        """
+                    iw = ' WHERE dq_flag_ifo=' + str(ifo)
+                # Get.
+                cur.execute("""
+                            SELECT MAX(process_time_last_used) AS 'tot'
+                            FROM tbl_processes """ + j  + iw)
+                # Loop.
+                for row in cur:
+                    # If tot exists.
+                    if not row.tot == None:
+                        # Set.
+                        res = int(row.tot)
+                # Close ODBC cursor.
+                cur.close()
+                del cur
+        # Return.
+        return res
+
+    # Get flag totals.
+    def get_flag_totals(self, ifo):
+        # Init.
+        res = 0
+        # If arg passed.
+        try:
+            ifo
+        except:
+            pass
+        else:
+            # Set ODBC cursor.
+            try:
+                cur = cnxn.cursor()
+            except:
+                pass
+            else:
+                # Set IFO.
+                iw = ''
+                if not ifo == None:
+                    iw = ' WHERE dq_flag_ifo=' + str(ifo)
+                # Get.
+                cur.execute("""
+                            SELECT COUNT(dq_flag_id) AS 'tot'
+                            FROM tbl_dq_flags """ + iw)
+                # Loop.
+                for row in cur:
+                    # If tot exists.
+                    if not row.tot == None:
+                        # Set.
+                        res = int(row.tot)
+                # Close ODBC cursor.
+                cur.close()
+                del cur
+        # Return.
+        return res
+
+    # Get flag version totals.
+    def get_flag_version_totals(self, ifo):
+        # Init.
+        res = 0
+        # If arg passed.
+        try:
+            ifo
+        except:
+            pass
+        else:
+            # Set ODBC cursor.
+            try:
+                cur = cnxn.cursor()
+            except:
+                pass
+            else:
+                # Set IFO.
+                j = ''
+                iw = ''
+                if not ifo == None:
+                    j = ' LEFT JOIN tbl_dq_flags ON tbl_dq_flag_versions.dq_flag_fk = tbl_dq_flags.dq_flag_id '
+                    iw = ' WHERE dq_flag_ifo=' + str(ifo)
+                # Get.
+                cur.execute("""
+                            SELECT COUNT(dq_flag_version_id) AS 'tot'
+                            FROM tbl_dq_flag_versions """ + j  + iw)
+                # Loop.
+                for row in cur:
+                    # If tot exists.
+                    if not row.tot == None:
+                        # Set.
+                        res = int(row.tot)
+                # Close ODBC cursor.
+                cur.close()
+                del cur
+        # Return.
+        return res
+
+    #########################
     # FLAG HANDLING METHODS #
     #########################
 

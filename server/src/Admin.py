@@ -5,6 +5,7 @@ Administrative task handling class file
 
 # Import.
 import Constants
+import DAO
 import gpstime
 import logging
 import socket
@@ -223,6 +224,27 @@ class AdminHandle:
         # Return.
         return d
 
+    # Get DB-related statistics.
+    def get_db_statistics_payload(self, ifo):
+        # Instantiate objects.
+        dao = DAO.DAOHandle()
+        # Define expected payload.
+        d = {"results" :
+                {
+                "earliest_known_segment_start_time" : dao.get_segment_boundaries('known', False, ifo),
+                "latest_known_segment_stop_time" : dao.get_segment_boundaries('known', True, ifo),
+                "total_known_segments" : dao.get_segment_totals('known', ifo),
+                "earliest_active_segment_start_time" : dao.get_segment_boundaries('active', False, ifo),
+                "latest_active_segment_stop_time" : dao.get_segment_boundaries('active', True, ifo),
+                "total_active_segments" : dao.get_segment_totals('active', ifo),
+                "total_flags" : dao.get_flag_totals(ifo),
+                "total_versions" : dao.get_flag_version_totals(ifo),
+                "last_segment_insert_time" : dao.get_last_segment_insert_time(ifo)
+                }
+             }
+        # Return.
+        return d
+    
     # Log event and set the required HTTP error code.
     def log_and_set_http_code(self, code, state, req_method, add_info, uri):
         # Init.
@@ -307,7 +329,8 @@ class AdminHandle:
                                     35: [3, 'Authentication failure'],
                                     36: [3, 'Authorisation failure'],
                                     37: [0, 'SSL Subject Info'],
-                                    38: [2, 'No versions are available for this flag, but the flag exists in the database. Please contact the database administrators']
+                                    38: [2, 'No versions are available for this flag, but the flag exists in the database. Please contact the database administrators'],
+                                    39: [2, 'Database statistics not available']
                                 }
         # Return.
         return log_state_dictionary
