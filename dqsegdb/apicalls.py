@@ -150,7 +150,10 @@ def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_st
 def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string):
     """ 
     Issue query to server for ifo:name:version with start and end time
-    Returns the python loaded JSON response!
+    Returns the python loaded JSON response converted into a dictionary and queryurl!
+    Returns
+    ----------
+    [dictionary,string(url)]
 
     Parameters
     ----------
@@ -161,6 +164,31 @@ def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string):
     result=urifunctions.getDataUrllib2(queryurl)
     result_json=json.loads(result)
     return result_json,queryurl
+
+def coalesceResultDictionary(result_dict):
+    """
+    Takes a dictionary as returned by QueryTimes or QueryTimeless and converts the lists of tuples into actual segment lists (and coalesces them).
+
+    Parameters
+    ----------
+    result_dict : `dict`
+        This is the input result dictionary from the other api calls
+    out_result_dict : `dict`
+        This is the output result dictionary with actual segment lists (and coalesced results).
+        
+    """
+    import copy
+    out_result_dict=copy.deepcopy(result_dict)
+    active_seg_python_list=[glue.segments.segment(i[0],i[1]) for i in result_dict['active']]
+    active_seg_list=glue.segments.segmentlist(active_seg_python_list)
+    active_seg_list.coalesce()
+    out_result_dict['active']=active_seg_list
+    known_seg_python_list=[glue.segments.segment(i[0],i[1]) for i in result_dict['known']]
+    known_seg_list=glue.segments.segmentlist(known_seg_python_list)
+    known_seg_list.coalesce()
+    out_result_dict['known']=known_seg_list
+    return out_result_dict
+
 
 def reportFlags(protocol,server,verbose):
     """
