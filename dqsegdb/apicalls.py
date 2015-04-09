@@ -99,7 +99,7 @@ def dqsegdbFindEndTime(flag_dict):
 
     Returns max_end_time: `int`
     """
-    if len(flag_dict['known']!=0:
+    if len(flag_dict['known'])!=0:
         maxEndTime=max([i[1] for i in flag_dict['known']])
         return maxEndTime
     else:
