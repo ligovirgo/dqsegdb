@@ -402,7 +402,15 @@ class AdminHandle:
     
     # Get a list of available resources.
     def get_available_resources(self):
+        # Instantiate.
+        dao = DAO.DAOHandle();
         # Set resource array.
-        a = {"results" : ['/report/flags', '/report/known']}
+        a = {"results" : ['/report/flags', '/report/known', '/report/db']}
+        # Get IFO array.
+        ifos = dao.get_value_list(1)
+        # Loop IFO array.
+        for ifo in ifos['Ifos']:
+            # Append resource to list.
+            a['results'].append('/report/db/' + ifo)
         # Return.
         return a
