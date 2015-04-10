@@ -45,7 +45,7 @@ class RequestHandle():
             if f[0] == 'dq':
                 # Get ifo list.
                 if l == 1:
-                    r = dao.get_value_list(1)
+                    r = dao.get_value_list(1, req_method, full_uri)
                     # If list not supplied.
                     if not r:
                         # Set HTTP code and log.
@@ -53,7 +53,7 @@ class RequestHandle():
                 # Otherwise, prepare more complex requests.
                 elif l > 1:
                     ifo = f[1]
-                    ifo_id = dao.get_value_details(1,ifo) 
+                    ifo_id = dao.get_value_details(1,ifo, req_method, full_uri) 
                     # Check IFO exists in database.
                     if ifo_id == None:
                         # Set HTTP code and log.
@@ -61,7 +61,7 @@ class RequestHandle():
                     else:
                         # Get flag list.
                         if l == 2:
-                            r = dao.get_flag_list(ifo)
+                            r = dao.get_flag_list(ifo, req_method, full_uri)
                             # If list not supplied.
                             if not r:
                                 # Set HTTP code and log.
@@ -69,7 +69,7 @@ class RequestHandle():
                         # Otherwise, prepare more complex requests.
                         elif l > 2:
                             flag = f[2]
-                            flag_id = dao.get_flag_id(ifo_id, flag)
+                            flag_id = dao.get_flag_id(ifo_id, flag, req_method, full_uri)
                             # If flag does not exist in database.
                             if flag_id == None:
                                 # Set HTTP code and log.
@@ -78,7 +78,7 @@ class RequestHandle():
                                 # If three URI array elements supplied.
                                 if l == 3:
                                     # Get version list.
-                                    v_l = dao.get_flag_version_list(ifo, flag)
+                                    v_l = dao.get_flag_version_list(ifo, flag, req_method, full_uri)
                                     # If list not supplied.
                                     if not v_l:
                                         # Set HTTP code and log.
@@ -115,7 +115,7 @@ class RequestHandle():
                                         else:
                                             t2 = arg['e'][0]
                                     # Get version ID.
-                                    version_id = dao.get_flag_version_id(flag_id, version)
+                                    version_id = dao.get_flag_version_id(flag_id, version, req_method, full_uri)
                                     # If version ID found.
                                     if version_id == None:
                                         # Set HTTP code and log.
@@ -124,7 +124,7 @@ class RequestHandle():
                                         # If metadata or everything included.
                                         if 'metadata' in request_array or not request_array:
                                             # Get metadata.
-                                            meta = dao.get_flag_version_metadata('metadata', ifo, flag, version, version_id)
+                                            meta = dao.get_flag_version_metadata('metadata', ifo, flag, version, version_id, req_method, full_uri)
                                             # If metadata not built.
                                             if not meta:
                                                 # Set HTTP code and log.
@@ -132,15 +132,15 @@ class RequestHandle():
                                         # If 'active' segments or everything included.
                                         if 'active' in request_array or not request_array:
                                             # Get segments.
-                                            a_segs = dao.get_flag_version_segments('active', version_id, t1, t2)
+                                            a_segs = dao.get_flag_version_segments('active', version_id, t1, t2, req_method, full_uri)
                                         # If 'known' segments or everything included.
                                         if 'known' in request_array or not request_array:
                                             # Get segments.
-                                            k_segs = dao.get_flag_version_segments('known', version_id, t1, t2)
+                                            k_segs = dao.get_flag_version_segments('known', version_id, t1, t2, req_method, full_uri)
                                         # If insert history or everything included.
                                         if 'insert_history' in request_array or not request_array:
                                             # Get insert history.
-                                            i_hist = dao.get_flag_version_insert_history(version_id)
+                                            i_hist = dao.get_flag_version_insert_history(version_id, req_method, full_uri)
                                             # If insert history not built.
                                             if not i_hist:
                                                 # Set HTTP code and log.
@@ -158,7 +158,7 @@ class RequestHandle():
             elif f[0] == 'report':
                 # Get report options.
                 if l == 1:
-                    r = admin.get_available_resources()
+                    r = admin.get_available_resources(req_method, full_uri)
                     # If dictionary not supplied.
                     if not r:
                         # Set HTTP code and log.
@@ -178,7 +178,7 @@ class RequestHandle():
                         # If request is db.
                         elif request == 'db':
                             # Get DB-related statistics.
-                            r = admin.get_db_statistics_payload(None)
+                            r = admin.get_db_statistics_payload(None, req_method, full_uri)
                             # If dictionary not supplied.
                             if not r:
                                 # Set HTTP code and log.
@@ -213,7 +213,7 @@ class RequestHandle():
                                 else:
                                     t2 = arg['e'][0]
                             # Get report segments.
-                            r = dao.get_report_segments(request, t1, t2, request_array)
+                            r = dao.get_report_segments(request, t1, t2, request_array, req_method, full_uri)
                             # If no segments supplied.
                             if not r:
                                 # Set HTTP code and log.
@@ -227,14 +227,14 @@ class RequestHandle():
                         else:
                             # Get IFO id.
                             ifo = f[2]
-                            ifo_id = dao.get_value_details(1,ifo) 
+                            ifo_id = dao.get_value_details(1, ifo, req_method, full_uri) 
                             # Check IFO exists in database.
                             if ifo_id == None:
                                 # Set HTTP code and log.
                                 e = admin.log_and_set_http_code(404, 5, req_method, None, full_uri)
                             else:
                                 # Get DB-related statistics for this IFO.
-                                r = admin.get_db_statistics_payload(ifo_id)                            
+                                r = admin.get_db_statistics_payload(ifo_id, req_method, full_uri)                            
                     # Otherwise, request is too long.
                     elif l > 3:
                         # Set HTTP code and log.
@@ -300,7 +300,7 @@ class RequestHandle():
                     # Start serving requests.
                     if l > 2:
                         ifo = f[1]
-                        ifo_id = dao.get_value_details(1, ifo)
+                        ifo_id = dao.get_value_details(1, ifo, req_method, full_uri)
                         # If IFO does not exist.
                         if ifo_id == None:
                             # Set HTTP code and log.
@@ -322,7 +322,7 @@ class RequestHandle():
                                 # Set version.
                                 version = f[3]
                                 # Get flag ID.
-                                flag_id = dao.get_flag_id(ifo_id, flag)
+                                flag_id = dao.get_flag_id(ifo_id, flag, req_method, full_uri)
                                 # If flag ID does not exist.
                                 if flag_id == None:
                                     # Set HTTP code and log.
@@ -335,14 +335,14 @@ class RequestHandle():
                                             # Insert new version.
                                             e = dao.insert_flag_version(req_method, full_uri, ifo_id, ifo, flag_id, flag, version, a)
                                         # Get version ID.
-                                        version_id = dao.get_flag_version_id(flag_id, version)
+                                        version_id = dao.get_flag_version_id(flag_id, version, req_method, full_uri)
                                         # If version does not exist.
                                         if version_id == None:
                                             # Set HTTP code and log.
                                             e = admin.log_and_set_http_code(404, 10, req_method, None, full_uri)
                                         else:
                                             # If putting and this version already has Known segments associated to it.
-                                            if req_method == 'PUT' and dao.get_flag_version_segment_total('known', version_id) > 0:
+                                            if req_method == 'PUT' and dao.get_flag_version_segment_total('known', version_id, req_method, full_uri) > 0:
                                                 # Set HTTP code and log.
                                                 e = admin.log_and_set_http_code(400, 18, req_method, None, full_uri)
                                             else:
