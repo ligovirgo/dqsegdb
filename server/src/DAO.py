@@ -292,9 +292,9 @@ class DAOHandle:
                         # Insert flag.
                         cur.execute("""
                                     INSERT INTO tbl_dq_flags
-                                    (dq_flag_name, dq_flag_ifo, dq_flag_assoc_versions, dq_flag_active_means_ifo_badness, dq_flag_creator, dq_flag_date_created)
+                                    (dq_flag_name, dq_flag_ifo, dq_flag_active_means_ifo_badness, dq_flag_creator, dq_flag_date_created)
                                     VALUES
-                                    (?,?,?,'',?,?,?)
+                                    (?,?,?,?,?)
                                     """, flag, ifo_id, badness, uid, gps)
                         cnxn.commit()
                         # Get new flag ID.
