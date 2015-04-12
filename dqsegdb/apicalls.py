@@ -126,12 +126,28 @@ def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,start
 def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
     """ 
     Issue query to server for ifo:name:version with start and end time
+    This is the version that reproduces S6 style query results when the query is empty
     Returns the python loaded JSON response!
 
     Parameters
     ----------
-    variable : `type`
-        docstring for variable
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
+    version : `string` or `int`
+        Ex: '1'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
+    startTime : `int`
+        Ex: 999999999
+    endTime : `int`
+        Ex: 999999999
+
     """
     queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
     try:
