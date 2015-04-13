@@ -841,7 +841,10 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
                     flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id]['insert_data_stop'] = end_time
             else:
                 # Need to make the dictionary entry for this process_id
-                flag_versions[(ifo,name,version)].provenance_url=seg_sum_comment
+                if seg_sum_comment!=None:
+                    flag_versions[(ifo,name,version)].provenance_url=seg_sum_comment
+                else:
+                    flag_versions[(ifo,name,version)].provenance_url=''
                 flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id] = {}
                 flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id]['insert_data_start'] = start_time
                 flag_versions[(ifo,name,version)].temp_process_ids[temp_process_id]['insert_data_stop'] = end_time
