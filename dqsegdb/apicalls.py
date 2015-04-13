@@ -1027,6 +1027,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             for j in range(len(segment_md.table['process_params']['stream'])):
                 process_id_index = segment_md.table['process_params']['orderedcol'].index('process_id')
                 temp_process_params_process_id=segment_md.table['process_params']['stream'][j][process_id_index]
+                #  This next bit looks a bit strange, but the goal is to pull off only the param and value from each row of the process_params table, and then put them into the process_metadata
+                #  Thus we loop through the columns in each row and toss out everything but the param and value entries, and then outside the for loop, append them to the args list
                 for i, entry in enumerate(segment_md.table['process_params']['orderedcol']):
                     if entry=="param":
                         temp_param=str(segment_md.table['process_params']['stream'][j][i])
