@@ -38,6 +38,19 @@ def dqsegdbCheckVersion(protocol,server,ifo,name,version):
     """ 
     Checks for existence of a given version of a flag in the db.
     Returns true if version exists
+    
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
+    version : `string` or `int`
+        Ex: '1'
     """
     ### Fix!!! This looks wrong:  seems to check if the flag exists, not whether a version on the server matches what was passed to the function
     queryurl=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
@@ -64,6 +77,17 @@ def dqsegdbMaxVersion(protocol,server,ifo,name):
     """ 
     Checks for existence of a flag in the db, returns maximum
     version if the flag exists exists, 0 if the flag does not exist.
+    
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
     """
     queryurl=urifunctions.constructFlagQueryURL(protocol,server,ifo)
     try:
@@ -114,8 +138,22 @@ def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,start
 
     Parameters
     ----------
-    variable : `type`
-        docstring for variable
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
+    version : `string` or `int`
+        Ex: '1'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
+    startTime : `int`
+        Ex: 999999999
+    endTime : `int`
+        Ex: 999999999
     """
     queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
     result=urifunctions.getDataUrllib2(queryurl)
@@ -126,12 +164,28 @@ def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,start
 def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
     """ 
     Issue query to server for ifo:name:version with start and end time
+    This is the version that reproduces S6 style query results when the query is empty
     Returns the python loaded JSON response!
 
     Parameters
     ----------
-    variable : `type`
-        docstring for variable
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
+    version : `string` or `int`
+        Ex: '1'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
+    startTime : `int`
+        Ex: 999999999
+    endTime : `int`
+        Ex: 999999999
+
     """
     queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
     try:
@@ -149,7 +203,7 @@ def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_st
 
 def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string):
     """ 
-    Issue query to server for ifo:name:version with start and end time
+    Issue query to server for ifo:name:version without start and end time
     Returns the python loaded JSON response converted into a dictionary and queryurl!
     Returns
     ----------
@@ -157,8 +211,18 @@ def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string):
 
     Parameters
     ----------
-    variable : `type`
-        docstring for variable
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
+    version : `string` or `int`
+        Ex: '1'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
     """
     queryurl=urifunctions.constructSegmentQueryURL(protocol,server,ifo,name,version,include_list_string)
     result=urifunctions.getDataUrllib2(queryurl)
@@ -194,6 +258,15 @@ def reportFlags(protocol,server,verbose):
     """
     Construct url and issue query to get the reported list of all flags
     provided by dqsegdb.
+    From the API Doc:
+    Get a JSON formatted string resource describing all the flags in the database. This provides an optimization by returning all flag names and all associated versions in a single call.
+    
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
     """
     queryurl=protocol+"://"+server+"/report/flags"
     if verbose:
@@ -203,8 +276,29 @@ def reportFlags(protocol,server,verbose):
 
 def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time):
     """
-    Construct url and issue query to get the reported list of all flags
-    provided by dqsegdb.
+    Construct url and issue query to get the reported list of all known segments for all flags in the time window provided.
+    From the API Doc:
+    Get a JSON string resource containing the known segments for all flags between t1 and t2. Note that this returns exactly what /dq/IFO/FLAG/VERSION/known does, except for ALL flags over the query period instead of one flag. The clients must assume that they may get empty known lists for flags that are unknown between times t1 and t2.
+
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
+    version : `string` or `int`
+        Ex: '1'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
+    startTime : `int`
+        Ex: 999999999
+    endTime : `int`
+        Ex: 999999999
+
     """
     includeText="?include=metadata"
     if includeSegments:
@@ -316,6 +410,25 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     Returns a python dictionary representing the calculated result "versionless"
     flag and also the python dictionaries (in a list) for the flag_versions
     necessary to construct the result.
+
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
+    version : `string` or `int`
+        Ex: '1'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
+    startTime : `int`
+        Ex: 999999999
+    endTime : `int`
+        Ex: 999999999
     """
 
     #verbose=True
@@ -416,6 +529,9 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     return result_flag,jsonResults,affected_results
 
 def dtd_uri_callback(uri):
+    """
+    S6 helper function for XML file writing and parsing using a dtd.
+    """
     if uri in ['http://www.ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt',
         'http://ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt']:
         # if the XML file contains a http pointer to the ligolw DTD at CIT then
@@ -429,7 +545,8 @@ def dtd_uri_callback(uri):
 
 
 def waitTill(runTime,timeout=2400):
-    """runTime is time in HH:MM (string) format, action is call to a function to
+    """
+    runTime is time in HH:MM (string) format, action is call to a function to
     be exceuted at specified time.
     Function source: http://stackoverflow.com/a/6579355/2769157
     """
@@ -494,7 +611,7 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
 def threadedPatchWithFailCases(q,server,debug,inputlogger=None):
     """ 
     Used by InsertMultipleDQXMLFileThreaded
-    to patch data to server.
+    to patch data to server. (Deprecated/Incomplete error handling)
     """
     while True:
         i=q.get()
@@ -508,7 +625,7 @@ def threadedPatchWithFailCases(q,server,debug,inputlogger=None):
 
 def setupSegment_md(filename,xmlparser,lwtparser,debug):
     """
-    Helper function used to setup ligolw parser.
+    Helper function used to setup ligolw parser (S6 xml generation tool).
     """
     segment_md = ldbd.LIGOMetadata(xmlparser,lwtparser)
 
@@ -642,6 +759,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             for j in range(len(segment_md.table['process_params']['stream'])):
                 process_id_index = segment_md.table['process_params']['orderedcol'].index('process_id')
                 temp_process_params_process_id=segment_md.table['process_params']['stream'][j][process_id_index]
+                #  This next bit looks a bit strange, but the goal is to pull off only the param and value from each row of the process_params table, and then put them into the process_metadata
+                #  Thus we loop through the columns in each row and toss out everything but the param and value entries, and then outside the for loop, append them to the args list
                 for i, entry in enumerate(segment_md.table['process_params']['orderedcol']):
                     if entry=="param":
                         temp_param=str(segment_md.table['process_params']['stream'][j][i])

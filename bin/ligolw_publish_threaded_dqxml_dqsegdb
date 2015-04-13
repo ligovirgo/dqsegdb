@@ -62,6 +62,9 @@ from glue.ligolw import lsctables
 from glue.ligolw import utils as ligolw_utils
 from glue.ligolw.utils import segments as ligolw_segments
 from glue.ligolw.utils import process as ligolw_process
+# ER6 Glue fixes:
+from glue.ligolw import table
+from glue.ligolw import array
 
 from glue.segmentdb import segmentdb_utils
 from dqsegdb.apicalls import *
@@ -168,7 +171,11 @@ try:
 
     # read in the published file and get the published segment list
     logger.debug("reading state from %s" % options.state_file)
-    indoc = ligolw_utils.load_url(options.state_file, gz = (options.state_file or "stdin").endswith(".gz"))
+    #indoc = ligolw_utils.load_url(options.state_file, gz = (options.state_file or "stdin").endswith(".gz"))
+    ContentHandler = ligolw.LIGOLWContentHandler
+    table.use_in(ContentHandler)
+    array.use_in(ContentHandler)
+    indoc = ligolw_utils.load_url(options.state_file, gz = (options.state_file or "stdin").endswith(".gz"), contenthandler=ContentHandler)
     published_segments = segmentdb_utils.find_segments(indoc,"P1:PUBLISHED:0")
     exclude_segments = segmentdb_utils.find_segments(indoc,"P1:EXCLUDE:0")
     logger.debug("published segments = %s" % str(published_segments))
