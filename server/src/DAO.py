@@ -704,7 +704,59 @@ class DAOHandle:
         d['results'] = l
         # Return.
         return d
-    
+
+    # Get a dictionary of all flags with coverage statistics for report.
+    def get_flag_version_coverage(self, req_method, full_uri):
+        # Init.
+        f = {}
+        d = {}
+        # Instantiate objects.
+        admin = Admin.AdminHandle()
+        try:
+            # Set ODBC cursor.
+            cur = cnxn.cursor()
+        except pyodbc.Error, err:
+            # Set HTTP code and log.
+            admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
+        else:
+            try:
+                # Get.
+                cur.execute("""
+                            SELECT dq_flag_name, dq_flag_version, value_txt, dq_flag_version_active_segment_total, dq_flag_version_active_earliest_segment_time, dq_flag_version_active_latest_segment_time, dq_flag_version_known_segment_total, dq_flag_version_known_earliest_segment_time, dq_flag_version_known_latest_segment_time
+                            FROM tbl_dq_flags
+                            LEFT JOIN tbl_dq_flag_versions ON tbl_dq_flags.dq_flag_id = tbl_dq_flag_versions.dq_flag_fk
+                            LEFT JOIN tbl_values ON tbl_dq_flags.dq_flag_ifo = tbl_values.value_id
+                            ORDER BY value_txt, dq_flag_name
+                            """)
+            except pyodbc.Error, err:
+                # Set HTTP code and log.
+                admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
+            else:
+                # Loop.
+                for row in cur:
+                    # Set call URI.
+                    call_uri = '/dq/' + row.value_txt + '/' + row.dq_flag_name + '/' + str(row.dq_flag_version)
+                    # Set segment info.
+                    active_earliest = row.dq_flag_version_active_earliest_segment_time
+                    active_latest = row.dq_flag_version_active_latest_segment_time
+                    known_earliest = row.dq_flag_version_known_earliest_segment_time
+                    known_latest = row.dq_flag_version_known_latest_segment_time
+                    # Build dictionary.
+                    f.update({
+                            call_uri : {
+                                            'total_active_segments' : row.dq_flag_version_active_segment_total,
+                                            'earliest_active_segment' : int(0 if active_earliest is None else active_earliest),
+                                            'latest_active_segment' : int(0 if active_latest is None else active_latest),
+                                            'total_known_segments' : row.dq_flag_version_known_segment_total,
+                                            'earliest_known_segment' : int(0 if known_earliest is None else known_earliest),
+                                            'latest_known_segment' : int(0 if known_latest is None else known_latest)
+                                        }
+                         })
+        # Include inside named dictionary.
+        d['results'] = f
+        # Return.
+        return d
+
     ##########################
     # VALUE HANDLING METHODS #
     ##########################

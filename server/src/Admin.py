@@ -327,7 +327,8 @@ class AdminHandle:
                                     38: [2, 'No versions are available for this flag, but the flag exists in the database. Please contact the database administrators'],
                                     39: [2, 'Database statistics not available'],
                                     40: [4, 'Problem with ODBC cursor'],
-                                    41: [4, 'Problem with ODBC statement execution']
+                                    41: [4, 'Problem with ODBC statement execution'],
+                                    42: [2, 'Flag-Version coverage statistics unavailable']
                                 }
         # Return.
         return log_state_dictionary
