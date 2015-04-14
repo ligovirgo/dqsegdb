@@ -253,6 +253,26 @@ def coalesceResultDictionary(result_dict):
     out_result_dict['known']=known_seg_list
     return out_result_dict
 
+def queryAPIVersion(protocol,server,verbose):
+    """
+    Construct url and issue query to get the reported list of all IFOs
+    provided by dqsegd and the API version of the server.
+    
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    """
+    queryurl=protocol+"://"+server+"/dq"
+    if verbose:
+        print queryurl
+    result=urifunctions.getDataUrllib2(queryurl)
+    dictResult=json.loads(result)
+    apiVersion=dictResult['query_information']['api_version']
+    return apiVersion
+
 
 def reportFlags(protocol,server,verbose):
     """
@@ -649,10 +669,23 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
     returns True if it completes sucessfully
     - options is a dictionary including (optionally):offset(int),synchronize(time in 'HH:MM' format (string))
     """
-    logger.info("Beginning call to InsertMultipleDQXMLFileThreaded.  This message last updated 10-31-2014, Happy Halloween")
+    logger.info("Beginning call to InsertMultipleDQXMLFileThreaded.  This message last updated April 14 2015, Ciao da Italia!")
     from threading import Thread
     from Queue import Queue
     import sys
+
+    # Make a call to server+'/dq':
+    protocol=server.split(':')[0]
+    serverfqdn=server.split('/')[-1]
+    apiResult=queryAPIVersion(protocol,serverfqdn,False)
+    # If the API change results in a backwards incompatibility, handle it here with a flag that affects behavior below
+    if apiResult >= 2.1.0:
+        # S6 style comments are needed
+        new_comments=True
+    else:
+        # Older server, so don't want to supply extra comments... wait it doesn't matter...
+        new_comments=False
+
 
     if 'offset' in testing_options:
         offset=int(testing_options['offset'])
@@ -731,7 +764,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
                 process_dict[temp_process_id]['process_metadata']['process_start_time'] = process_dict[temp_process_id]['start_time']
             else:
                 process_dict[temp_process_id]['process_metadata']['process_start_timestamp'] = process_dict[temp_process_id]['start_time']
-            process_dict[temp_process_id]['process_comment']=process_dict[temp_process_id]['comment']
+            if new_comments:
+                process_dict[temp_process_id]['process_comment']=process_dict[temp_process_id]['comment']
             process_dict[temp_process_id]['process_metadata']['uid'] = process_dict[temp_process_id]['username']
             process_dict[temp_process_id]['process_metadata']['args'] = [] ### Fix!!! dqxml has no args???
             process_dict[temp_process_id]['process_metadata']['pid'] = process_dict[temp_process_id]['unix_procid']
@@ -780,9 +814,16 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             name = flag_versions_numbered[i]['name']
             version = flag_versions_numbered[i]['version']
             if (ifo,name,version) not in flag_versions.keys():
-                flag_versions[(ifo,name,version)] = InsertFlagVersion(ifo,name,version)
-                flag_versions[(ifo,name,version)].flag_description=str(flag_versions_numbered[i]['comment']) # old segment_definer comment = new flag_description
-                # OUTDATED PLACEHOLDER: flag_versions[(ifo,name,version)].version_comment=str(flag_versions_numbered[i]['comment'])
+                if new_comments==True:
+                    flag_versions[(ifo,name,version)] = InsertFlagVersion(ifo,name,version)
+                else:
+                    flag_versions[(ifo,name,version)] = InsertFlagVersionOld(ifo,name,version)
+                if: new_comments:
+                    flag_versions[(ifo,name,version)].flag_description=str(flag_versions_numbered[i]['comment']) # old segment_definer comment = new flag_description
+                    # OUTDATED PLACEHOLDER: flag_versions[(ifo,name,version)].version_comment=str(flag_versions_numbered[i]['comment'])
+                else:
+                    flag_versions[(ifo,name,version)].flag_comment=str(flag_versions_numbered[i]['comment'])
+                    flag_versions[(ifo,name,version)].version_comment=str(flag_versions_numbered[i]['comment'])
             flag_versions[(ifo,name,version)].temporary_definer_id = flag_versions_numbered[i]['segment_def_id']
             flag_versions[(ifo,name,version)].temporary_process_id = flag_versions_numbered[i]['process_id']
             # Populate reverse lookup dictionary:
@@ -860,7 +901,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             for pid in flag_versions[i].temp_process_ids.keys():
                 start = flag_versions[i].temp_process_ids[pid]['insert_data_start']
                 stop = flag_versions[i].temp_process_ids[pid]['insert_data_stop']
-                flag_versions[i].flag_version_comment=process_dict[pid]['process_comment']  # Fix!!! Test!
+                if new_comments:
+                    flag_versions[i].flag_version_comment=process_dict[pid]['process_comment']  # Fix!!! Test!
                 insert_history_dict = {}
                 try:
                     insert_history_dict['process_metadata'] = process_dict[pid]['process_metadata']

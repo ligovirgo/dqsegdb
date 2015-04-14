@@ -210,6 +210,31 @@ class InsertFlagVersion(PatchFlagVersion):
         self.flagDict['metadata']['deactivated']=self.deactivated
         self.flagDict['metadata']['active_indicates_ifo_badness']=self.active_indicates_ifo_badness
 
+class InsertFlagVersionOld(PatchFlagVersion):
+    __doc__ = PatchFlagVersion.__doc__ + """ 
+    Adds metadata for initial inserts 
+    """
+    def __init__(self,ifo,name,version):
+        super(InsertFlagVersion, self).__init__(ifo,name,version)
+        self.metadata={}
+        self.version_comment=""
+        self.flag_comment=""
+        self.provenance_url=""
+        self.deactivated=False
+        self.active_indicates_ifo_badness=None
+    def buildFlagDictFromInsertVersion(self):
+        ### Fix!!! I think I should make this a function that takes the self.x arguments
+        ### as inputs and returns a modified flagDict object, so I can use it other
+        ### places
+        self.buildFlagDictFromPatchVersion()
+        self.flagDict['metadata']={}
+        self.flagDict['metadata']['flag_comment']=self.flag_comment
+        self.flagDict['metadata']['version_comment']=self.version_comment
+        self.flagDict['metadata']['provenance_url']=self.provenance_url
+        self.flagDict['metadata']['deactivated']=self.deactivated
+        self.flagDict['metadata']['active_indicates_ifo_badness']=self.active_indicates_ifo_badness
+    
+
 ################################################################################
 #
 #  Helper functions to convert segmentlist to json list of lists type object 
