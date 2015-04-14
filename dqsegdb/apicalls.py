@@ -4,6 +4,7 @@ from dqsegdb import clientutils
 import json
 import glue
 from dqsegdb.jsonhelper import InsertFlagVersion
+from dqsegdb.jsonhelper import InsertFlagVersionOld
 from urllib2 import HTTPError
 from urllib2 import URLError
 import time
@@ -270,7 +271,7 @@ def queryAPIVersion(protocol,server,verbose):
         print queryurl
     result=urifunctions.getDataUrllib2(queryurl)
     dictResult=json.loads(result)
-    apiVersion=dictResult['query_information']['api_version']
+    apiVersion=str(dictResult['query_information']['api_version'])
     return apiVersion
 
 
@@ -679,7 +680,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
     serverfqdn=server.split('/')[-1]
     apiResult=queryAPIVersion(protocol,serverfqdn,False)
     # If the API change results in a backwards incompatibility, handle it here with a flag that affects behavior below
-    if apiResult >= 2.1.0:
+    if apiResult >= "2.1.0":
         # S6 style comments are needed
         new_comments=True
     else:
@@ -818,7 +819,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
                     flag_versions[(ifo,name,version)] = InsertFlagVersion(ifo,name,version)
                 else:
                     flag_versions[(ifo,name,version)] = InsertFlagVersionOld(ifo,name,version)
-                if: new_comments:
+                if new_comments:
                     flag_versions[(ifo,name,version)].flag_description=str(flag_versions_numbered[i]['comment']) # old segment_definer comment = new flag_description
                     # OUTDATED PLACEHOLDER: flag_versions[(ifo,name,version)].version_comment=str(flag_versions_numbered[i]['comment'])
                 else:
