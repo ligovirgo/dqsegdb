@@ -163,8 +163,7 @@ def publishAndExit(filepath,debug=False):
     raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
   else:
     # We're done here
-    if debug:
-      print "Insert worked!"
+    print "Insert worked!"
     sys.exit()
 
 def del_file(name):
