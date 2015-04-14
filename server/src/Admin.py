@@ -75,7 +75,6 @@ class AdminHandle:
                                     "server_timestamp" : gpstime.GpsSecondsFromPyUTC(time.time(), constant.gps_leap_secs),
                                     "server_elapsed_query_time" : "%.5f" % seqt,
                                     "server" : socket.gethostname(),
-                                    "server_code_version" : constant.py_server_version,
                                     "api_version" : constant.api_version,
                                     "start" : t1,
                                     "end" : t2,
@@ -222,30 +221,6 @@ class AdminHandle:
              }
         # Return.
         return d
-
-    '''
-    # Get DB-related statistics.
-    def get_db_statistics_payload(self, ifo, req_method, full_uri):
-        # Instantiate objects.
-        dao = DAO.DAOHandle()
-        print 'here'
-        # Define expected payload.
-        d = {"results" :
-                {
-                 "earliest_known_segment_start_time" : dao.get_segment_boundaries('known', False, ifo, req_method, full_uri),
-                 "latest_known_segment_stop_time" : dao.get_segment_boundaries('known', True, ifo, req_method, full_uri),
-                 "total_known_segments" : dao.get_segment_totals('known', ifo, req_method, full_uri),
-                 "earliest_active_segment_start_time" : dao.get_segment_boundaries('active', False, ifo, req_method, full_uri),
-                 "latest_active_segment_stop_time" : dao.get_segment_boundaries('active', True, ifo, req_method, full_uri),
-                 "total_active_segments" : dao.get_segment_totals('active', ifo, req_method, full_uri),
-                 "total_flags" : dao.get_flag_totals(ifo, req_method, full_uri),
-                 "total_versions" : dao.get_flag_version_totals(ifo, req_method, full_uri),
-                 "last_segment_insert_time" : dao.get_last_segment_insert_time(ifo, req_method, full_uri)
-                }
-             }
-        # Return.
-        return d
-    '''
     
     # Log event and set the required HTTP error code.
     def log_and_set_http_code(self, code, state, req_method, add_info, uri):
@@ -384,7 +359,7 @@ class AdminHandle:
         # Instantiate.
         dao = DAO.DAOHandle();
         # Set resource array.
-        d = {"results" : ['/report/flags', '/report/known', '/report/db']}
+        d = {"results" : ['/report/flags', '/report/coverage', '/report/known', '/report/db']}
         # Get IFO array.
         ifos = dao.get_value_list(1, req_method, full_uri)
         # Loop IFO array.
