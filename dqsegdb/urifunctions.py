@@ -82,15 +82,16 @@ def getDataUrllib2(url,timeout=900,logger=None):
             output=urllib2.urlopen(url)
     except urllib2.HTTPError,e:
         #print e.read()
-        print "Error accesing url: %s" % url
+        print "Warning: Issue accessing url: %s" % url
+        print "Code: "
         print e.code
         #print e.reason
-        print url
-        print "May be handled cleanly by calling instance: raising error:"
+        #print url
+        print "May be handled cleanly by calling instance: otherwise will result in an error."
         raise
     except urllib2.URLError,e:
         #print e.read()
-        print "Error accesing url: %s" % url
+        print "Issue accesing url: %s" % url
         print e.reason
         try:
             type, value, traceback_stack = sys.exc_info()
