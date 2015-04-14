@@ -233,16 +233,21 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
         urlreturned = opener.open(request)
     except urllib2.HTTPError,e:
         #print e.read()
+        print "Warning: Issue accessing url: %s" % url
+        print "Code: "
         print e.code
         #print e.reason
+        #print url
+        print "May be handled cleanly by calling instance: otherwise will result in an error."
+        #print e.reason
         #print urlreturned
-        print url
         raise
     except urllib2.URLError,e:
         #print e.read()
+        print "Warning: Issue accessing url: %s" % url
         print e.reason
+        print "May be handled cleanly by calling instance: otherwise will result in an error."
         #print urlreturned
-        print url
         raise
     if logger:
         logger.debug("Completed url call: %s" % url)
@@ -276,14 +281,18 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
         urlreturned = opener.open(request)
     except urllib2.HTTPError,e:
         #print e.read()
+        print "Warning: Issue accessing url: %s" % url
+        print "Code: "
         print e.code
         #print e.reason
-        print url
+        #print url
+        print "May be handled cleanly by calling instance: otherwise will result in an error."
         raise
     except urllib2.URLError,e:
         #print e.read()
+        print "Warning: Issue accessing url: %s" % url
         print e.reason
-        print url
+        print "May be handled cleanly by calling instance: otherwise will result in an error."
         raise
     if logger:
         logger.debug("Completed url call: %s" % url)
