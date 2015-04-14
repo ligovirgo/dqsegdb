@@ -215,7 +215,7 @@ class InsertFlagVersionOld(PatchFlagVersion):
     Adds metadata for initial inserts 
     """
     def __init__(self,ifo,name,version):
-        super(InsertFlagVersion, self).__init__(ifo,name,version)
+        super(InsertFlagVersionOld, self).__init__(ifo,name,version)
         self.metadata={}
         self.version_comment=""
         self.flag_comment=""
