@@ -683,7 +683,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         # S6 style comments are needed
         new_comments=True
     else:
-        # Older server, so don't want to supply extra comments... wait it doesn't matter...
+        # Older server, so don't want to supply extra comments... 
         new_comments=False
 
 
