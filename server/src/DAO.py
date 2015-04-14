@@ -978,15 +978,14 @@ class DAOHandle:
                     else:
                         # Get values.
                         gps = gpstime.GpsSecondsFromPyUTC(time.time(), constant.gps_leap_secs)
-                        data_format = 5 # Was 8, fixed until removal
                         try:
                             # Insert process.
                             cur.execute("""
     	                                INSERT INTO tbl_processes
-    	                                (dq_flag_version_fk, process_full_name, pid, fqdn, data_format_fk, user_fk, insertion_time, process_time_started)
+    	                                (dq_flag_version_fk, process_full_name, pid, fqdn, user_fk, insertion_time, process_time_started)
     	                                VALUES
                                         (?,?,?,?,?,?,?,?);
-    	                                """, vid, str(key['process_metadata']['name']), int(key['process_metadata']['pid']), str(key['process_metadata']['fqdn']), data_format, uid, gps, str(key['process_metadata']['process_start_timestamp']))
+    	                                """, vid, str(key['process_metadata']['name']), int(key['process_metadata']['pid']), str(key['process_metadata']['fqdn']), uid, gps, str(key['process_metadata']['process_start_timestamp']))
                         except pyodbc.Error, err:
                             # Set HTTP code and log.
                             admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
