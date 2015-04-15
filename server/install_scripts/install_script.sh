@@ -66,6 +66,9 @@ mv web_src.tar /usr/share/dqsegdb_web/
 cd /usr/share/dqsegdb_web/
 tar -xvf web_src.tar 
 
+# Make web interface file download directory write-able.
+chmod 777 downloads
+
 # Change dir.
 cd /root
 
