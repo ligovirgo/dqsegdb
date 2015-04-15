@@ -984,7 +984,7 @@ class DAOHandle:
     	                                INSERT INTO tbl_processes
     	                                (dq_flag_version_fk, process_full_name, pid, fqdn, user_fk, insertion_time, process_time_started)
     	                                VALUES
-                                        (?,?,?,?,?,?,?,?);
+                                        (?,?,?,?,?,?,?);
     	                                """, vid, str(key['process_metadata']['name']), int(key['process_metadata']['pid']), str(key['process_metadata']['fqdn']), uid, gps, str(key['process_metadata']['process_start_timestamp']))
                         except pyodbc.Error, err:
                             # Set HTTP code and log.
