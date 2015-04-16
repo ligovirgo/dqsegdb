@@ -1,21 +1,29 @@
 --
+-- DB Schema SQL - 2.1.3
+--
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `tbl_dq_flags`
 --
 
 CREATE TABLE IF NOT EXISTS `tbl_dq_flags` (
   `dq_flag_id` int(11) NOT NULL AUTO_INCREMENT,
   `dq_flag_name` text NOT NULL,
-  `dq_flag_description` text NOT NULL,
   `dq_flag_ifo` int(11) NOT NULL DEFAULT '0',
-  `dq_flag_assoc_versions` text NOT NULL COMMENT 'Comma-delimited list of associated versions.',
-  `dq_flag_active_means_ifo_badness` tinyint(1) DEFAULT NULL,
-  `dq_flag_creator` int(11) DEFAULT NULL,
+  `dq_flag_assoc_versions` text NOT NULL,
+  `dq_flag_active_means_ifo_badness` tinyint(1) DEFAULT '0',
+  `dq_flag_creator` int(11) DEFAULT '0',
   `dq_flag_date_created` double NOT NULL,
   PRIMARY KEY (`dq_flag_id`),
   KEY `dq_flag_active_means_ifo_badness` (`dq_flag_active_means_ifo_badness`),
   KEY `dq_flag_ifo` (`dq_flag_ifo`),
   KEY `dq_flag_creator` (`dq_flag_creator`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=794 ;
 
 -- --------------------------------------------------------
 
@@ -26,12 +34,16 @@ CREATE TABLE IF NOT EXISTS `tbl_dq_flags` (
 CREATE TABLE IF NOT EXISTS `tbl_dq_flag_versions` (
   `dq_flag_version_id` int(11) NOT NULL AUTO_INCREMENT,
   `dq_flag_fk` int(11) NOT NULL DEFAULT '0',
+  `dq_flag_description` text NOT NULL,
   `dq_flag_version` int(11) NOT NULL DEFAULT '0',
-  `dq_flag_version_segment_total` int(11) NOT NULL DEFAULT '0',
-  `dq_flag_version_earliest_segment_time` double NOT NULL DEFAULT '0',
-  `dq_flag_version_latest_segment_time` double NOT NULL DEFAULT '0',
+  `dq_flag_version_known_segment_total` int(11) NOT NULL DEFAULT '0',
+  `dq_flag_version_known_earliest_segment_time` double NOT NULL DEFAULT '0',
+  `dq_flag_version_known_latest_segment_time` double NOT NULL DEFAULT '0',
+  `dq_flag_version_active_segment_total` int(11) NOT NULL DEFAULT '0',
+  `dq_flag_version_active_earliest_segment_time` double NOT NULL DEFAULT '0',
+  `dq_flag_version_active_latest_segment_time` double NOT NULL DEFAULT '0',
   `dq_flag_version_deactivated` int(1) NOT NULL DEFAULT '0' COMMENT 'Is\r\nthis version unavailable?',
-  `dq_flag_version_description` text NOT NULL,
+  `dq_flag_version_comment` text NOT NULL,
   `dq_flag_version_uri` text NOT NULL,
   `dq_flag_version_last_modifier` int(11) NOT NULL DEFAULT '0',
   `dq_flag_version_date_created` double NOT NULL,
@@ -41,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `tbl_dq_flag_versions` (
   KEY `dq_flag_fk` (`dq_flag_fk`),
   KEY `dq_flag_versio_unavailable` (`dq_flag_version_deactivated`),
   KEY `dq_flag_version_last_modifier` (`dq_flag_version_last_modifier`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=801 ;
 
 -- --------------------------------------------------------
 
@@ -55,20 +67,21 @@ CREATE TABLE IF NOT EXISTS `tbl_processes` (
   `process_full_name` text NOT NULL,
   `pid` int(11) NOT NULL DEFAULT '0',
   `fqdn` text NOT NULL,
-  `data_format_fk` int(11) NOT NULL DEFAULT '0',
   `user_fk` int(11) NOT NULL DEFAULT '0',
-  `insertion_time` double NOT NULL,
-  `affected_data_segment_total` double NOT NULL,
-  `affected_data_start` double NOT NULL,
-  `affected_data_stop` double NOT NULL,
-  `process_time_started` double NOT NULL,
+  `insertion_time` double NOT NULL DEFAULT '0',
+  `affected_known_data_segment_total` double NOT NULL DEFAULT '0',
+  `affected_known_data_start` double NOT NULL DEFAULT '0',
+  `affected_known_data_stop` double NOT NULL DEFAULT '0',
+  `affected_active_data_segment_total` int(11) NOT NULL DEFAULT '0',
+  `affected_active_data_start` double NOT NULL DEFAULT '0',
+  `affected_active_data_stop` double NOT NULL DEFAULT '0',
+  `process_time_started` double NOT NULL DEFAULT '0',
   `process_time_last_used` double NOT NULL DEFAULT '0',
   PRIMARY KEY (`process_id`),
   KEY `user_fk` (`user_fk`),
   KEY `pid` (`pid`),
-  KEY `upload_format_fk` (`data_format_fk`),
   KEY `dq_flag_version_fk` (`dq_flag_version_fk`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT AUTO_INCREMENT=11049 ;
 
 -- --------------------------------------------------------
 
@@ -82,7 +95,7 @@ CREATE TABLE IF NOT EXISTS `tbl_process_args` (
   `process_argv` text NOT NULL,
   PRIMARY KEY (`process_arg_id`),
   KEY `process_fk` (`process_fk`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COMMENT='Arguments passed by the process';
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COMMENT='Arguments passed by the process' AUTO_INCREMENT=989 ;
 
 -- --------------------------------------------------------
 
@@ -122,7 +135,7 @@ CREATE TABLE IF NOT EXISTS `tbl_values` (
   `value_txt` text NOT NULL,
   PRIMARY KEY (`value_id`),
   KEY `value_group_fk` (`value_group_fk`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=4 ;
 
 --
 -- Dumping data for table `tbl_values`
@@ -132,8 +145,9 @@ INSERT INTO `tbl_values` (`value_id`, `value_group_fk`, `value_txt`) VALUES
 (1, 1, 'V1'),
 (2, 1, 'H1'),
 (3, 1, 'L1'),
-(4, 3, 'ASCII'),
-(5, 3, 'LIGOLW XML');
+(4, 1, 'G1'),
+(5, 1, 'H2'),
+(6, 1, 'P1');
 
 -- --------------------------------------------------------
 
@@ -145,7 +159,7 @@ CREATE TABLE IF NOT EXISTS `tbl_value_groups` (
   `value_group_id` int(11) NOT NULL AUTO_INCREMENT,
   `value_group` text NOT NULL,
   PRIMARY KEY (`value_group_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
 
 --
 -- Dumping data for table `tbl_value_groups`
@@ -153,8 +167,9 @@ CREATE TABLE IF NOT EXISTS `tbl_value_groups` (
 
 INSERT INTO `tbl_value_groups` (`value_group_id`, `value_group`) VALUES
 (1, 'IFO'),
-(2, 'User'),
-(3, 'Data format');
+(2, 'User');
+
+-- --------------------------------------------------------
 
 --
 -- Constraints for dumped tables
@@ -178,15 +193,8 @@ ALTER TABLE `tbl_dq_flag_versions`
 -- Constraints for table `tbl_processes`
 --
 ALTER TABLE `tbl_processes`
-  ADD CONSTRAINT `tbl_processes_ibfk_2` FOREIGN KEY (`data_format_fk`) REFERENCES `tbl_values` (`value_id`),
   ADD CONSTRAINT `tbl_processes_ibfk_3` FOREIGN KEY (`user_fk`) REFERENCES `tbl_values` (`value_id`),
   ADD CONSTRAINT `tbl_processes_ibfk_4` FOREIGN KEY (`dq_flag_version_fk`) REFERENCES `tbl_dq_flag_versions` (`dq_flag_version_id`);
-
---
--- Constraints for table `tbl_process_args`
---
-ALTER TABLE `tbl_process_args`
-  ADD CONSTRAINT `tbl_process_args_ibfk_1` FOREIGN KEY (`process_fk`) REFERENCES `tbl_processes` (`process_id`),
 
 --
 -- Constraints for table `tbl_segments`
@@ -205,4 +213,3 @@ ALTER TABLE `tbl_segment_summary`
 --
 ALTER TABLE `tbl_values`
   ADD CONSTRAINT `tbl_values_ibfk_1` FOREIGN KEY (`value_group_fk`) REFERENCES `tbl_value_groups` (`value_group_id`);
-

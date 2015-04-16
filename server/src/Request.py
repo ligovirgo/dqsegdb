@@ -175,6 +175,14 @@ class RequestHandle():
                             if not r:
                                 # Set HTTP code and log.
                                 admin.log_and_set_http_code(200, 27, req_method, None, full_uri)
+                        # If request is coverage.
+                        elif request == 'coverage':
+                            # Get list of all flags.
+                            r = dao.get_flag_version_coverage(req_method, full_uri)
+                            # If dictionary not supplied.
+                            if not r:
+                                # Set HTTP code and log.
+                                admin.log_and_set_http_code(200, 42, req_method, None, full_uri)
                         # If request is db.
                         elif request == 'db':
                             # Get DB-related statistics.
