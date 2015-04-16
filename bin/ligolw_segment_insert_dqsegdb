@@ -163,8 +163,7 @@ def publishAndExit(filepath,debug=False):
     raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
   else:
     # We're done here
-    if debug:
-      print "Insert worked!"
+    print "Insert worked!"
     sys.exit()
 
 def del_file(name):
@@ -202,7 +201,7 @@ ligolwtypes.FromPyType[type(True)] = ligolwtypes.FromPyType[type(0)]
 
 process_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__,
              version = __version__,
-             cvs_entry_time = __date__, comment = options.comment).process_id
+             cvs_entry_time = __date__, comment = 'ligolw_segment_insert_dqsegdb client insert or append').process_id
 
 ##########################################################################
 #             Process segment-file and summary-file 

@@ -1,0 +1,524 @@
+/*
+This file contains all div-related styles.
+*/
+
+/* === DIVs === */
+
+/* === Break === */
+.break
+{
+	clear: both;
+}
+
+/* === Shell container === */
+#div_shell
+{
+	position: relative;
+	width: 1000px;
+	margin: 0 auto;
+	z-index: 0;
+}
+
+/* === Main container. === */
+#div_main
+{
+	position: relative;
+	padding: 0 10px;
+	background: #FFF;
+	z-index: 0;
+}
+
+/* === Upper container. === */
+#div_upper
+{
+	position: relative;
+	width: 100%;
+	margin: 0;
+	background: url(../images/hdr.png) repeat-x 0 0;
+	z-index: 0;
+}
+
+/* === Search bar container. === */
+#div_search_bar
+{
+	position: relative;
+	width: 100%;
+	height: 50px;
+	margin: 0 0 30px 0;
+	background: url(../images/light_to_dark_blue_transparent_bg.png) 0 0 repeat-x;
+}
+
+/* === Upper inner containers. === */
+#div_upper_lx, #div_upper_rx
+{
+	position: relative;
+	float: left;
+	width: 650px;
+	padding: 0 10px;
+	z-index: 0;
+}
+#div_upper_rx
+{
+	width: 300px;
+	padding: 0 10px 0 0;
+}
+
+/* === Top link container. === */
+.top_links_container
+{
+	position: relative;
+	top: -50px;
+	width: 100%;
+	min-height: 50px;
+	height: 50px;
+	margin: 0 0 10px 0;
+	background: url(../images/brown_transparent_bg.png) 0 0 repeat-x;
+	z-index: 1;
+}
+
+/* === Horizontal navigation container === */	
+#navigation_horiz
+{
+	width: 100%;
+	z-index: 1;
+}
+#navigation_horiz  ul
+{
+	height: 50px;
+	display: block;
+	margin: 0;
+	padding: 0;
+}
+
+#navigation_horiz  ul li
+{
+	display: block;
+	float: left;
+	margin: 0;
+	position:relative;
+}
+
+#navigation_horiz  ul li a.navlink, #navigation_horiz  ul li a.navlink_sel
+{
+	position: relative;
+	float: left;
+	height: 34px;
+	min-width: 150px;
+	padding: 16px 8px 0 8px;
+	text-align: center;
+	font-size: 14px;
+	color: #FFF;
+}
+#navigation_horiz  ul li a.navlink_sel
+{
+	background: #6887AD;
+}
+#navigation_horiz  ul li a.navlink:link:hover, #navigation_horiz  ul li a.navlink:visited:hover,
+
+#navigation_horiz  ul li a.navlink_sel:link:hover, #navigation_horiz  ul li a.navlink_sel:visited:hover
+{
+	background: #819EC1;
+}
+
+#navigation_horiz .dropdown
+{
+	position:absolute;
+	padding: 0 0 0 0;
+	background:#FFF;
+	border-right: 1px solid #FFF;
+	border-bottom: 1px solid #FFF;
+	color:#000;
+	z-index: 1;
+}
+
+/* === Middle container === */	
+#div_middle
+{
+	position: relative;
+	width: 100%;
+	top: -55px;
+	padding: 5px 0;
+	background: #FFF;
+	z-index: 0;
+}
+
+/* === Middle-left and -right containers - Homepage === */	
+#div_middle_left, #div_middle_right
+{
+	position: relative;
+	float: left;
+	width: 655px;
+	margin: 0 10px 0 0;
+	z-index: 0;
+}
+#div_middle_right
+{
+	width: 315px;
+	margin: 0;
+}
+
+/* === Footer containers === */	
+#div_footer
+{
+	position: relative;
+	width: 100%;
+	padding: 5px 0;
+	color: #FFF;
+	background: #7DA7DC;
+	z-index: 0;
+}
+#div_footer_base
+{
+	position: relative;
+	float: left;
+	width: 980px;
+	height: 10px;
+	margin: 0 0 10px 0;
+	background: #FFF;
+	z-index: 0;
+}
+#div_footer_base_lx, #div_footer_base_rx
+{
+	position: relative;
+	float: left;
+	width: 10px;
+	height: 10px;
+	background:url(../images/white_bl_no_bdr.png) 0 0 no-repeat;
+	z-index: 0;
+}
+#div_footer_base_rx
+{
+	background:url(../images/white_br_no_bdr.png) 0 0 no-repeat;
+}
+
+/* === Rounded DIV styles === */
+.bl,.blHdr {background:url(../images/bl.png) 0 100% no-repeat; width:100%;}
+.br,.brHdr {background:url(../images/br.png) 100% 100% no-repeat}
+.blHdr {background: 0 100% no-repeat;}
+.brHdr {background: 100% 100% no-repeat}
+.tlCon {background:url(../images/tl.gif) 0 0 no-repeat}
+.tr {padding:9px;}
+.tlCon { background:0 0 no-repeat;padding:9px;}
+.trCon {background:url(../images/miniBorderPixel.gif) 100% 0 no-repeat; padding: 4px 18px 13px 8px; text-align: justify;}
+.t,.tCon {background:#D7D6D6 url(../images/greyGradient.gif) 0 0 repeat-x; width:100%;}
+.tCon {background:#FFF;}
+.b {background:url(../images/miniBorderPixel.gif) 0 100% repeat-x}
+.bCon {background:url(../images/miniBorderPixelBelow.png) 0 100% repeat-x}
+.l {background:url(../images/miniBorderPixel.gif) 0 0 repeat-y}
+.rHdr {background:url(../images/miniBorderPixelHdrShadowedRight.png) 100% 0 repeat-y; min-height: 34px}
+.r {background:url(../images/miniBorderPixelShadowedRight.png) 100% 0 repeat-y}
+
+/* === Flat Light-Blue div styles === */
+.flat_light_blue_hdr, .flat_light_blue_hdr_w_title, .flat_light_blue_ftr
+{
+	position: relative;
+	float: left;
+	width: 100%;
+	height: 40px;
+	background: #D2DDEC;
+}
+.flat_light_blue_hdr
+{
+	height: 10px;
+}
+.flat_light_blue_ftr
+{
+	height: 11px;
+	margin: 0 0 10px 0;
+}
+.flat_light_blue_tl, .flat_light_blue_tr, .flat_light_blue_bl, .flat_light_blue_br
+{
+	position: relative;
+	float: left;
+	width: 11px;
+	height: 11px;
+	background: url(../images/light_blue_tl.png) no-repeat top left;
+}
+.flat_light_blue_tr
+{
+	float: right;
+	background: url(../images/light_blue_tr.png) no-repeat top right;
+}
+.flat_light_blue_bl, .flat_light_blue_br
+{
+	background: url(../images/light_blue_bl.png) no-repeat bottom left;
+}
+.flat_light_blue_br
+{
+	float: right;
+	background: url(../images/light_blue_br.png) no-repeat bottom right;
+}
+.flat_light_blue_on_white_tl, .flat_light_blue_on_white_tr, .flat_light_blue_on_white_bl, .flat_light_blue_on_white_br
+{
+	position: relative;
+	float: left;
+	width: 11px;
+	height: 11px;
+	background: url(../images/light_blue_on_white_tl.png) no-repeat top left;
+}
+.flat_light_blue_on_white_tr
+{
+	float: right;
+	background: url(../images/light_blue_on_white_tr.png) no-repeat top right;
+}
+.flat_light_blue_on_white_bl, .flat_light_blue_on_white_br
+{
+	background: url(../images/light_blue_on_white_bl.png) no-repeat bottom left;
+}
+.flat_light_blue_on_white_br
+{
+	float: right;
+	background: url(../images/light_blue_on_white_br.png) no-repeat bottom right;
+}
+.flat_light_blue_bg
+{
+	position: relative;
+	float: left;
+	width: 96%;
+	color: #000;
+	padding: 0 2%;
+	background: #D2DDEC;
+}
+.flat_light_blue_title
+{
+	position: relative;
+	float: left;
+	top: -10px;
+	font-size: 22px;
+	color: #000;
+	text-align: justify;
+}
+.flat_light_blue_content
+{
+	position: relative;
+	text-align: justify;
+}
+
+/* === Azzure div styles === */
+.azzure_hdr, .azzure_ftr
+{
+	position: relative;
+	float: left;
+	width: 100%;
+	height: 40px;
+	background: #CDE1FA;
+}
+.azzure_ftr
+{
+	height: 11px;
+	margin: 0 0 10px 0;
+	background: #CDE1FA;
+}
+.azzure_tl, .azzure_tr, .azzure_bl, .azzure_br
+{
+	position: relative;
+	float: left;
+	width: 11px;
+	height: 11px;
+	background: url(../images/azzure_tl.png) no-repeat top left;
+}
+.azzure_tr
+{
+	float: right;
+	background: url(../images/azzure_tr.png) no-repeat top right;
+}
+.azzure_bl, .azzure_br
+{
+	background: url(../images/azzure_bl.png) no-repeat bottom left;
+}
+.azzure_br
+{
+	float: right;
+	background: url(../images/azzure_br.png) no-repeat bottom right;
+}
+.azzure_bg
+{
+	position: relative;
+	float: left;
+	width: 96%;
+	color: #000;
+	padding: 0 2%;
+	background: #CDE1FA;
+}
+.azzure_title
+{
+	position: relative;
+	float: left;
+	top: -10px;
+	font-size: 22px;
+	color: #000;
+	text-align: justify;
+}
+.azzure_content
+{
+	position: relative;
+	text-align: justify;
+}
+
+/* === Grey div styles === */
+.grey_hdr, .grey_ftr
+{
+	position: relative;
+	float: left;
+	width: 100%;
+	height: 53px;
+	background: #8792A0;
+}
+.grey_ftr
+{
+	height: 11px;
+	background: #8792A0;
+}
+.grey_tl, .grey_tr, .grey_bl, .grey_br
+{
+	position: relative;
+	float: left;
+	width: 11px;
+	height: 11px;
+	background: url(../images/grey_tl.png) no-repeat top left;
+}
+.grey_tr
+{
+	float: right;
+	background: url(../images/grey_tr.png) no-repeat top right;
+}
+.grey_bl, .grey_br
+{
+	background: url(../images/grey_bl.png) no-repeat bottom left;
+}
+.grey_br
+{
+	float: right;
+	background: url(../images/grey_br.png) no-repeat bottom right;
+}
+.grey_bg
+{
+	position: relative;
+	float: left;
+	width: 96%;
+	color: #FFF;
+	padding: 0 2%;
+	background: #8792A0;
+}
+.grey_title
+{
+	position: relative;
+	float: left;
+	top: -10px;
+	font-size: 22px;
+	color: #FFF;
+	text-align: justify;
+}
+.grey_content
+{
+	position: relative;
+	text-align: justify;
+}
+
+/***********************************
+** DIVs used in formatting rows. **
+**********************************/
+.div_row_cover
+{
+	position: relative;
+	float: left;
+	left: -2px;
+	width: 99%;
+	padding: 0.6% 0.5% 0.5% 0.5%;
+	border: solid #CCC;
+	border-width:  0 0 1px 0;
+}
+.div_row_hdr
+{
+	position: relative;
+	float: left;
+	width: 29%;
+	padding: 3px 0.5% 0 0.5%;
+	font-weight: bold;
+}
+.div_row_details
+{
+	position: relative;
+	float: left;
+	width: 69%;
+	padding: 0 0.5%;
+}
+
+
+/************************
+** Host-related divs. **
+**********************/
+#div_current_host {
+	position: relative;
+	float: left;
+	color: #FFF;
+	margin: 12px 0 0 8px;
+}
+#div_change_host {
+	position: relative;
+	float: left;
+	font-size: 11px;
+	margin: 14px 0 0 8px;
+}
+#query_server {
+	position: relative;
+}
+
+div.div_f_v_cover, div.div_f_v_cover_shaded {
+	position: relative;
+	width: 100%;
+	height: 16px;
+	padding: 5px;
+	background: #DEE9F8;
+}
+div.div_f_v_cover_shaded {
+	background: #B5D2F6;
+}
+span.span_versions, span.span_versions:hover {
+	position: relative;
+	float: right;
+	margin: 1px 0 0 5px;
+	font-size: 10px;
+	color: #3988B1;
+	cursor: pointer;
+}
+
+span.span_versions:hover {
+	color: #5FAFD9;
+}
+
+span.span_version_no, span.span_version_no:hover, span.span_version_no_deselected, span.span_version_no_deselected:hover {
+	position: relative;
+	float: left;
+	top: -2px;
+	margin: 0 0 0 5px;
+	padding: 1px;
+}
+span.span_version_no, span.span_version_no:hover, span.span_version_no_deselected:hover {
+	background: #FFF;
+	border: 1px solid;
+	border-radius: 15px;
+}
+span.span_version_no:hover, span.span_version_no_deselected:hover {
+	background: #CCC;
+}
+span.span_version_no_deselected {
+	top: -1px;
+}
+span.span_change_host {
+	color: #5FAFD9;
+}
+span.span_change_host:hover {
+	color: #92C7E8;
+	cursor: pointer;
+}
+/* === SEGMENT RETRIEVAL === */
+#div_retrieval_msg {
+	position: absolute;
+	display: block;
+	visibility: hidden;
+}
+#input_retrieve_segments_hdr {
+	height: 18px;
+	visibility: hidden;
+}
