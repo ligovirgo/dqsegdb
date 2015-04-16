@@ -82,6 +82,8 @@ def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
         Ex: 999999999
     endTime : `int`
         Ex: 999999999
+    ifo : `string`
+        Ex: 'L1'
 
     """
     total_active_list=segments.segmentlist([]) 
