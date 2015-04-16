@@ -27,6 +27,24 @@ def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol,
     Function to query the dqsegdb for lists of included and excluded flags.
     Returns lists of JSON for the included and excluded flags and lists of 
     URLs used to query the database.
+
+    Parameters
+    ----------
+    includedList : `list`
+        List of ifo,name,version tuples
+    excludedList : `list`
+        List of ifo,name,version tuples
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
+    startTime : `int`
+        Ex: 999999999
+    endTime : `int`
+        Ex: 999999999
+
     """
     from dqsegdb import apicalls
     ## Form the results for included and excluded flags
