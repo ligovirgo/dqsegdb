@@ -78,16 +78,6 @@ def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
 
     Parameters
     ----------
-    includedList : `list`
-        List of ifo,name,version tuples
-    excludedList : `list`
-        List of ifo,name,version tuples
-    protocol : `string`
-        Ex: 'https'
-    server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
-    include_list_string : `string`
-        Ex: "metadata,known,active"
     startTime : `int`
         Ex: 999999999
     endTime : `int`
