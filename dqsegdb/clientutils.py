@@ -75,6 +75,24 @@ def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
     """ 
     Calculate the result of the union of the active times for the included flag less the intersection of that result with the union of the excluded flags
     Inputs are 2 lists of python dictionaries representing the JSON (already have run json.loads() on the JSON), a start time, and end time, and the ifo name (it does not make sense to include/exclude across multiple ifos)
+
+    Parameters
+    ----------
+    includedList : `list`
+        List of ifo,name,version tuples
+    excludedList : `list`
+        List of ifo,name,version tuples
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
+    startTime : `int`
+        Ex: 999999999
+    endTime : `int`
+        Ex: 999999999
+
     """
     total_active_list=segments.segmentlist([]) 
     for flag in includedJSON: 
