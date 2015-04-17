@@ -30,6 +30,7 @@ python setup.py build
 %install
 python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
 rm -rf $RPM_BUILD_ROOT/dqsegdb.egg-info
+rm -rf $RPM_BUILD_ROOT/dqsegdb-1.1.0-py2.6.egg-info
 
 %clean
 rm -rf $RPM_BUILD_ROOT
