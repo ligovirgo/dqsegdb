@@ -14,24 +14,24 @@ require_once('InitVar.php');
 class JSAction {
 	
 	private $document;
-	private $getReqResponse;
+	private $getAdTypeResponse;
  
 	public function __construct() {
 		// Build JS action response.
-		$this->document = $this->getReqResponse();
+		$this->document = $this->getAdTypeResponse();
 	}
 
 	// Decide which response to build.
-	private function getReqResponse() {
+	private function getAdTypeResponse() {
 		// Instantiate.
 		$dao = new DAO();
 		$serverdata = new GetServerData();
 		$structure = new GetStructure();
 		$variable = new Variables();
 		// Get admin type.
-		$variable->getReq();
+		$variable->getAdminType();
 		// Get query server form.
-		if($variable->req == 'update_div_query_server') {
+		if($variable->ad_type == 'update_div_query_server') {
 			// If IFO passed.
 			if(isset($_GET['ifo'])) {
 				$_SESSION['ifo'] = $_GET['ifo'];
@@ -45,7 +45,7 @@ class JSAction {
 			$this->document = $serverdata->query_form;
 		}
 		// Update version div.
-		elseif($variable->req == 'update_version_div') {
+		elseif($variable->ad_type == 'update_version_div') {
 			// If flag passed.
 			if(isset($_GET['dq_flag'])) {
 				$_SESSION['dq_flag'] = $_GET['dq_flag'];
@@ -54,7 +54,7 @@ class JSAction {
 			$this->document = $serverdata->version_div;
 		}
 		// Update version div from textarea.
-		elseif($variable->req == 'update_version_div_from_ta') {
+		elseif($variable->ad_type == 'update_version_div_from_ta') {
 			// If flags passed.
 			if(isset($_GET['dq_flag'])) {
 				// Set flag session.
@@ -64,7 +64,7 @@ class JSAction {
 			$this->document = $serverdata->version_div;
 		}
 		// Get version div.
-		elseif($variable->req == 'update_version_select_session') {
+		elseif($variable->ad_type == 'update_version_select_session') {
 			// If URI passed.
 			if(isset($_GET['uri'])) {
 				// If URI not in update array.
@@ -83,7 +83,7 @@ class JSAction {
 			$this->document = $serverdata->version_span;
 		}
 		// If selecting/de-selecting a version.
-		elseif($variable->req == 'deselect_version_uri') {
+		elseif($variable->ad_type == 'deselect_version_uri') {
 			// Set selected class to re-send.
 			$this->document = 'span_version_no';
 			// If URI passed.
@@ -105,7 +105,7 @@ class JSAction {
 			}
 		}
 		// If retrieving segments.
-		elseif($variable->req == 'retrieve_segments') {
+		elseif($variable->ad_type == 'retrieve_segments') {
 			// Get file-related variables.
 			$variable->get_file_related_variables();
 			// Get segment JSON.
@@ -122,11 +122,11 @@ class JSAction {
 			}
 		}
 		// If re-populating recent query results div.
-		elseif($variable->req == 'get_recent_query_results') {
+		elseif($variable->ad_type == 'get_recent_query_results') {
 			$this->document = $dao->get_recent_query_results(3);
 		}
 		// If providing option to change host.
-		elseif($variable->req == 'get_current_host_box') {
+		elseif($variable->ad_type == 'get_current_host_box') {
 			// Update session to take request into account.
 			if(!$_SESSION['changing_current_host']) {
 				$_SESSION['changing_current_host'] = TRUE;
@@ -138,7 +138,7 @@ class JSAction {
 			$this->document = $structure->get_current_host_div_contents(3);
 		}
 		// Set the currently-used host.
-		elseif($variable->req == 'set_current_host') {
+		elseif($variable->ad_type == 'set_current_host') {
 			$_SESSION['default_host'] = $_GET['h'];
 			// Unset selected flags.
 			unset($_SESSION['dq_flag']);
@@ -148,7 +148,7 @@ class JSAction {
 			$_SESSION['changing_current_host'] = FALSE;
 		}
 		// Alternate the flag choice option.
-		elseif($variable->req == 'alternate_flag_choice_option') {
+		elseif($variable->ad_type == 'alternate_flag_choice_option') {
 			if($_SESSION['flag_choice_option'] == 0) {
 				$_SESSION['flag_choice_option'] = 1;
 			}

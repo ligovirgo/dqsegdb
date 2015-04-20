@@ -6,7 +6,8 @@ require_once('GetServerData.php');
 require_once('GetStructure.php');
 
 // Page content class.
-class GetContent {
+class GetContent
+{
 	public $contents;
 	
 	private $page;

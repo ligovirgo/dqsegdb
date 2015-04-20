@@ -153,9 +153,6 @@ class GetServerData {
 		// Instantiate.
 		$dao = new DAO();
 		$structure = new GetStructure();
-		$variable = new Variables();
-		// Get app variables.
-		$variable->get_app_variables();
 		// OPEN FORM.
 		$this->query_form .= "	<form method=\"POST\" id=\"frm_query_server\">\n";
 		// GET IFO.
@@ -197,8 +194,7 @@ class GetServerData {
 		$this->query_form .= $structure->get_form_structure($f, $s, NULL);
 		// GET FLAGS.
 		$f = "Flags";
-		$alt = "<span id=\"span_dq_flag_options\" class=\"span_change_host\" onclick=\"alternate_flag_option()\">- Change Flag-selection option</span>";
-		$alt .= "<span id=\"span_dq_flag_options\" class=\"span_frm_info\"><br />- A maximum of <strong>".$variable->max_selectable_flags."</strong> flags can be selected at a time.</span>";
+		$alt = "<span id=\"span_dq_flag_options\" class=\"span_change_host\" onclick=\"alternate_flag_option()\">Change Flag-selection option</span>";
 		// Get flag choice option in use.
 		$s = $this->get_choose_flag_option($tabs);
 		// Add flags to form.
@@ -236,13 +232,10 @@ class GetServerData {
 	public function get_choose_flag_option($tabs) {
 		// Init.
 		$s = NULL;
-		$variable = new Variables();
-		// Get maximum allowable flag select value.
-		$variable->get_app_variables();
 		// If using select.
 		if($_SESSION['flag_choice_option'] == 0) {
 			// Open select.
-			$s = "	<select multiple size=\"8\" id=\"dq_flag\" onchange=\"update_div_flag_versions(".$variable->max_selectable_flags.")\">\n";
+			$s = "	<select multiple size=\"8\" id=\"dq_flag\" onchange=\"update_div_flag_versions()\">\n";
 			// If selecting all flags.
 			if($_SESSION['ifo'] == 'Use_all_IFO') {
 				$res_uri = $_SESSION['default_host'].'/report/flags';
@@ -296,7 +289,7 @@ class GetServerData {
 		// Otherwise, if textarea.
 		elseif($_SESSION['flag_choice_option'] == 1) {
 			// Get textarea.
-			$s .= "	<textarea id=\"ta_dq_flag\" onchange=\"update_div_flag_versions_from_ta(".$variable->max_selectable_flags.")\"></textarea>\n";
+			$s .= "	<textarea id=\"ta_dq_flag\" onchange=\"update_div_flag_versions_from_ta()\"></textarea>\n";
 		}
 		// Return.
 		return $s;
@@ -336,71 +329,65 @@ class GetServerData {
 	public function get_version_div_contents($tabs) {
 		// Instantiate.
 		$structure = new GetStructure();
-		$variable = new Variables();
 		// If the DQ Flag session exists.
 		if(isset($_SESSION['dq_flag'])) {
-			// Get app variables.
-			$variable->get_app_variables();
 			// Add version information.
 			$f = "Versions";
 			$s = NULL;
 			$i = 0;
 			// Explode flags.
 			$da = explode(',',$_SESSION['dq_flag']);
-			// If number of selected flags within maximum allowable value.
-			if(count($da) <= $variable->max_selectable_flags) {
-				// Loop through selected URI.
-				foreach($da as $key => $uri) {
-					$i++;
-					// Explode to get flag.
-					$fa = explode('/', $uri);
-					$u = $fa[2];
-					// If the flag name exists.
-					if(isset($fa[3]) && !empty($fa[3])) {
-						$flag_name = $fa[3];
-						$span_name = str_replace('-','_',str_replace(' ','',$fa[3]));
-						// Get div.
-						$cover_div = NULL;
-						// Set div colour.
-						if($i == 2) {
-							$cover_div = "_shaded";
-							$i = 0;
-						}
-						$structure->openDiv('flag_'.$flag_name, $tabs,'div_f_v_cover'.$cover_div);
-						$s .= $structure->div;
-						// If selecting from all flags.
-						if($_SESSION['ifo'] == 'Use_all_IFO') {
-							$flag_name = $fa[2].' - '.$flag_name;
-							$span_name = $fa[2].'_'.$span_name;
-						}
-						$s .= $flag_name;
-						// Add version information after flag name.
-						$this->get_flag_version_span_contents($uri);
-						$s .= "<span id=\"span_".$span_name."\" class=\"span_versions\">".$this->version_span."</span>";
-						// Close div.
-						$structure->closeDiv('flag_'.$flag_name, $tabs);
-						$s .= $structure->div;
+			// Loop through selected URI.
+			foreach($da as $key => $uri) {
+				$i++;
+				// Explode to get flag.
+				$fa = explode('/', $uri);
+				$u = $fa[2];
+				// If the flag name exists.
+				if(isset($fa[3]) && !empty($fa[3])) {
+					$flag_name = $fa[3];
+					$span_name = str_replace('-','_',str_replace(' ','',$fa[3]));
+					// Get div.
+					$cover_div = NULL;
+					// Set div colour.
+					if($i == 2) {
+						$cover_div = "_shaded";
+						$i = 0;
 					}
-				}
-				// Ensure that only flags that have been selected by the user are in the call to the server.
-				foreach($_SESSION['uri_deselected'] as $i => $uri) {
-					// Explode to get flag.
-					$fa = explode('/', $uri);
-					$u = $fa[2];
-					$fn = $fa[3];
-					// If flag not found in call to server array.
-					if(!preg_match("/".$u."\/".$fn."/i", $_SESSION['dq_flag'])) {
-	//					echo "Not in call, but still in array: ".$u."/".$fn."<br />\n";
-						// Remove from array.
-						unset($_SESSION['uri_deselected'][$i]);
+					$structure->openDiv('flag_'.$flag_name, $tabs,'div_f_v_cover'.$cover_div);
+					$s .= $structure->div;
+					// If selecting from all flags.
+					if($_SESSION['ifo'] == 'Use_all_IFO') {
+						$flag_name = $fa[2].' - '.$flag_name;
+						$span_name = $fa[2].'_'.$span_name;
 					}
-	//				else {
-	//					echo "In call and in array: ".$u."/".$fn."<br />\n";
-	//				}
+					$s .= $flag_name;
+					// Add version information after flag name.
+					$this->get_flag_version_span_contents($uri);
+					$s .= "<span id=\"span_".$span_name."\" class=\"span_versions\">".$this->version_span."</span>";
+					// Close div.
+					$structure->closeDiv('flag_'.$flag_name, $tabs);
+					$s .= $structure->div;
 				}
 			}
+			// Ensure that only flags that have been selected by the user are in the call to the server.
+			foreach($_SESSION['uri_deselected'] as $i => $uri) {
+				// Explode to get flag.
+				$fa = explode('/', $uri);
+				$u = $fa[2];
+				$fn = $fa[3];
+				// If flag not found in call to server array.
+				if(!preg_match("/".$u."\/".$fn."/i", $_SESSION['dq_flag'])) {
+//					echo "Not in call, but still in array: ".$u."/".$fn."<br />\n";
+					// Remove from array.
+					unset($_SESSION['uri_deselected'][$i]);
+				}
+//				else {
+//					echo "In call and in array: ".$u."/".$fn."<br />\n";
+//				}
+			}
 			// Add to div.
-			$this->version_div = $structure->get_form_structure($f, $s, '- Select version numbers to add them to the query.');
+			$this->version_div = $structure->get_form_structure($f, $s, 'select version numbers to add them to the query');
 		}
 	}
 	

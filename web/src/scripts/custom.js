@@ -7,7 +7,7 @@ function update_div_query_server() {
 	// Init.
 	r = 0;
 	// Update.
-	$.get("scripts/actions.php?ad_type=update_div_query_server&ifo=" +  ifo, function(r) {
+	$.get("scripts/actions.php?req=update_div_query_server&ifo=" +  ifo, function(r) {
 		// If result retrieved
 		if(r != 0) {
 			// Re-write form.
@@ -17,37 +17,63 @@ function update_div_query_server() {
 }
 
 // Update the flag version div.
-function update_div_flag_versions() {
+function update_div_flag_versions(max) {
 	// Get currently selected IFO.
 	var dq_flag = $("#dq_flag").val();
-	// Init.
-	r = 0;
-	// Update version div.
-	$.get("scripts/actions.php?ad_type=update_version_div&dq_flag=" + dq_flag, function(r) {
-		// If result retrieved
-		if(r != 0) {
-			// Show retrieve segment button.
-			$("#divForsubmit_segment_form").css("visibility", "visible");
-			// Re-write form.
-			$('#div_version_div').html(r);
-		}
-	});
+	// If number of elements in list is less than or equal to 10.
+	if(dq_flag.length <= 10) {
+		// Init.
+		r = 0;
+		// Update version div.
+		$.get("scripts/actions.php?req=update_version_div&dq_flag=" + dq_flag, function(r) {
+			// If result retrieved
+			if(r != 0) {
+				// Show retrieve segment button.
+				$("#divForsubmit_segment_form").css("visibility", "visible");
+				// Re-write form.
+				$('#div_version_div').html(r);
+			}
+		});
+	}
+	// Otherwise, if number of elements in list is more than 10.
+	else {
+		alert(get_too_many_flags_msg(dq_flag.length, max));
+	}
 }
 
 // Update the flag version div using contents of textarea.
-function update_div_flag_versions_from_ta() {
+function update_div_flag_versions_from_ta(max) {
+	// Set flag string.
+	var f_string = "[\"" + $("#ta_dq_flag").val().replace(/\n/g, "\",\"") + "\"]";
 	// Get currently selected IFO.
-	var dq_flag = $("#ta_dq_flag").val().replace(/\n/g, "[[[BREAK]]]");
-	// Update version div.
-	$.get("scripts/actions.php?ad_type=update_version_div_from_ta&dq_flag=" + dq_flag, function(r) {
-		// If result retrieved
-		if(r != 0) {
-			// Show retrieve segment button.
-			$("#divForsubmit_segment_form").css("visibility", "visible");
-			// Re-write form.
-			$('#div_version_div').html(r);
-		}
-	});
+	var dq_flag_list = JSON.parse(f_string);
+	// If number of elements in list is less than or equal to 10.
+	if(dq_flag_list.length <= 10) {
+		var dq_flag = $("#ta_dq_flag").val().replace(/\n/g, "[[[BREAK]]]");
+		// Update version div.
+		$.get("scripts/actions.php?req=update_version_div_from_ta&dq_flag=" + dq_flag, function(r) {
+			// If result retrieved
+			if(r != 0) {
+				// Show retrieve segment button.
+				$("#divForsubmit_segment_form").css("visibility", "visible");
+				// Re-write form.
+				$('#div_version_div').html(r);
+			}
+		});
+	}
+	// Otherwise, if number of elements in list is more than 10.
+	else {
+		alert(get_too_many_flags_msg(dq_flag_list.length, max));
+	}
+}
+
+function get_too_many_flags_msg(len, max) {
+	// Init.
+	r = '';
+	// Set.
+	r = len + ' flags have currently been selected.\n\nThe maximum allowable limit via this interface is ' + max;
+	// Return.
+	return r;
 }
 
 // Select/De-select a specific flag version URI.
@@ -55,7 +81,7 @@ function deselect_version_uri(span_name, uri) {
 	// Init.
 	r = 0;
 	// Update version div.
-	$.get("scripts/actions.php?ad_type=deselect_version_uri&uri=" + uri, function(r) {
+	$.get("scripts/actions.php?req=deselect_version_uri&uri=" + uri, function(r) {
 		// If result retrieved
 		if(r != 0) {
 			// Re-write form.
@@ -75,7 +101,7 @@ function retrieve_segments() {
 	$("#img_retrieval_msg").fadeIn('fast');
 	$("#img_retrieval_msg").css("visibility", "visible");
 	// Update version div.
-	$.get("scripts/actions.php?ad_type=retrieve_segments&s=" + s + "&e=" + e, function(r) {
+	$.get("scripts/actions.php?req=retrieve_segments&s=" + s + "&e=" + e, function(r) {
 		// If result retrieved
 		if(r != 0) {
 			alert(r);
@@ -93,7 +119,7 @@ function retrieve_segments() {
 // Re-build the Recent Query Results list.
 function rebuild_recent_query_results_list() {
 	// Update version div.
-	$.get("scripts/actions.php?ad_type=get_recent_query_results", function(r) {
+	$.get("scripts/actions.php?req=get_recent_query_results", function(r) {
 		// If results retrieved.
 		if(r != 0) {
 			$('#div_recent_query_results').html(r);
@@ -104,7 +130,7 @@ function rebuild_recent_query_results_list() {
 // De-/Activate the drop-down select for use in host changing.
 function activate_host_change_option() {
 	// Get current host box.
-	$.get("scripts/actions.php?ad_type=get_current_host_box", function(r) {
+	$.get("scripts/actions.php?req=get_current_host_box", function(r) {
 		// If results retrieved.
 		if(r != 0) {
 			// Re-build contents.
@@ -120,7 +146,7 @@ function update_host() {
 	// Init.
 	h = $('#sel_change_host').find(":selected").val();
 	// Get current host box.
-	$.get("scripts/actions.php?ad_type=set_current_host&h=" + h, function() {
+	$.get("scripts/actions.php?req=set_current_host&h=" + h, function() {
 		// Reload page.
 		location.reload();
 	});
@@ -129,7 +155,7 @@ function update_host() {
 // Alternate the available flag_choice option.
 function alternate_flag_option() {
 	// Alternate flag choice option.
-	$.get("scripts/actions.php?ad_type=alternate_flag_choice_option", function(r) {
+	$.get("scripts/actions.php?req=alternate_flag_choice_option", function(r) {
 		// If result returned.
 		if(r != 0) {
 			$('#input_Flags_val').html(r);

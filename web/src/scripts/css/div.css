@@ -512,13 +512,6 @@ span.span_change_host:hover {
 	color: #92C7E8;
 	cursor: pointer;
 }
-span.span_logged_in {
-	position: relative;
-	top: 10px;
-	text-align: right;
-	color: #FFF;
-}
-
 /* === SEGMENT RETRIEVAL === */
 #div_retrieval_msg {
 	position: absolute;

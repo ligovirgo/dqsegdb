@@ -7,7 +7,6 @@ ini_set("display_errors","1");
 class Variables {
 
 	public $app_version;
-	public $max_selectable_flags;
 	
 	public $host;
 	public $db;
@@ -19,13 +18,12 @@ class Variables {
 	public $doc_root;
 	public $download_dir;
 	
-	public $req;
+	public $ad_type;
 	public $c;
 
 	public function get_app_variables() {
 		// Application-related variables.
-		$this->app_version = "1.2";
-		$this->max_selectable_flags = 10;
+		$this->app_version = "1.1";
 	}
 	
 	public function initVariables() {
@@ -42,10 +40,10 @@ class Variables {
 		$this->download_dir = 'downloads/';
 	}
 	
-	// Get request.
-	public function getReq() {
-		if(isset($_GET["req"])) {
-			$this->req = $_GET["req"];
+	// Get admin type.
+	public function getAdminType() {
+		if(isset($_GET["ad_type"])) {
+			$this->ad_type = $_GET["ad_type"];
 		}
 	}
 

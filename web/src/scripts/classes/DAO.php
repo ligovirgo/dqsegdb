@@ -15,12 +15,14 @@ class DAO
 	///////////////////////
 
 	// Connect to database.	
-	public function dbConnect() {
+	public function dbConnect()
+	{
 		// Create new variables object.
 		$variable = new Variables();
 		$variable->initVariables();
 		// If connection not made.
-		if(!$this->pdo) {
+		if(!$this->pdo)
+		{
 			// Create new PDO object.
 			$this->pdo = new PDO("mysql:host=".$variable->host.";dbname=".$variable->db, $variable->db_user, $variable->db_pass);
 /*			// Check.
@@ -43,7 +45,8 @@ class DAO
 	//////////////////////
 
 	// Get contents as top links.
-	public function getTopLinkSQL() {
+	public function getTopLinkSQL()
+	{
 		// Create PDO object
 		$this->dbConnect();
 		// Query.
@@ -53,7 +56,8 @@ class DAO
 	}
 
 	// Get sub-link SQL.
-	public function getSubLinkSQL($c) {
+	public function getSubLinkSQL($c)
+	{
 		// If arg sent.
 		if(isset($c))
 		{
@@ -62,9 +66,11 @@ class DAO
 			// Build prepared statement.
 			if(($stmt = $this->pdo->prepare("SELECT content_id, content_name, content_uri
 							 FROM tbl_contents
-							 WHERE content_parent=:c AND content_hide_in_top_links=0"))) {
+							 WHERE content_parent=:c AND content_hide_in_top_links=0")))
+			{
 				// Execute.
-				if($stmt->execute(array(':c' => $c))) {
+				if($stmt->execute(array(':c' => $c)))
+				{
 					// Loop.
 					$this->resB = $stmt;
 				}
@@ -73,7 +79,8 @@ class DAO
 	}
 
 	// Get footer SQL.
-	public function getFooterSQL() {
+	public function getFooterSQL()
+	{
 		// Init.
 		$ToF = FALSE;
 		// Create PDO object
@@ -85,7 +92,8 @@ class DAO
 	}
 
 	// Get homepage left contents.
-	public function getHomepageXSQL($lr) {
+	public function getHomepageXSQL($lr)
+	{
 		// Create PDO object
 		$this->dbConnect();
 		// Query.
@@ -96,11 +104,13 @@ class DAO
 	}
 
 	// Check if content has sub-links
-	public function checkForSubLinks($c) {
+	public function checkForSubLinks($c)
+	{
 		// Init.
 		$ToF = FALSE;
 		// If arg sent.
-		if(isset($c)) {
+		if(isset($c))
+		{
 			// Create PDO object
 			$this->dbConnect();
 			// Build prepared statement.
@@ -109,9 +119,11 @@ class DAO
 						     WHERE content_parent=:c AND content_parent<>1 AND content_hide_in_top_links=0
 						     LIMIT 1");
 			// Execute.
-			if($stmt->execute(array(':c' => $c))) {
+			if($stmt->execute(array(':c' => $c)))
+			{
 				// Loop.
-				while($stmt->fetch()) {
+				while($stmt->fetch())
+				{
 					// Set.
 					$ToF = TRUE;
 				}
@@ -122,31 +134,38 @@ class DAO
 	}
 
 	// Check if this is the content section currently being used.
-	public function checkIfSectionSel($c,$p) {
+	public function checkIfSectionSel($c,$p)
+	{
 	 	// Init.
 	 	$sel = FALSE;
 		// If args are passed.
-		if(isset($c) && isset($p)) {
+		if(isset($c) && isset($p))
+		{
 			// Create PDO object
 			$this->dbConnect();
 			// If the content is already the parent.
-			if($c == $p) {
+			if($c == $p)
+			{
 				// Set.
 				$sel = TRUE;
 			}
 			// Otherwise, if not at root.
-			elseif($c != 0 && $c != 99999 && $sel == FALSE) {
+			elseif($c != 0 && $c != 99999 && $sel == FALSE)
+			{
 				// Build prepared statement.
 				if(($stmt = $this->pdo->prepare("SELECT content_parent
 								 FROM tbl_contents
 								 WHERE content_id=:c
-								 LIMIT 1"))) {
-					if($stmt->execute(array(':c' => $c))) {
+								 LIMIT 1")))
+				{
+					if($stmt->execute(array(':c' => $c)))
+					{
 						// Bind by column name.
 						$stmt->bindColumn('content_parent', $content_parent);
 						// Loop.
 //$stmt->fetch(PDO::FETCH_BOUND)
-						while($stmt->fetch()) {
+						while($stmt->fetch())
+						{
 							// Check again.
 							$sel = $this->checkIfSectionSel($content_parent,$p);
 						}
@@ -163,22 +182,27 @@ class DAO
 	////////////////////
 
 	// Check if content exists
-	public function checkContentExists($c) {
+	public function checkContentExists($c)
+	{
 		// Init.
 		$ToF = FALSE;
 		// If arg sent.
-		if(isset($c)) {
+		if(isset($c))
+		{
 			// Create PDO object
 			$this->dbConnect();
 			// Build prepared statement.
 			if(($stmt = $this->pdo->prepare("SELECT content_id
 							 FROM tbl_contents
 							 WHERE content_id=:c
-							 LIMIT 1"))) {
+							 LIMIT 1")))
+			{
 				// Execute.
-				if($stmt->execute(array(':c' => $c))) {
+				if($stmt->execute(array(':c' => $c)))
+				{
 					// Loop.
-					while($stmt->fetch()) {
+					while($stmt->fetch())
+					{
 						// Set.
 						$ToF = TRUE;
 					}
@@ -223,7 +247,8 @@ class DAO
 			// Build prepared statement.
 			if(($stmt = $this->pdo->prepare("SELECT value_id, value_txt
 							 				 FROM tbl_values
-							 				 WHERE value_group_fk=:g"))) {
+							 				 WHERE value_group_fk=:g")))
+			{
 				// Execute.
 				if($stmt->execute(array(':g' => $g))) {
 					// Bind by column name.
@@ -314,42 +339,37 @@ class DAO
 		$variable->get_file_related_variables();
 		// If arg passed.
 		if(isset($f)) {
-			// Get user ID for this user.
-			$uid = $this->get_valid_user_id();
-			// If valid UID is returned.
-			if($uid != 0) {
-				// Set args.
-				$args = $serverdata->get_uri_args($_SESSION['default_gps_start'], $_SESSION['default_gps_stop']);
-				// Get filesize.
-				$fs = filesize($variable->doc_root.$variable->download_dir.$f);
-				// Loop through URI used in file creation and add to history.
-				foreach($_SESSION['uri_deselected'] as $i => $uri) {
-					// Build string.
-					$fu .= ', '.$uri.$args;
-				}
-				// Remove first two characters from URI string.
-				$fu = substr($fu, 2);
-				// Get host-related ID.
-				$host_id = $this->get_value_id($_SESSION['default_host']);
-				// Create PDO object
-				$this->dbConnect();
-				// Build prepared statement.
-				if(($stmt = $this->pdo->prepare("INSERT INTO tbl_file_metadata
-							 					 (file_name, file_size, file_uri_used, user_fk, host_fk)
-								 				 VALUES
-												 (:f, :fs, :fu, :uid, :h)"))) {
-					// Execute.
-					if($stmt->execute(array(':f' => $f, ':fs' => $fs, ':fu' => $fu, ':uid' => $uid, ':h' => $host_id))) {
-						// Set.
-						$r = TRUE;
-					}
+			// Set args.
+			$args = $serverdata->get_uri_args($_SESSION['default_gps_start'], $_SESSION['default_gps_stop']);
+			// Get filesize.
+			$fs = filesize($variable->doc_root.$variable->download_dir.$f);
+			// Loop through URI used in file creation and add to history.
+			foreach($_SESSION['uri_deselected'] as $i => $uri) {
+				// Build string.
+				$fu .= ', '.$uri.$args;
+			}
+			// Remove first two characters from URI string.
+			$fu = substr($fu, 2);
+			// Get host-related ID.
+			$host_id = $this->get_value_id($_SESSION['default_host']);
+			// Create PDO object
+			$this->dbConnect();
+			// Build prepared statement.
+			if(($stmt = $this->pdo->prepare("INSERT INTO tbl_file_metadata
+						 					 (file_name, file_size, file_uri_used, host_fk)
+							 				 VALUES
+											 (:f, :fs, :fu, :h)"))) {
+				// Execute.
+				if($stmt->execute(array(':f' => $f, ':fs' => $fs, ':fu' => $fu, ':h' => $host_id))) {
+					// Set.
+					$r = TRUE;
 				}
 			}
 		}
 		// Return.
 		return $r;
 	}
-
+	
 	// Get recent query results.
 	public function get_recent_query_results($tabs) {
 		// Init.
@@ -370,7 +390,6 @@ class DAO
 		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">Data</td>\n";
 		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">URI used</td>\n";
 		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">File size</td>\n";
-		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">User</td>\n";
 		$r .= $structure->tabStr."	</tr>\n";
 		// Create PDO object
 		$this->dbConnect();
@@ -388,7 +407,6 @@ class DAO
  				$stmt->bindColumn('file_uri_used', $file_uri_used);
  				$stmt->bindColumn('value_add_info', $data);
  				$stmt->bindColumn('file_created_fmt', $file_created_fmt);
-				$stmt->bindColumn('user_fk', $user_fk);
  				// Loop.
 				while($stmt->fetch()) {
 					// Set bg.
@@ -409,128 +427,18 @@ class DAO
 					}
 					// Round to 1 decimal place.
 					$file_size = round($file_size, 1);
-					// Get username.
-					$username = str_replace('@', '<br />@', $this->get_username($user_fk));
 					// Set.
 					$r .= $structure->tabStr."	<tr>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$file_created_fmt."</td>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$data."</td>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\"><a href=\"".$variable->download_dir.$file_name."\" target=\"_blank\">".str_replace(", ", "<br />\n", $file_uri_used)."</a></td>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$file_size." ".$suffix."B</td>\n";
-					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$username."</td>\n";
 					$r .= $structure->tabStr."	</tr>\n";
 				}
 			}
 		}
 		// Close table.
 		$r .= $structure->tabStr."</table>\n";
-		// Return.
-		return $r;
-	}
-	
-	/////////////////////////////
-	// USER-RELATED FUNCTIONS //
-	///////////////////////////	
-	// Get user ID for this user.
-	private function get_valid_user_id() {
-		// Init.
-		$r = 0;
-		// If the username is set.
-		if(isset($_SERVER['eduPersonPrincipalName']) && !empty($_SERVER['eduPersonPrincipalName'])) {
-			// Get the ID for this user.
-			$r = $this->get_user_id($_SERVER['eduPersonPrincipalName']);
-			// If no user found.
-			if($r == 0) {
-				// Insert user to database.
-				if($this->insert_user($_SERVER['eduPersonPrincipalName'])) {
-					// Attempt again to get the ID for this user.
-					$r = $this->get_user_id($_SERVER['eduPersonPrincipalName']);
-				}
-			}
-		}
-		// Return.
-		return $r;
-	}
-	
-	// Get the ID for this user.
-	private function get_user_id($s) {
-		// Init.
-		$r = 0;
-		// If arg sent.
-		if(isset($s)) {
-			// Create PDO object
-			$this->dbConnect();
-			// Build prepared statement.
-			if(($stmt = $this->pdo->prepare("SELECT value_id
-							 				 FROM tbl_values
-							 				 WHERE value_group_fk=3 AND value_txt=:s"))) {
-				// Execute.
-				if($stmt->execute(array(':s' => $s))) {
-					// Bind by column name.
-					$stmt->bindColumn('value_id', $value_id);
-					// Loop.
-					while($stmt->fetch()) {
-						// Set.
-						$r = $value_id;
-					}
-				}
-			}
-		}
-		// Return.
-		return $r;
-	}
-	
-	// Get username from ID.
-	private function get_username($i) {
-		// Init.
-		$r = 0;
-		// If arg sent.
-		if(isset($i)) {
-			// Create PDO object
-			$this->dbConnect();
-			// Build prepared statement.
-			if(($stmt = $this->pdo->prepare("SELECT value_txt
-							 				 FROM tbl_values
-							 				 WHERE value_group_fk=3 AND value_id=:i"))) {
-				// Execute.
-				if($stmt->execute(array(':i' => $i))) {
-					// Bind by column name.
-					$stmt->bindColumn('value_txt', $value_txt);
-					// Loop.
-					while($stmt->fetch()) {
-						// Set.
-						$r = $value_txt;
-					}
-				}
-			}
-		}
-		// Return.
-		return $r;
-	}
-	
-	// Insert username.
-	public function insert_user($s) {
-		// Init.
-		$r = FALSE;
-		// If arg passed.
-		if(isset($s)) {
-			// If user does not already exist.
-			if($this->get_user_id($s) == 0) {
-				// Create PDO object
-				$this->dbConnect();
-				// Build prepared statement.
-				if(($stmt = $this->pdo->prepare("INSERT INTO tbl_values
-							 					 (value_group_fk, value_txt)
-								 				 VALUES
-												 (3, :s)"))) {
-					// Execute.
-					if($stmt->execute(array(':s' => $s))) {
-						// Set.
-						$r = TRUE;
-					}
-				}
-			}
-		}
 		// Return.
 		return $r;
 	}

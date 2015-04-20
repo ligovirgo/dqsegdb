@@ -21,8 +21,7 @@ class GetStructure
 	private $str;
 	private $menuCall;
 	private $searchBox;
-	private $logged_in_as;
-	
+
 	// Get header.
 	public function getHeader() {
  	 	// Set hdr.
@@ -78,9 +77,9 @@ class GetStructure
 		// Get Current host box.
 		$this->get_current_host_div(4);
 		$this->bdy .= $this->current_host_div;
-		// Get Logged-in as.
-		$this->get_logged_in_as(5);
-		$this->bdy .= $this->logged_in_as;
+		// Get Search.
+//		$this->getSearchBox(5);
+//		$this->bdy .= $this->searchBox;
 		$this->closeDiv('search_bar',4);
 		$this->bdy .= $this->div;
 		// Upper content - Upper left.
@@ -451,14 +450,6 @@ class GetStructure
 		$this->searchBox .= $this->tabStr."</form>\n\n";
 	}
 
-	// Get logged-in as.
-	private function get_logged_in_as($tabs) {
-		// Add number of tabs required.
-	 	$this->getRequiredTabs($tabs);
-		// Open form.
-		$this->logged_in_as .= $this->tabStr."<span class=\"span_logged_in\">Logged-in as: ".$_SERVER['eduPersonPrincipalName']."</span>\n\n";
-	}
-
 	// Get current host div.
 	private function get_current_host_div($tabs) {
 		// Instantiate.
@@ -525,7 +516,7 @@ class GetStructure
 			// Get additional text available for this host.
 			$add_info = $dao->get_value_add_info($_SESSION['default_host']);
 			// Set host name.
-			$host_name = $serverdata->set_host_name($_SESSION['default_host'], $add_info);
+			$host_name = $this->set_host_name($_SESSION['default_host'], $add_info);
 			// Set.
 			$r .= "Currently using: <span class=\"uri_like\">".$host_name."</span>";
 		}
@@ -538,7 +529,7 @@ class GetStructure
 		// If explanatory text sent.
 		if(isset($t)) {
 			// Add required style.
-			$t = "<br />\n<span class=\"span_frm_info\">".$t."</span>\n";
+			$t = "<br />\n<span class=\"span_frm_info\">(".$t.")</span>\n";
 		}
 	 	// Set.
 		$r = "<div class=\"div_row_cover\">\n".
