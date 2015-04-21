@@ -1,3 +1,4 @@
+#!/bin/bash
 mkdir /tmp/mysql_dump
 chmod a+rwx /tmp/mysql_dump
 time mysqldump -u root dqsegdb --tab=/tmp/mysql_dump
