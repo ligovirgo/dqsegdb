@@ -13,7 +13,7 @@ License: None
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
-Requires: python, pyrxp, 0lue >= 1.47
+Requires: python, pyrxp, glue >= 1.47
 BuildArch: noarch
 Vendor: Ryan Fisher <ryan.fisher@ligo.org>
 
