@@ -32,7 +32,7 @@ AUTHOR = 'Ryan Fisher'
 AUTHOR_EMAIL = 'ryan.fisher@ligo.org'
 LICENSE = None
 #rel_version="0.9"
-rel_version="1.1.2"
+rel_version="1.1.3"
 release=True
 
 
@@ -58,7 +58,7 @@ class DQSegDBBuildPy(build_py.build_py):
     def run(self):
         try:
             write_vcs_info(version_py)
-        except subprocess.CalledProcessError:
+        except:
             # failed to generate version.py because git call did'nt work
             if os.path.exists(version_py):
                 log.info("cannot determine git status, using existing %s"
