@@ -32,7 +32,7 @@ AUTHOR = 'Ryan Fisher'
 AUTHOR_EMAIL = 'ryan.fisher@ligo.org'
 LICENSE = None
 #rel_version="0.9"
-rel_version="1.1.1"
+rel_version="1.1.2"
 release=True
 
 
@@ -68,7 +68,12 @@ class DQSegDBBuildPy(build_py.build_py):
 
 class DQSegDBSDist(sdist.sdist):
     def run(self):
-        write_vcs_info(version_py)
+        try:
+            write_vcs_info(version_py)
+        except:
+            if os.path.exists(version_py):
+                log.info("cannot determine git status, using existing %s" 
+                        % version_py)
         sdist.sdist.run(self)
 
 
@@ -179,12 +184,9 @@ setup(name=PACKAGENAME,
       ext_modules=[],
       scripts=scripts,
       data_files=[('etc', [DQSegDBInstall.shenv, DQSegDBInstall.cshenv])],
-      install_requires=['glue'],
       provides=[PACKAGENAME],
       author=AUTHOR,
       author_email=AUTHOR_EMAIL,
       license=LICENSE,
       long_description=LONG_DESCRIPTION,
-      zip_safe=False,
-      use_2to3=True
       )
