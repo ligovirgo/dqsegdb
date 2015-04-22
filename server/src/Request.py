@@ -355,11 +355,25 @@ class RequestHandle():
                                                 e = admin.log_and_set_http_code(400, 18, req_method, None, full_uri)
                                             else:
                                                 # Put new 'known' segments.
-                                                e = dao.insert_segments('known', req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, a)
-                                                # Put new 'active' segments.
-                                                e = dao.insert_segments('active', req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, a)
-                                                # Commit the transaction to the DB.
-                                                dao.commit_transaction_to_db()
+                                                known_insert = dao.insert_segments('known', req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, a)
+                                                # Set error info.
+                                                e = known_insert['error_info']
+                                                # If no error code returned following known insert.
+                                                if not e:
+                                                    # Put new 'active' segments.
+                                                    active_insert = dao.insert_segments('active', req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, a)
+                                                    # Set error info.
+                                                    e = active_insert['error_info']
+                                                    # If no error code returned following known insert and insert set to true.
+                                                    if not e and known_insert['inserted']:
+                                                        # Update version segment global values.
+                                                        dao.update_segment_global_values(version_id, known_insert['seg_tot'], known_insert['seg_first_gps'], known_insert['seg_last_gps'], active_insert['seg_tot'], active_insert['seg_first_gps'], active_insert['seg_last_gps'], req_method, full_uri)
+                                                        # Insert process.
+                                                        dao.insert_process(a, version_id, known_insert['uid'], known_insert['seg_tot'], known_insert['seg_first_gps'], known_insert['seg_last_gps'], active_insert['seg_tot'], active_insert['seg_first_gps'], active_insert['seg_last_gps'], req_method, full_uri)
+                                                        # Commit the transaction to the DB.
+                                                        dao.commit_transaction_to_db()
+                                                    else:
+                                                        admin.log_and_set_http_code(500, 43, req_method, None, full_uri)
                                     # Otherwise, URI too long.                
                                     elif l > 4:
                                         # Set HTTP code and log.

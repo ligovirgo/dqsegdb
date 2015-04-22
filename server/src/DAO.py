@@ -950,7 +950,7 @@ class DAOHandle:
     ###########################
         
     # Insert process to DB and get id.
-    def insert_process(self, request, data, vid, uid, seg_tot, seg_start, seg_stop, req_method, full_uri):
+    def insert_process(self, data, vid, uid, known_seg_tot, known_seg_start, known_seg_stop, active_seg_tot, active_seg_start, active_seg_stop, req_method, full_uri):
         # Instantiate objects.
         admin = Admin.AdminHandle()
         constant = Constants.ConstantsHandle()
@@ -958,7 +958,7 @@ class DAOHandle:
         # Loop through insert history dictionary.
         for key in data['insert_history']:
             # Get a process ID from a version ID, pid and timestamp.
-            process_id = self.get_process_id_from_vid_pid_timestamp(vid, key['process_metadata']['pid'], uid, req_method, full_uri)
+            process_id = self.get_process_id_from_vid_pid_timestamp(vid, key['process_metadata']['pid'], uid, req_method, full_uri, known_seg_start)
             # If this process has not already been inserted into the database.
             if process_id == 0:
                 # Get user id if not passed.
@@ -982,10 +982,37 @@ class DAOHandle:
                             # Insert process.
                             cur.execute("""
     	                                INSERT INTO tbl_processes
-    	                                (dq_flag_version_fk, process_full_name, pid, fqdn, user_fk, insertion_time, process_time_started)
+    	                                (dq_flag_version_fk,
+                                         process_full_name,
+                                         pid,
+                                         fqdn,
+                                         user_fk,
+                                         insertion_time,
+                                         affected_known_data_segment_total,
+                                         affected_known_data_start,
+                                         affected_known_data_stop,
+                                         affected_active_data_segment_total,
+                                         affected_active_data_start,
+                                         affected_active_data_stop,
+                                         process_time_started,
+                                         process_time_last_used
+                                        )
     	                                VALUES
-                                        (?,?,?,?,?,?,?);
-    	                                """, vid, str(key['process_metadata']['name']), int(key['process_metadata']['pid']), str(key['process_metadata']['fqdn']), uid, gps, str(key['process_metadata']['process_start_timestamp']))
+                                        (?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+    	                                """, vid,
+                                             str(key['process_metadata']['name']),
+                                             int(key['process_metadata']['pid']),
+                                             str(key['process_metadata']['fqdn']),
+                                             uid,
+                                             gps,
+                                             known_seg_tot,
+                                             int(known_seg_start),
+                                             int(known_seg_stop),
+                                             active_seg_tot,
+                                             int(active_seg_start),
+                                             int(active_seg_stop),
+                                             str(key['process_metadata']['process_start_timestamp']),
+                                             str(key['process_metadata']['process_start_timestamp']))
                         except pyodbc.Error, err:
                             # Set HTTP code and log.
                             admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
@@ -999,8 +1026,10 @@ class DAOHandle:
                         # Close ODBC cursor.
                         cur.close()
                         del cur
-        # Update the process global values.
-        self.update_process_global_values(request, process_id, vid, seg_tot, seg_start, seg_stop, req_method, full_uri)
+            # Otherwise, if process ID unavailable.
+            else:
+                # Update the process global values.
+                self.update_process_global_values(process_id, uid, vid, known_seg_tot, known_seg_start, known_seg_stop, active_seg_tot, active_seg_start, active_seg_stop, req_method, full_uri)
 
     # Get ID of process committed.
     def get_new_process_id(self, vid, pid, uid, gps, req_method, full_uri):
@@ -1098,7 +1127,7 @@ class DAOHandle:
         return l
 
     # Get a process ID from a version ID, pid and timestamp.
-    def get_process_id_from_vid_pid_timestamp(self, vid, pid, u, req_method, full_uri):
+    def get_process_id_from_vid_pid_timestamp(self, vid, pid, u, req_method, full_uri, known_seg_start):
         # Init.
         r = 0
         # Instantiate objects.
@@ -1115,10 +1144,10 @@ class DAOHandle:
                 cur.execute("""
                             SELECT process_id
                             FROM tbl_processes
-                            WHERE dq_flag_version_fk=? AND pid=? AND user_fk=?
+                            WHERE dq_flag_version_fk=? AND pid=? AND user_fk=? AND affected_known_data_stop=?
     			            ORDER BY process_id DESC
                             LIMIT 1
-                            """, vid, pid, u)
+                            """, vid, pid, u, known_seg_start)
             except pyodbc.Error, err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
@@ -1141,6 +1170,11 @@ class DAOHandle:
     def insert_segments(self, request, req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, data):
         # Init.
         e = []
+        seg_tot = 0
+        seg_first_gps = 0
+        seg_last_gps = 0
+        uid = 0
+        inserted = False
         # Instantiate objects.
         admin = Admin.AdminHandle()
         user = User.UserHandle()
@@ -1189,15 +1223,23 @@ class DAOHandle:
                         except pyodbc.Error, err:
                             # Set HTTP code and log.
                             admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
-                        # Update version segment global values.
-                        self.update_segment_global_values(request, version_id, seg_tot, seg_first_gps, seg_last_gps, req_method, full_uri)
-                        # Insert process.
-                        self.insert_process(request, data, version_id, uid, seg_tot, seg_first_gps, seg_last_gps, req_method, full_uri)
+                        else:
+                            # Set inserted.
+                            inserted = True
                         # Close ODBC cursor.
                         cur.close()
                         del cur
+        # Set return dictionary.
+        d = {
+             "error_info" : e,
+             "seg_tot" : seg_tot,
+             "seg_first_gps" : seg_first_gps,
+             "seg_last_gps" : seg_last_gps,
+             "inserted" : inserted,
+             "uid" : uid
+            }
         # Return.
-        return e
+        return d
 
     # Commit transaction to database.
     def commit_transaction_to_db(self):
@@ -1205,7 +1247,7 @@ class DAOHandle:
         cnxn.commit()
 
     # Update version segment global values.
-    def update_segment_global_values(self, request, vid, tot, start, stop, req_method, full_uri):
+    def update_segment_global_values(self, vid, known_tot, known_start, known_stop, active_tot, active_start, active_stop, req_method, full_uri):
         # Instantiate objects.
         admin = Admin.AdminHandle()
         # Initialise ODBC cursor.
@@ -1216,13 +1258,16 @@ class DAOHandle:
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
             # Init.
-            start = 0
-            stop = 0
-            tot = 0
+            known_start = 0
+            known_stop = 0
+            known_tot = 0
+            active_start = 0
+            active_stop = 0
+            active_tot = 0
             try:
                 # Get.
                 cur.execute("""
-                            SELECT dq_flag_version_""" + request + """_segment_total AS 'tot', dq_flag_version_""" + request + """_earliest_segment_time AS 'earliest', dq_flag_version_""" + request + """_latest_segment_time AS 'latest'
+                            SELECT dq_flag_version_known_segment_total AS 'known_tot', dq_flag_version_known_earliest_segment_time AS 'known_earliest', dq_flag_version_known_latest_segment_time AS 'known_latest', dq_flag_version_active_segment_total AS 'active_tot', dq_flag_version_active_earliest_segment_time AS 'active_earliest', dq_flag_version_active_latest_segment_time AS 'active_latest'
                             FROM tbl_dq_flag_versions
                             WHERE dq_flag_version_id=?
                             """, vid)
@@ -1233,16 +1278,19 @@ class DAOHandle:
                 # Loop.
                 for row in cur:
                     # Set.
-                    start = admin.set_var_if_higher_lower('l', start, row.earliest) 
-                    stop = admin.set_var_if_higher_lower('h', stop, row.latest)
-                    tot = tot + row.tot
+                    known_start = admin.set_var_if_higher_lower('l', known_start, row.known_earliest) 
+                    known_stop = admin.set_var_if_higher_lower('h', known_stop, row.known_latest)
+                    known_tot = known_tot + row.known_tot
+                    active_start = admin.set_var_if_higher_lower('l', active_start, row.active_earliest) 
+                    active_stop = admin.set_var_if_higher_lower('h', active_stop, row.active_latest)
+                    active_tot = active_tot + row.active_tot
                 try:
                     # Update segment global values.
                     cur.execute("""
                                 UPDATE tbl_dq_flag_versions
-                                SET dq_flag_version_""" + request + """_segment_total=?, dq_flag_version_""" + request + """_earliest_segment_time=?, dq_flag_version_""" + request + """_latest_segment_time=?
+                                SET dq_flag_version_known_segment_total=?, dq_flag_version_known_earliest_segment_time=?, dq_flag_version_known_latest_segment_time=?, dq_flag_version_active_segment_total=?, dq_flag_version_active_earliest_segment_time=?, dq_flag_version_active_latest_segment_time=?
                                 WHERE dq_flag_version_id=?
-                                """, tot, int(start), int(stop), vid)
+                                """, known_tot, int(known_start), int(known_stop), active_tot, int(active_start), int(active_stop), vid)
                 except pyodbc.Error, err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
@@ -1251,7 +1299,7 @@ class DAOHandle:
             del cur                            
 
     # Update process segment global values.
-    def update_process_global_values(self, request, process_id, vid, tot, start, stop, req_method, full_uri):
+    def update_process_global_values(self, process_id, uid, vid, known_tot, known_start, known_stop, active_tot, active_start, active_stop, req_method, full_uri):
         # Instantiate objects.
         admin = Admin.AdminHandle()
         # Initialise ODBC cursor.
@@ -1262,13 +1310,16 @@ class DAOHandle:
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
             # Init.
-            start = 0
-            stop = 0
-            tot = 0
+            known_start = 0
+            known_stop = 0
+            known_tot = 0
+            active_start = 0
+            active_stop = 0
+            active_tot = 0
             try:
                 # Get.
                 cur.execute("""
-                            SELECT process_id, affected_""" + request + """_data_segment_total AS 'tot', affected_""" + request + """_data_start AS 'earliest', affected_""" + request + """_data_stop AS 'latest'
+                            SELECT process_id, affected_known_data_segment_total AS 'known_tot', affected_known_data_start AS 'known_earliest', affected_known_data_stop AS 'known_latest', affected_active_data_segment_total AS 'active_tot', affected_active_data_start AS 'active_earliest', affected_active_data_stop AS 'active_latest'
                             FROM tbl_processes
                             WHERE process_id=?
                             """, process_id)
@@ -1279,16 +1330,19 @@ class DAOHandle:
                 # Loop.
                 for row in cur:
                     # Set.
-                    start = admin.set_var_if_higher_lower('l', start, row.earliest)
-                    stop = admin.set_var_if_higher_lower('h', stop, row.latest)
-                    tot = tot + row.tot
+                    known_start = admin.set_var_if_higher_lower('l', known_start, row.known_earliest)
+                    known_stop = admin.set_var_if_higher_lower('h', known_stop, row.known_latest)
+                    known_tot = known_tot + row.known_tot
+                    active_start = admin.set_var_if_higher_lower('l', active_start, row.active_earliest)
+                    active_stop = admin.set_var_if_higher_lower('h', active_stop, row.active_latest)
+                    active_tot = active_tot + row.active_tot
                 try:
                     # Update segment global values.
                     cur.execute("""
                                 UPDATE tbl_processes
-                                SET affected_""" + request + """_data_segment_total=?, affected_""" + request + """_data_start=?, affected_""" + request + """_data_stop=?
+                                SET affected_known_data_segment_total=?, affected_known_data_start=?, affected_known_data_stop=?, affected_active_data_segment_total=?, affected_active_data_start=?, affected_active_data_stop=?
                                 WHERE process_id=?
-                                """, tot, int(start), int(stop), process_id)
+                                """, known_tot, int(known_start), int(known_stop), active_tot, int(active_start), int(active_stop), process_id)
                 except pyodbc.Error, err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
@@ -1394,8 +1448,7 @@ class DAOHandle:
     def get_report_segments(self, request, t1, t2, request_array, req_method, full_uri):
         # Init.
         d = {}
-        flag_array = []
-        flag_json = {}
+        payload = {}
         seg_sql = ''
         w = ''
         pre_v_fk = 0
@@ -1425,14 +1478,14 @@ class DAOHandle:
                 tbl = '_summary'
             # If request within acceptable range, i.e. 'active', 'known', etc., get list of all flags over period requested by args.
             if not admin.check_request('seg', request) == False:
-                # If 'known' or 'active' segments or everything included.
-                if 'known' in request_array or 'active' in request_array or not request_array:
-                    # Get the additional fields from the DB.
+                # If user is not requesting just the metadata.
+                if not 'metadata' in request_array:
+                    # Get the segment start/stop fields from the DB.
                     seg_sql = ', segment_start_time, segment_stop_time '
                 try:
                     # Get.
                     cur.execute("""
-                                SELECT dq_flag_name, value_txt AS 'dq_flag_ifo_txt', dq_flag_description, dq_flag_active_means_ifo_badness, dq_flag_version_uri, dq_flag_version_deactivated, dq_flag_version, dq_flag_version_fk""" + seg_sql + """
+                                SELECT dq_flag_name, value_txt AS 'dq_flag_ifo_txt', dq_flag_description, dq_flag_version_comment, dq_flag_active_means_ifo_badness, dq_flag_version_uri, dq_flag_version_deactivated, dq_flag_version, dq_flag_version_fk""" + seg_sql + """
                                 FROM
                                 (SELECT dq_flag_version_fk""" + seg_sql + """
                                 FROM tbl_segment""" + tbl + w + """
@@ -1449,33 +1502,27 @@ class DAOHandle:
                     for row in cur:
                         # If this is a different flag.
                         if not pre_v_fk == row.dq_flag_version_fk:
-                            # If metadata or everything included.
-                            if 'metadata' in request_array or not request_array:
-                                # Get metadata for this flag.
-                                flag_json = admin.get_flag_metadata(row.dq_flag_ifo_txt, row.dq_flag_name, str(row.dq_flag_version), row.dq_flag_description, row.dq_flag_version_uri, row.dq_flag_version_deactivated, row.dq_flag_active_means_ifo_badness)
-                            # If 'known' or 'active' segments or everything included.
-                            if 'known' in request_array or 'active' in request_array or not request_array:
-                                # Reset segment array.
-                                flag_json[request] = {}
-                            # Add segment array to metadata.
-                            flag_array.append(flag_json)
-                            # If not on the first loop.
-                            if not pre_v_fk == 0:
-                                # Increment array key.
-                                i += 1
-                        # If 'known' segments or everything included.
-                        if 'known' in request_array or not request_array:
+                            # Increment counter.
+                            i= i + 1
+                            # Get metadata for this flag.
+                            payload[i] = admin.get_flag_metadata(row.dq_flag_ifo_txt, row.dq_flag_name, str(row.dq_flag_version), row.dq_flag_description, row.dq_flag_version_comment, row.dq_flag_version_uri, row.dq_flag_version_deactivated, row.dq_flag_active_means_ifo_badness)
+                            # If 'known' or 'active' segments or no limitations have been set.
+                            if request == 'known' or request == 'active':
+                                # Reset segment list.
+                                payload[i][request] = []
+                        # If user is not requesting just the metadata.
+                        if not 'metadata' in request_array:
                             # Set segment start/stop times.
                             t1 = int(row.segment_start_time)
                             t2 = int(row.segment_stop_time)
                             # Append segments to list.
-                            flag_array[i][request].append([t1,t2])
+                            payload[i][request].append([t1,t2])
                         # Set previous version FK for use in next loop. 
                         pre_v_fk = row.dq_flag_version_fk
                 # Close ODBC cursor.
                 cur.close()
                 del cur
         # Set in overall dictionary.
-        d['results'] = flag_array
+        d['results'] = payload
         # Return.
         return d

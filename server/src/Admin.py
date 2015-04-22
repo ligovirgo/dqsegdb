@@ -11,6 +11,9 @@ import logging
 import socket
 import time
 
+# Instantiate logger.
+log = logging.getLogger(__name__)
+
 class AdminHandle:
     
     # Get flag metadata.
@@ -238,19 +241,19 @@ class AdminHandle:
         log_message = req_method + ' ' + uri + ' - ' + str(d[state][1]) + add_info
         # If reply exists, but this is just logging.
         if log_group == 0:
-            logging.info(log_message)
+            log.debug(log_message)
         # Otherwise, if reply exists, but debug.
         elif log_group == 1:
-            logging.debug(log_message)
+            log.info(log_message)
         # Otherwise, if reply exists, but warning.
         elif log_group == 2:
-            logging.warning(log_message)
+            log.warning(log_message)
         # Otherwise, if reply exists, but error.
         elif log_group == 3:
-            logging.error(log_message)
+            log.error(log_message)
         # Otherwise, if reply exists, but critical.
         elif log_group == 4:
-            logging.critical(log_message)
+            log.critical(log_message)
         # If HTTP code passed.
         if not code == 0:
             # Set list.
@@ -303,7 +306,8 @@ class AdminHandle:
                                     39: [2, 'Database statistics not available'],
                                     40: [4, 'Problem with ODBC cursor'],
                                     41: [4, 'Problem with ODBC statement execution'],
-                                    42: [2, 'Flag-Version coverage statistics unavailable']
+                                    42: [2, 'Flag-Version coverage statistics unavailable'],
+                                    43: [4, 'Transaction not committed to database'],
                                 }
         # Return.
         return log_state_dictionary
