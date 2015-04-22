@@ -1250,6 +1250,7 @@ class DAOHandle:
     def update_segment_global_values(self, vid, known_tot, known_start, known_stop, active_tot, active_start, active_stop, req_method, full_uri):
         # Instantiate objects.
         admin = Admin.AdminHandle()
+        constant = Constants.ConstantsHandle()
         # Initialise ODBC cursor.
         try:
             cur = cnxn.cursor()
@@ -1257,13 +1258,9 @@ class DAOHandle:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
-            # Init.
-            known_start = 0
-            known_stop = 0
-            known_tot = 0
-            active_start = 0
-            active_stop = 0
-            active_tot = 0
+            # Get GPS time.
+            gps = gpstime.GpsSecondsFromPyUTC(time.time(), constant.gps_leap_secs)
+            # Attempt to retrieve current totals from database.
             try:
                 # Get.
                 cur.execute("""
@@ -1288,9 +1285,9 @@ class DAOHandle:
                     # Update segment global values.
                     cur.execute("""
                                 UPDATE tbl_dq_flag_versions
-                                SET dq_flag_version_known_segment_total=?, dq_flag_version_known_earliest_segment_time=?, dq_flag_version_known_latest_segment_time=?, dq_flag_version_active_segment_total=?, dq_flag_version_active_earliest_segment_time=?, dq_flag_version_active_latest_segment_time=?
+                                SET dq_flag_version_known_segment_total=?, dq_flag_version_known_earliest_segment_time=?, dq_flag_version_known_latest_segment_time=?, dq_flag_version_active_segment_total=?, dq_flag_version_active_earliest_segment_time=?, dq_flag_version_active_latest_segment_time=?, dq_flag_version_date_last_modified=?
                                 WHERE dq_flag_version_id=?
-                                """, known_tot, int(known_start), int(known_stop), active_tot, int(active_start), int(active_stop), vid)
+                                """, known_tot, int(known_start), int(known_stop), active_tot, int(active_start), int(active_stop), gps, vid)
                 except pyodbc.Error, err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
@@ -1302,6 +1299,7 @@ class DAOHandle:
     def update_process_global_values(self, process_id, uid, vid, known_tot, known_start, known_stop, active_tot, active_start, active_stop, req_method, full_uri):
         # Instantiate objects.
         admin = Admin.AdminHandle()
+        constant = Constants.ConstantsHandle()
         # Initialise ODBC cursor.
         try:
             cur = cnxn.cursor()
@@ -1309,13 +1307,9 @@ class DAOHandle:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
-            # Init.
-            known_start = 0
-            known_stop = 0
-            known_tot = 0
-            active_start = 0
-            active_stop = 0
-            active_tot = 0
+            # Get GPS time.
+            gps = gpstime.GpsSecondsFromPyUTC(time.time(), constant.gps_leap_secs)
+            # Attempt to retrieve current totals from database.
             try:
                 # Get.
                 cur.execute("""
@@ -1340,9 +1334,9 @@ class DAOHandle:
                     # Update segment global values.
                     cur.execute("""
                                 UPDATE tbl_processes
-                                SET affected_known_data_segment_total=?, affected_known_data_start=?, affected_known_data_stop=?, affected_active_data_segment_total=?, affected_active_data_start=?, affected_active_data_stop=?
+                                SET affected_known_data_segment_total=?, affected_known_data_start=?, affected_known_data_stop=?, affected_active_data_segment_total=?, affected_active_data_start=?, affected_active_data_stop=?, process_time_last_used=?
                                 WHERE process_id=?
-                                """, known_tot, int(known_start), int(known_stop), active_tot, int(active_start), int(active_stop), process_id)
+                                """, known_tot, int(known_start), int(known_stop), active_tot, int(active_start), int(active_stop), gps, process_id)
                 except pyodbc.Error, err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
