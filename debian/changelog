@@ -1,3 +1,10 @@
+dqsegdb (1.1.1-1) unstable; urgency=low
+
+  * Changed python setup.py to not require setuptools
+    
+
+ -- Ryan Fisher <ryan.fisher@ligo.org>  Wed, Apr 22 2015 14:35:00 +0200
+
 dqsegdb (1.1.0-1) unstable; urgency=low
 
   * Release for compatibility with old S6 comment fields change to server.
