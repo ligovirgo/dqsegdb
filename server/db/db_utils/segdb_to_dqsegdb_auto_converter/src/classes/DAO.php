@@ -135,144 +135,162 @@ class DAO {
 												else {
 													// Log.
 													$log->write_to_log("11. Check, analysis and optimisation of the DB completed successfully.");
-													// Update known version-segment totals.
-													if(!$this->update_version_segment_totals(FALSE)) {
+													// Update version URI.
+													if(!$this->update_version_uri()) {
 														// Log.
-														$log->write_to_log("12. ERROR - Unable to successfully update known version-segment totals.");
+														$log->write_to_log("11.b ERROR - Unable to successfully update version URI.");
 													}
 													else {
 														// Log.
-														$log->write_to_log("12. Known version-segment totals updated successfully.");
-														// Update active version-segment totals.
-														if(!$this->update_version_segment_totals(TRUE)) {
+														$log->write_to_log("11.b Version URI updated successfully.");
+														// Update known version-segment totals.
+														if(!$this->update_version_segment_totals(FALSE)) {
 															// Log.
-															$log->write_to_log("13. ERROR - Unable to successfully update active version-segment totals.");
+															$log->write_to_log("12. ERROR - Unable to successfully update known version-segment totals.");
 														}
 														else {
 															// Log.
-															$log->write_to_log("13. Active version-segment totals updated successfully.");
-															// Update known earliest version-segment boundaries.
-															if(!$this->update_version_segment_boundaries(FALSE, FALSE)) {
+															$log->write_to_log("12. Known version-segment totals updated successfully.");
+															// Update active version-segment totals.
+															if(!$this->update_version_segment_totals(TRUE)) {
 																// Log.
-																$log->write_to_log("14. ERROR - Unable to successfully update known earliest version-segment boundaries.");
+																$log->write_to_log("13. ERROR - Unable to successfully update active version-segment totals.");
 															}
 															else {
 																// Log.
-																$log->write_to_log("14. Known earliest version-segment boundaries updated successfully.");
-																// Update known latest version-segment boundaries.
-																if(!$this->update_version_segment_boundaries(FALSE, TRUE)) {
+																$log->write_to_log("13. Active version-segment totals updated successfully.");
+																// Update known earliest version-segment boundaries.
+																if(!$this->update_version_segment_boundaries(FALSE, FALSE)) {
 																	// Log.
-																	$log->write_to_log("15. ERROR - Unable to successfully update known latest version-segment boundaries.");
+																	$log->write_to_log("14. ERROR - Unable to successfully update known earliest version-segment boundaries.");
 																}
 																else {
 																	// Log.
-																	$log->write_to_log("15. Known latest version-segment boundaries updated successfully.");
-																	// Update active earliest version-segment boundaries.
-																	if(!$this->update_version_segment_boundaries(TRUE, FALSE)) {
+																	$log->write_to_log("14. Known earliest version-segment boundaries updated successfully.");
+																	// Update known latest version-segment boundaries.
+																	if(!$this->update_version_segment_boundaries(FALSE, TRUE)) {
 																		// Log.
-																		$log->write_to_log("16. ERROR - Unable to successfully update active earliest version-segment boundaries.");
+																		$log->write_to_log("15. ERROR - Unable to successfully update known latest version-segment boundaries.");
 																	}
 																	else {
 																		// Log.
-																		$log->write_to_log("16. Active earliest version-segment boundaries updated successfully.");
-																		// Update active latest version-segment boundaries.
-																		if(!$this->update_version_segment_boundaries(TRUE, TRUE)) {
+																		$log->write_to_log("15. Known latest version-segment boundaries updated successfully.");
+																		// Update active earliest version-segment boundaries.
+																		if(!$this->update_version_segment_boundaries(TRUE, FALSE)) {
 																			// Log.
-																			$log->write_to_log("17. ERROR - Unable to successfully update active latest version-segment boundaries.");
+																			$log->write_to_log("16. ERROR - Unable to successfully update active earliest version-segment boundaries.");
 																		}
 																		else {
 																			// Log.
-																			$log->write_to_log("17. Active latest version-segment boundaries updated successfully.");
-																			// Convert processes.
-																			if(!$this->convert_processes()) {
+																			$log->write_to_log("16. Active earliest version-segment boundaries updated successfully.");
+																			// Update active latest version-segment boundaries.
+																			if(!$this->update_version_segment_boundaries(TRUE, TRUE)) {
 																				// Log.
-																				$log->write_to_log("18. ERROR - Unable to successfully convert processes.");
+																				$log->write_to_log("17. ERROR - Unable to successfully update active latest version-segment boundaries.");
 																			}
 																			else {
 																				// Log.
-																				$log->write_to_log("18. Processes converted successfully.");
-																				// Coalesce processes.
-																				if(!$this->coalesce_processes()) {
+																				$log->write_to_log("17. Active latest version-segment boundaries updated successfully.");
+																				// Convert processes.
+																				if(!$this->convert_processes()) {
 																					// Log.
-																					$log->write_to_log("19. ERROR - Unable to successfully coalesce processes.");
+																					$log->write_to_log("18. ERROR - Unable to successfully convert processes.");
 																				}
 																				else {
 																					// Log.
-																					$log->write_to_log("19. Processes successfully coalesced.");
-																					// Associate process args.
-																					if(!$this->associate_process_args()) {
+																					$log->write_to_log("18. Processes converted successfully.");
+																					// Update version comments.
+																					if(!$this->update_version_comments()) {
 																						// Log.
-																						$log->write_to_log("20. ERROR - Unable to successfully associate process args.");
+																						$log->write_to_log("18.b ERROR - Unable to successfully update version comments.");
 																					}
 																					else {
 																						// Log.
-																						$log->write_to_log("20. Process args associated successfully.");
-																						// Update known start process-segment boundaries.
-																						if(!$this->update_process_segment_boundaries(FALSE, FALSE)) {
+																						$log->write_to_log("18.b Version comments updated successfully.");
+																						// Coalesce processes.
+																						if(!$this->coalesce_processes()) {
 																							// Log.
-																							$log->write_to_log("21. ERROR - Unable to successfully update process known-segment start boundaries.");
+																							$log->write_to_log("19. ERROR - Unable to successfully coalesce processes.");
 																						}
 																						else {
 																							// Log.
-																							$log->write_to_log("21. Process known-segment start boundaries updated successfully.");
-																							// Update known end process-segment boundaries.
-																							if(!$this->update_process_segment_boundaries(FALSE, TRUE)) {
+																							$log->write_to_log("19. Processes successfully coalesced.");
+																							// Associate process args.
+																							if(!$this->associate_process_args()) {
 																								// Log.
-																								$log->write_to_log("22. ERROR - Unable to successfully update process known-segment end boundaries.");
+																								$log->write_to_log("20. ERROR - Unable to successfully associate process args.");
 																							}
 																							else {
 																								// Log.
-																								$log->write_to_log("22. Process known-segment end boundaries updated successfully.");
-																								// Update active start process-segment boundaries.
-																								if(!$this->update_process_segment_boundaries(TRUE, FALSE)) {
+																								$log->write_to_log("20. Process args associated successfully.");
+																								// Update known start process-segment boundaries.
+																								if(!$this->update_process_segment_boundaries(FALSE, FALSE)) {
 																									// Log.
-																									$log->write_to_log("23. ERROR - Unable to successfully update process active-segment start boundaries.");
+																									$log->write_to_log("21. ERROR - Unable to successfully update process known-segment start boundaries.");
 																								}
 																								else {
 																									// Log.
-																									$log->write_to_log("23. Process active-segment start boundaries updated successfully.");
-																									// Update active process-segment end boundaries.
-																									if(!$this->update_process_segment_boundaries(TRUE, TRUE)) {
+																									$log->write_to_log("21. Process known-segment start boundaries updated successfully.");
+																									// Update known end process-segment boundaries.
+																									if(!$this->update_process_segment_boundaries(FALSE, TRUE)) {
 																										// Log.
-																										$log->write_to_log("24. ERROR - Unable to successfully update process active-segment end boundaries.");
+																										$log->write_to_log("22. ERROR - Unable to successfully update process known-segment end boundaries.");
 																									}
 																									else {
 																										// Log.
-																										$log->write_to_log("24. Process active-segment end boundaries updated successfully.");
-																										// Update active process-segment totals.
-																										if(!$this->update_process_segment_totals(TRUE)) {
+																										$log->write_to_log("22. Process known-segment end boundaries updated successfully.");
+																										// Update active start process-segment boundaries.
+																										if(!$this->update_process_segment_boundaries(TRUE, FALSE)) {
 																											// Log.
-																											$log->write_to_log("25. ERROR - Unable to successfully update process-segment active totals.");
+																											$log->write_to_log("23. ERROR - Unable to successfully update process active-segment start boundaries.");
 																										}
 																										else {
 																											// Log.
-																											$log->write_to_log("25. Process-segment active totals updated successfully.");
-																											// Update known process-segment totals.
-																											if(!$this->update_process_segment_totals(FALSE)) {
+																											$log->write_to_log("23. Process active-segment start boundaries updated successfully.");
+																											// Update active process-segment end boundaries.
+																											if(!$this->update_process_segment_boundaries(TRUE, TRUE)) {
 																												// Log.
-																												$log->write_to_log("26. ERROR - Unable to successfully update process-segment known totals.");
+																												$log->write_to_log("24. ERROR - Unable to successfully update process active-segment end boundaries.");
 																											}
 																											else {
 																												// Log.
-																												$log->write_to_log("26. Process-segment known totals updated successfully.");
-																												// Re-alter schema.
-																												if(!$this->re_alter_schema()) {
+																												$log->write_to_log("24. Process active-segment end boundaries updated successfully.");
+																												// Update active process-segment totals.
+																												if(!$this->update_process_segment_totals(TRUE)) {
 																													// Log.
-																													$log->write_to_log("27. ERROR - Unable to re-alter DQSEGDB schema, removing segdb fields used in conversion.");
+																													$log->write_to_log("25. ERROR - Unable to successfully update process-segment active totals.");
 																												}
 																												else {
 																													// Log.
-																													$log->write_to_log("27. DQSEGDB schema altered, segdb fields used in conversion removed.");
-																													// Check, analyse and optimise each of the tables.
-																													if(!$this->db_optimisation()) {
+																													$log->write_to_log("25. Process-segment active totals updated successfully.");
+																													// Update known process-segment totals.
+																													if(!$this->update_process_segment_totals(FALSE)) {
 																														// Log.
-																														$log->write_to_log("28. ERROR - Check, analysis and optimisation of the DB not completed successfully.");
+																														$log->write_to_log("26. ERROR - Unable to successfully update process-segment known totals.");
 																													}
 																													else {
 																														// Log.
-																														$log->write_to_log("28. Check, analysis and optimisation of the DB completed successfully.");
-																														// Log.
-																														$log->write_to_log("segdb >>> DQSEGDB conversion process now complete.");
+																														$log->write_to_log("26. Process-segment known totals updated successfully.");
+																														// Re-alter schema.
+																														if(!$this->re_alter_schema()) {
+																															// Log.
+																															$log->write_to_log("27. ERROR - Unable to re-alter DQSEGDB schema, removing segdb fields used in conversion.");
+																														}
+																														else {
+																															// Log.
+																															$log->write_to_log("27. DQSEGDB schema altered, segdb fields used in conversion removed.");
+																															// Check, analyse and optimise each of the tables.
+																															if(!$this->db_optimisation()) {
+																																// Log.
+																																$log->write_to_log("28. ERROR - Check, analysis and optimisation of the DB not completed successfully.");
+																															}
+																															else {
+																																// Log.
+																																$log->write_to_log("28. Check, analysis and optimisation of the DB completed successfully.");
+																																// Log.
+																																$log->write_to_log("segdb >>> DQSEGDB conversion process now complete.");
+																															}
+																														}
 																													}
 																												}
 																											}
@@ -424,7 +442,7 @@ class DAO {
 								`process_full_name` text NOT NULL,
 								`pid` int(11) NOT NULL DEFAULT '0',
 								`fqdn` text NOT NULL,
-								`data_format_fk` int(11) NOT NULL DEFAULT '0',
+								`version_comment` text NOT NULL,
 								`user_fk` int(11) NOT NULL DEFAULT '0',
 								`insertion_time` double NOT NULL DEFAULT '0',
 								`affected_active_data_segment_total` int(11) NOT NULL DEFAULT '0',
@@ -439,7 +457,6 @@ class DAO {
 								PRIMARY KEY (`process_id`),
 								KEY `user_fk` (`user_fk`),
 								KEY `pid` (`pid`),
-								KEY `upload_format_fk` (`data_format_fk`),
 								KEY `dq_flag_version_fk` (`dq_flag_version_fk`)
 							  ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;
 							  CREATE TABLE IF NOT EXISTS `tbl_processes` (
@@ -448,7 +465,7 @@ class DAO {
 								`process_full_name` text NOT NULL,
 								`pid` int(11) NOT NULL DEFAULT '0',
 								`fqdn` text NOT NULL,
-								`data_format_fk` int(11) NOT NULL DEFAULT '0',
+								`version_comment` text NOT NULL,
 								`user_fk` int(11) NOT NULL DEFAULT '0',
 								`insertion_time` double NOT NULL DEFAULT '0',
 								`affected_active_data_segment_total` int(11) NOT NULL DEFAULT '0',
@@ -463,7 +480,6 @@ class DAO {
 								PRIMARY KEY (`process_id`),
 								KEY `user_fk` (`user_fk`),
 								KEY `pid` (`pid`),
-								KEY `upload_format_fk` (`data_format_fk`),
 								KEY `dq_flag_version_fk` (`dq_flag_version_fk`)
 							  ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;
 							  CREATE TABLE IF NOT EXISTS `tbl_process_args` (
@@ -485,6 +501,7 @@ class DAO {
 								`dq_flag_version_fk` int(11) NOT NULL DEFAULT '0',
 								`segment_start_time` double NOT NULL,
 								`segment_stop_time` double NOT NULL,
+								`version_uri` text NOT NULL,
 								`PROCESS_ID` varchar(26) NOT NULL,
 								`SEGMENT_DEF_ID` varchar(26) NOT NULL,
 								KEY `dq_flag_version_fk` (`dq_flag_version_fk`)
@@ -549,8 +566,8 @@ class DAO {
 				// Get table name.
 				$e = explode('.', $file);
 				$t = strtoupper($e[0]);
-				// If table name exists.
-				if(!empty($t)) {
+				// If table name exists and isn't README.
+				if(!empty($t) && $t != 'README') {
 					// Set SQL.
 					$sql .= "LOAD DATA LOCAL INFILE '".$constant->source_dir.$file."' INTO TABLE ".$t." FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n'; ";
 					// Log.
@@ -576,7 +593,7 @@ class DAO {
 				}
 				else {
 					// Log.
-					$log->write_to_log("ERROR: unable to successfully import segdb CSV data.");
+					$log->write_to_log("ERROR: unable to successfully import segdb CSV data: ".print_r($this->pdo->errorInfo()));
 					// Set.
 					$r = FALSE;
 				}
@@ -633,18 +650,22 @@ class DAO {
 				if($this->pdo->query("ALTER TABLE `tbl_dq_flag_versions` DROP `PROCESS_ID`")) {
 					if($this->pdo->query("ALTER TABLE `tbl_dq_flag_versions` DROP `SEGMENT_DEF_ID`")) {
 						if($this->pdo->query("ALTER TABLE `tbl_processes` DROP `PROCESS_ID_OLD`")) {
-							if($this->pdo->query("ALTER TABLE `tbl_segments` DROP `PROCESS_ID`")) {
-								if($this->pdo->query("ALTER TABLE `tbl_segments` DROP `SEGMENT_DEF_ID`")) {
-									if($this->pdo->query("ALTER TABLE `tbl_segment_summary` DROP `PROCESS_ID`")) {
-										if($this->pdo->query("ALTER TABLE `tbl_segment_summary` DROP `SEGMENT_DEF_ID`")) {
-											if($this->pdo->query("DROP TABLE `tbl_processes_tmp`")) {
-												if($this->pdo->query("DROP TABLE `PROCESS`")) {
-													if($this->pdo->query("DROP TABLE `PROCESS_PARAMS`")) {
-														if($this->pdo->query("DROP TABLE `SEGMENT`")) {
-															if($this->pdo->query("DROP TABLE `SEGMENT_DEFINER`")) {
-																if($this->pdo->query("DROP TABLE `SEGMENT_SUMMARY`")) {
-																	// Set.
-																	$r = TRUE;
+							if($this->pdo->query("ALTER TABLE `tbl_processes` DROP `version_comment`")) {
+								if($this->pdo->query("ALTER TABLE `tbl_segments` DROP `PROCESS_ID`")) {
+									if($this->pdo->query("ALTER TABLE `tbl_segments` DROP `SEGMENT_DEF_ID`")) {
+										if($this->pdo->query("ALTER TABLE `tbl_segment_summary` DROP `PROCESS_ID`")) {
+											if($this->pdo->query("ALTER TABLE `tbl_segment_summary` DROP `version_uri`")) {
+												if($this->pdo->query("ALTER TABLE `tbl_segment_summary` DROP `SEGMENT_DEF_ID`")) {
+													if($this->pdo->query("DROP TABLE `tbl_processes_tmp`")) {
+														if($this->pdo->query("DROP TABLE `PROCESS`")) {
+															if($this->pdo->query("DROP TABLE `PROCESS_PARAMS`")) {
+																if($this->pdo->query("DROP TABLE `SEGMENT`")) {
+																	if($this->pdo->query("DROP TABLE `SEGMENT_DEFINER`")) {
+																		if($this->pdo->query("DROP TABLE `SEGMENT_SUMMARY`")) {
+																			// Set.
+																			$r = TRUE;
+																		}
+																	}
 																}
 															}
 														}
@@ -1196,6 +1217,7 @@ class DAO {
 			$fqdn = $loop['NODE'];
 			$insertion_time = $tc->unix2gps(strtotime($tc->convert_bespoke_segdb_datetimes($loop['INSERTION_TIME'])));
 			$user_fk = array_search($loop['USERNAME'], $u_a);
+			$version_comment = $loop['COMMENT'];
 			$process_time_started = $loop['START_TIME'];
 			$process_time_last_used = $loop['END_TIME'];
 			if(empty($process_time_last_used)) {
@@ -1205,6 +1227,7 @@ class DAO {
 			$a[$loop['PROCESS_ID']] = array('process_full_name' => $process_full_name,
 											'pid' => $pid,
 											'fqdn' => $fqdn,
+											'version_comment' => $version_comment,
 											'insertion_time' => $insertion_time,
 											'user_fk' => $user_fk,
 											'process_time_started' => $process_time_started,
@@ -1361,19 +1384,17 @@ class DAO {
 												 (dq_flag_fk,
 												  dq_flag_description,
 												  dq_flag_version,
-												  dq_flag_version_comment,
-												  dq_flag_version_uri,
 												  dq_flag_version_last_modifier,
 												  dq_flag_version_date_created,
 												  dq_flag_version_date_last_modified,
 												  PROCESS_ID,
 												  SEGMENT_DEF_ID)
 												 VALUES
-												 (:f, :d, :v, :d, '', :u, :dc, :dm, :p, :s)"))) {
+												 (:f, :d, :v, :u, :dc, :dm, :p, :s)"))) {
 					// Execute.
 					if($stmt->execute(array(':f' => $s['dq_flag_fk'],
-											':v' => $s['version'],
 											':d' => $s['description'],
+											':v' => $s['version'],
 											':u' => $s['last_modifier'],
 											':dc' => $s['date_created'],
 											':dm' => $s['date_created'],
@@ -1676,13 +1697,15 @@ class DAO {
 			}
 			// Insert version with process info to database.
 			if(($stmt = $this->pdo->prepare("INSERT INTO tbl_processes_tmp
-									  		 (dq_flag_version_fk, process_full_name, pid, fqdn, data_format_fk, user_fk, insertion_time, process_time_started, process_time_last_used, PROCESS_ID_OLD)
+									  		 (dq_flag_version_fk, process_full_name, pid, fqdn, version_comment, user_fk, insertion_time, process_time_started, process_time_last_used, PROCESS_ID_OLD)
 									 		 VALUES
-							  				 (:v,:n,:p,:f,5,:u,:i,:sta,:sto,:po)"))) {
+							  				 (:v,:n,:p,:f,:c,:u,:i,:sta,:sto,:po)"))) {
 				// Execute.
 				if($stmt->execute(array(':v' => $v_id,
 										':n' => $pfn,
+										':p' => $p_a[$PROCESS_ID]['pid'],
 										':f' => $p_a[$PROCESS_ID]['fqdn'],
+										':c' => $p_a[$PROCESS_ID]['version_comment'],
 										':u' => $p_a[$PROCESS_ID]['user_fk'],
 										':i' => $p_a[$PROCESS_ID]['insertion_time'],
 										':sta' => $p_a[$PROCESS_ID]['process_time_started'],
@@ -1706,19 +1729,27 @@ class DAO {
 	private function coalesce_processes() {
 		// Init.
 		$r = TRUE;
+		$g = NULL;
 		// Initialise.
+		$constant = new Constants();
 		$log = new Logger();
 		// Create PDO object
 		$this->db_connect();
+		// Get package execution constants.
+		$constant->package_execution_constants();
+		// If grouping.
+		if($constant->use_process_coalescence) {
+			$g = "GROUP BY pid, dq_flag_version_fk";
+		}
 		// Log.
 		$log->write_to_log("Beginning process coalescence...");
 		// Get version_fks and associated PROCESS_IDs from segments table.
 		if($res = $this->pdo->query("INSERT INTO tbl_processes
-								  (dq_flag_version_fk, process_full_name, pid, fqdn, data_format_fk, user_fk, insertion_time, process_time_started, process_time_last_used, PROCESS_ID_OLD)
-								  SELECT dq_flag_version_fk, process_full_name, pid, fqdn, data_format_fk, user_fk, MIN(insertion_time) AS 'insertion_time', MIN(process_time_started) AS 'process_time_started', MAX(process_time_last_used) AS 'process_time_last_used', PROCESS_ID_OLD
-                   		  	 	  FROM tbl_processes_tmp
-								  GROUP BY pid, dq_flag_version_fk
-								  ORDER BY dq_flag_version_fk")) {
+								  	 (dq_flag_version_fk, process_full_name, pid, fqdn, version_comment, user_fk, insertion_time, process_time_started, process_time_last_used, PROCESS_ID_OLD)
+								  	 SELECT dq_flag_version_fk, process_full_name, pid, fqdn, version_comment, user_fk, MIN(insertion_time) AS 'insertion_time', MIN(process_time_started) AS 'process_time_started', MAX(process_time_last_used) AS 'process_time_last_used', PROCESS_ID_OLD
+                   		  	 	  	 FROM tbl_processes_tmp
+								  	 ".$g."
+								  	 ORDER BY dq_flag_version_fk")) {
 			// Log.
 			$log->write_to_log("Processes coalesced successfully.");
 		}
@@ -1780,6 +1811,90 @@ class DAO {
 		}
 		// Return.
 		return $a;
+	}
+	
+	// Update version comments.
+	private function update_version_comments() {
+		// Init.
+		$r = FALSE;
+		// Instantiate.
+		$log = new Logger();
+		// Log.
+		$log->write_to_log("Updating version comments...");
+		// Create PDO object.
+		$this->db_connect();
+		// Get.
+		$res = $this->pdo->query("SELECT dq_flag_version_fk, version_comment
+								  FROM tbl_processes_tmp
+								  WHERE version_comment NOT LIKE ''
+								  GROUP BY dq_flag_version_fk");
+		// Loop.
+		while($loop = $res->fetch()) {
+			// Set.
+			$v_id = $loop['dq_flag_version_fk'];
+			$version_comment = $loop['version_comment'];
+			// Insert segments.
+			if(($stmt = $this->pdo->prepare("UPDATE tbl_dq_flag_versions
+											 SET dq_flag_version_comment=:c
+											 WHERE dq_flag_version_id=:v"))) {
+				// Execute.
+				if($stmt->execute(array(':c' => $version_comment, ':v' => $v_id))) {
+					// Set.
+					$r = TRUE;
+				}
+				// Otherwise, output error.
+				else {
+					// Log.
+					$log->write_to_log("ERROR - Problem updating version comments: ".$stmt->errorInfo[2]);
+				}
+			}
+		}
+		// Log.
+		$log->write_to_log("Finished updating version comments");
+		// Return.
+		return $r;
+	}
+
+	// Update version URI.
+	private function update_version_uri() {
+		// Init.
+		$r = FALSE;
+		// Instantiate.
+		$log = new Logger();
+		// Log.
+		$log->write_to_log("Updating version URI...");
+		// Create PDO object.
+		$this->db_connect();
+		// Get.
+		$res = $this->pdo->query("SELECT dq_flag_version_fk, version_uri
+								  FROM tbl_segment_summary
+								  WHERE version_uri NOT LIKE ''
+								  GROUP BY dq_flag_version_fk");
+		// Loop.
+		while($loop = $res->fetch()) {
+			// Set.
+			$v_id = $loop['dq_flag_version_fk'];
+			$version_uri = $loop['version_uri'];
+			// Insert segments.
+			if(($stmt = $this->pdo->prepare("UPDATE tbl_dq_flag_versions
+											 SET dq_flag_version_uri=:u
+											 WHERE dq_flag_version_id=:v"))) {
+				// Execute.
+				if($stmt->execute(array(':u' => $version_uri, ':v' => $v_id))) {
+					// Set.
+					$r = TRUE;
+				}
+				// Otherwise, output error.
+				else {
+					// Log.
+					$log->write_to_log("ERROR - Problem updating version URI: ".$stmt->errorInfo[2]);
+				}
+			}
+		}
+		// Log.
+		$log->write_to_log("Finished updating version URI");
+		// Return.
+		return $r;
 	}
 	
 	// Update version-segment boundaries.
@@ -2031,7 +2146,7 @@ class DAO {
 			$r = $loop['tot'];
 		}
 		// Log.
-		$log->write_to_log("Upper segment import limit set at: ".$tot);
+		$log->write_to_log("Upper segment import limit set at: ".$r);
 		// Return.
 		return $r;
 	} 
@@ -2040,14 +2155,177 @@ class DAO {
 	private function convert_segments($s) {
 		// Init.
 		$r = TRUE;
+		// Instantiate.
+		$constant = new Constants();
+		$log = new Logger();
+		// Get conversion constant.
+		$constant->package_execution_constants();
+		// Log.
+		$log->write_to_log("Converting segments/segment summaries...");
+		// If not using joins in segment conversion.
+		if(!$constant->use_join_in_segment_conversion) {
+			// Init.
+			$z = 1000000;
+			$t_a = NULL;
+			$t_b = "s";
+			$t_c = NULL;
+			// If dealing with summaries.
+			if($s) {
+				$t_a = "_SUMMARY";
+				$t_b = "_summary";
+				$t_c = " summaries";
+			}
+			// Log.
+			$log->write_to_log("Converting segment".$t_c." without SQL JOIN...");
+			// Get upper import limit.
+			$limit = $this->count_segdb_segments($s);
+			// Get version array.
+			$v_a = $this->get_version_array(FALSE);
+			// Create PDO object
+			$this->db_connect();
+			// Loop through until limit is reached.
+			for($i=0; $i<$limit; $i=$i+$z) {
+				// Log.
+				$log->write_to_log("Extracting segment".$t_c."s (".$i.",".$z.")");
+				// Get.
+				$res = $this->pdo->query("SELECT *
+										  FROM SEGMENT".$t_a."
+										  LIMIT ".$i.",".$z);
+				// Loop.
+				while($loop = $res->fetch()) {
+					// Set.
+					$PROCESS_ID = $loop['PROCESS_ID'];
+					$SEGMENT_DEF_ID = $loop['SEGMENT_DEF_ID'];
+					$START_TIME = $loop['START_TIME'];
+					$END_TIME = $loop['END_TIME'];
+					// Get flag version id from SEGMENT_DEF_ID.
+					$dq_flag_version_fk = $v_a[$SEGMENT_DEF_ID];
+					// If dealing with summaries.
+					if($s) {
+						$COMMENT = $loop['COMMENT'];
+					}
+					// If dealing with 'known' (summaries).
+					if($s) {
+						// Insert segments.
+						if(($stmt = $this->pdo->prepare("INSERT INTO tbl_segment_summary
+														 (dq_flag_version_fk,
+														  segment_start_time,
+														  segment_stop_time,
+														  version_uri,
+														  PROCESS_ID,
+														  SEGMENT_DEF_ID)
+														 VALUES
+														 (:v, :s, :e, :c, :p, :d)"))) {
+							// Execute.
+							if($stmt->execute(array(':v' => $dq_flag_version_fk,
+													':s' => $START_TIME,
+													':e' => $END_TIME,
+													':c' => $COMMENT,
+													':p' => $PROCESS_ID,
+													':d' => $SEGMENT_DEF_ID))) {
+							}
+							// Otherwise, output error.
+							else {
+								// Log.
+								$log->write_to_log("ERROR - Problem converting segment".$t_c."s (version_id: $dq_flag_version_fk, SEGMENT_DEF_ID: $SEGMENT_DEF_ID) - ".$stmt->errorInfo[2]);
+								// Set result to error to not automatically go on with segment summary insertion.
+								$r = FALSE;
+							}
+						}
+					}
+					// Otherwise, active.
+					else {
+						// Insert segments.
+						if(($stmt = $this->pdo->prepare("INSERT INTO tbl_segments
+														 (dq_flag_version_fk,
+														  segment_start_time,
+														  segment_stop_time,
+														  PROCESS_ID,
+														  SEGMENT_DEF_ID)
+														 VALUES
+														 (:v, :s, :e, :p, :d)"))) {
+							// Execute.
+							if($stmt->execute(array(':v' => $dq_flag_version_fk,
+													':s' => $START_TIME,
+													':e' => $END_TIME,
+													':p' => $PROCESS_ID,
+													':d' => $SEGMENT_DEF_ID))) {
+							}
+							// Otherwise, output error.
+							else {
+								// Log.
+								$log->write_to_log("ERROR - Problem converting segment".$t_c."s (version_id: $dq_flag_version_fk, SEGMENT_DEF_ID: $SEGMENT_DEF_ID) - ".$stmt->errorInfo[2]);
+								// Set result to error to not automatically go on with segment summary insertion.
+								$r = FALSE;
+							}
+						}
+					}
+				}
+			}
+		}
+		// If not using joins in segment conversion.
+		else {
+			// Init.
+			$t_a = NULL;
+			$t_b = "s";
+			$t_c = "s";
+			$t_d = NULL;
+			$t_e = NULL;
+			// If dealing with summaries.
+			if($s) {
+				$t_a = "_SUMMARY";
+				$t_b = "_summary";
+				$t_c = " summaries";
+				$t_d = "COMMENT,";
+				$t_e = "version_uri,";
+			}
+			// Log.
+			$log->write_to_log("Converting segment".$t_c." using SQL JOIN...");
+			// Create PDO object
+			$this->db_connect();
+			// Get.
+			if($res = $this->pdo->query("INSERT INTO tbl_segment".$t_b."
+									 (dq_flag_version_fk,
+									  segment_start_time,
+									  segment_stop_time,".$t_e."
+									  PROCESS_ID,
+									  SEGMENT_DEF_ID)
+									 SELECT dq_flag_version_id, START_TIME, END_TIME, ".$t_d."SEGMENT".$t_a.".PROCESS_ID, SEGMENT".$t_a.".SEGMENT_DEF_ID
+									 FROM tbl_dq_flag_versions
+									 LEFT JOIN SEGMENT".$t_a." ON tbl_dq_flag_versions.SEGMENT_DEF_ID = SEGMENT".$t_a.".SEGMENT_DEF_ID")) {
+												 // Log.
+			$log->write_to_log("Finished converting segment".$t_c);
+			}
+			// Otherwise, output error.
+			else {
+				// Log.
+				$log->write_to_log("ERROR - Problem converting segment".$t_c." - ".print_r($this->pdo->errorInfo()));
+				// Set result to error to not automatically go on with segment summary insertion.
+				$r = FALSE;
+			}
+		}
+		// Log.
+		$log->write_to_log("Finished converting segment".$t_c."s (version_id: ".$dq_flag_version_fk.", SEGMENT_DEF_ID: ".$SEGMENT_DEF_ID.") - ".$stmt->errorInfo[2]);
+		// Return.
+		return $r;
+	}
+
+/*	// Convert segments.
+	private function convert_segments($s) {
+		// Init.
+		$r = TRUE;
 		$t_a = NULL;
 		$t_b = "s";
 		$t_c = "s";
+		$t_d = NULL;
+		$t_e = NULL;
 		// If dealing with summaries.
 		if($s) {
 			$t_a = "_SUMMARY";
 			$t_b = "_summary";
 			$t_c = " summaries";
+			$t_d = "COMMENT,";
+			$t_e = "version_uri,";
 		}
 		// Instantiate.
 		$log = new Logger();
@@ -2059,10 +2337,10 @@ class DAO {
 		if($res = $this->pdo->query("INSERT INTO tbl_segment".$t_b."
 									 (dq_flag_version_fk,
 									  segment_start_time,
-									  segment_stop_time,
+									  segment_stop_time,".$t_e."
 									  PROCESS_ID,
 									  SEGMENT_DEF_ID)
-									 SELECT dq_flag_version_id, START_TIME, END_TIME, SEGMENT".$t_a.".PROCESS_ID, SEGMENT".$t_a.".SEGMENT_DEF_ID
+									 SELECT dq_flag_version_id, START_TIME, END_TIME, ".$t_d."SEGMENT".$t_a.".PROCESS_ID, SEGMENT".$t_a.".SEGMENT_DEF_ID
 									 FROM tbl_dq_flag_versions
 									 LEFT JOIN SEGMENT".$t_a." ON tbl_dq_flag_versions.SEGMENT_DEF_ID = SEGMENT".$t_a.".SEGMENT_DEF_ID")) {
 			// Log.
@@ -2078,6 +2356,6 @@ class DAO {
 		// Return.
 		return $r;
 	}
-}
+*/}
 
 ?>
