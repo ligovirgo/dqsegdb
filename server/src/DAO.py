@@ -1468,7 +1468,7 @@ class DAOHandle:
                 w = ' WHERE ' + w
             # Set table to use dependent upon type of insert.
             tbl = 's'
-            if request == 'known':
+            if request == 'known' or request == 'all':
                 tbl = '_summary'
             # If request within acceptable range, i.e. 'active', 'known', etc., get list of all flags over period requested by args.
             if not admin.check_request('seg', request) == False:
@@ -1477,6 +1477,8 @@ class DAOHandle:
                     # Get the segment start/stop fields from the DB.
                     seg_sql = ', segment_start_time, segment_stop_time '
                 try:
+                    if request == 'all':
+                        active_data_dictionary=self.get_active_segments_only(w,seg_sql)
                     # Get.
                     cur.execute("""
                                 SELECT dq_flag_name, value_txt AS 'dq_flag_ifo_txt', dq_flag_description, dq_flag_version_comment, dq_flag_active_means_ifo_badness, dq_flag_version_uri, dq_flag_version_deactivated, dq_flag_version, dq_flag_version_fk""" + seg_sql + """
@@ -1488,6 +1490,7 @@ class DAOHandle:
                                 LEFT JOIN tbl_dq_flags ON tbl_dq_flag_versions.dq_flag_fk = tbl_dq_flags.dq_flag_id
                                 LEFT JOIN tbl_values ON tbl_dq_flags.dq_flag_ifo = tbl_values.value_id
                                 """)
+
                 except pyodbc.Error, err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
@@ -1497,15 +1500,23 @@ class DAOHandle:
                         # If this is a different flag.
                         if not pre_v_fk == row.dq_flag_version_fk:
                             # Increment counter.
-                            i= i + 1
+                            i = row.dq_flag_version_fk
                             # Get metadata for this flag.
                             payload[i] = admin.get_flag_metadata(row.dq_flag_ifo_txt, row.dq_flag_name, str(row.dq_flag_version), row.dq_flag_description, row.dq_flag_version_comment, row.dq_flag_version_uri, row.dq_flag_version_deactivated, row.dq_flag_active_means_ifo_badness)
                             # If 'known' or 'active' segments or no limitations have been set.
-                            if request == 'known' or request == 'active':
+                            if request == 'known' or request == 'active': 
                                 # Reset segment list.
                                 payload[i][request] = []
+                            elif request == 'all': 
+                                payload[i]['known']=[]
+                                # Append all the active segments into this flag's payload
+                                payload[i]['active']=active_data_dictionary[i]
+                        if request == 'all':
+                            t1 = int(row.segment_start_time)
+                            t2 = int(row.segment_stop_time)
+                            payload[i]['known'].append([t1,t2])
                         # If user is not requesting just the metadata.
-                        if not 'metadata' in request_array:
+                        elif not 'metadata' in request_array:
                             # Set segment start/stop times.
                             t1 = int(row.segment_start_time)
                             t2 = int(row.segment_stop_time)
@@ -1520,3 +1531,37 @@ class DAOHandle:
         d['results'] = payload
         # Return.
         return d
+
+    def get_active_segments_only(w,seg_sql):
+        """ 
+        Function used by /report/all to get the active segments.
+        Returns a dictionary with keys of dq_flag_version_fk and buckets
+        containing the active flags for that flag_version_fk in a list.
+        """
+        cur = cnxn.cursor()
+        try:
+            # Get active segments and flag_version_fk.
+            # w = ' segment_stop_time >= ' + t1 + ' AND segment_start_time <= ' + t2
+            # w = ' WHERE ' + w
+            # seg_sql = ', segment_start_time, segment_stop_time ' 
+            cur.execute("""
+                       SELECT dq_flag_version_fk""" + seg_sql + """
+                       FROM tbl_segments""" + w + """
+                       ORDER BY dq_flag_version_fk
+                       """)
+        except pyodbc.Error, err:
+            # Set HTTP code and log.
+            admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
+        else:
+            output={}
+            # Loop.
+            for row in cur:
+                i = row.dq_flag_version_fk
+                if i not in output.keys():
+                    output[i] = []
+                t1 = int(row.segment_start_time)
+                t2 = int(row.segment_stop_time)
+                # Append segments to list.  
+                output[i].append([t1,t2])
+        del cur
+        return output
