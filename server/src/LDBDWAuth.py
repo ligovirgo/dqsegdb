@@ -85,7 +85,7 @@ class GridmapAuthorization:
         admin = Admin.AdminHandle()
         constant = Constants.ConstantsHandle()
         # If using HTTP.
-        if not constant.use_https:
+        if not constant.use_https or str(environ['LocalAccess'])=='True':
             # Set result to OK and carry on.
             r = [200]
         # Otherwise, using HTTPS.
