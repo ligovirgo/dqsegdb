@@ -18,6 +18,22 @@ body
 }
 
 /*******
+** p **
+*****/
+p.p_comment_hdr {
+	position: relative;
+	margin: 5px 0 0 0;
+	color: #37E;	
+}
+
+/********
+** h* **
+******/
+h4.get_request {
+	position: relative;
+	margin: 0;	
+}
+/*******
 ** a **
 *****/
 a, a:link, a:visited, a:link:hover, a:visited:hover
@@ -304,9 +320,12 @@ line
 /*******************
 ** Query results **
 *****************/
-#tbl_query_results {
+#tbl_query_results, #tbl_flag_statistics {
 	position: relative;
 	width: 100%;
+}
+#tbl_flag_statistics {
+	font-size: 10px;
 }
 .query_results, .query_results_hl, .query_results_hdr {
 	padding: 3px;

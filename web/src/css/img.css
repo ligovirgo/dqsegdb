@@ -36,3 +36,13 @@ img.img_tutorial {
 	position: relative;
 	border: 1px solid #CCC;
 }
+
+
+/* === Retrieve JSON payload image === */
+img.img_get_json, img.img_get_json:hover {
+	cursor: pointer;
+}
+img.img_get_json:hover {
+	opacity: 0.4;
+	filter: alpha(opacity=40);
+}

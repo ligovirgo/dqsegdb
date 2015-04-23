@@ -48,8 +48,8 @@ class DAO
 		$this->dbConnect();
 		// Query.
 		$this->res = $this->pdo->query("SELECT content_id, content_name, content_uri
-						FROM tbl_contents
-						WHERE content_parent=0 AND content_hide_in_top_links=0");
+										FROM tbl_contents
+										WHERE content_parent=0 AND content_hide_in_top_links=0");
 	}
 
 	// Get sub-link SQL.
@@ -61,8 +61,9 @@ class DAO
 			$this->dbConnect();
 			// Build prepared statement.
 			if(($stmt = $this->pdo->prepare("SELECT content_id, content_name, content_uri
-							 FROM tbl_contents
-							 WHERE content_parent=:c AND content_hide_in_top_links=0"))) {
+							 				 FROM tbl_contents
+							 				 WHERE content_parent=:c AND content_hide_in_top_links=0
+											 ORDER BY content_name"))) {
 				// Execute.
 				if($stmt->execute(array(':c' => $c))) {
 					// Loop.
@@ -206,6 +207,34 @@ class DAO
 				}
 			}
 		}
+	}
+
+	// Get content parent.
+	public function get_content_parent($c) {
+		// Init.
+		$r = 0;
+		// If arg sent.
+		if(isset($c)) {
+			// Create PDO object
+			$this->dbConnect();
+			// Build prepared statement.
+			if(($stmt = $this->pdo->prepare("SELECT content_parent
+							 				 FROM tbl_contents
+							 				 WHERE content_id=:c"))) {
+				// Execute.
+				if($stmt->execute(array(':c' => $c))) {
+					// Bind by column name.
+					$stmt->bindColumn('content_parent', $content_parent);
+					// Loop.
+					while($stmt->fetch()) {
+						// Check again.
+						$r = $content_parent;
+					}
+				}
+			}
+		}
+		// Return.
+		return $r;
 	}
 
 	////////////////////

@@ -30,7 +30,7 @@ class JSAction {
 		$variable = new Variables();
 		// Get admin type.
 		$variable->getReq();
-		// Get query server form.
+			// Get query server form.
 		if($variable->req == 'update_div_query_server') {
 			// If IFO passed.
 			if(isset($_GET['ifo'])) {
@@ -43,6 +43,30 @@ class JSAction {
 			}
 			$serverdata->get_query_form_div(3);
 			$this->document = $serverdata->query_form;
+		}
+		// Build an individual JSON payload.
+		elseif($variable->req == 'build_individual_json_payload') {
+			// Get file-related variables.
+			$variable->get_file_related_variables();
+			// Reset arrays.
+			unset($_SESSION['uri_deselected']);
+			$_SESSION['uri_deselected'] = array();
+			// Add to deselected array.
+			array_push($_SESSION['uri_deselected'], $_GET['uri']);
+			// Get segment JSON.
+			$data = $serverdata->retrieve_segments(NULL, NULL);
+			// If JSON passed.
+			if(!empty($data)) {
+				// Set filename.
+				$f = time().'.json';
+				// If put to file successful.
+				if(file_put_contents($variable->doc_root.$variable->download_dir.$f, $data)) {
+					// Insert file metadata to database.
+					$dao->insert_file_metadata($f);
+					// Set return.
+					$this->document = $variable->download_dir.$f;
+				}
+			}
 		}
 		// Update version div.
 		elseif($variable->req == 'update_version_div') {

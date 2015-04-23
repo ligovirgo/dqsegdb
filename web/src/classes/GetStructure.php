@@ -466,24 +466,21 @@ class GetStructure
 		$variable = new Variables();
 		// Set content call ID.
 		$variable->getContentCallID();
-		// If on homepage.
-		if($variable->c == 1) {
-			// Open.
-			$this->openDiv('current_host',$tabs,'');
-			$this->current_host_div = $this->div;
-			// Get current-host div contents.
-			$this->current_host_div .= $this->get_current_host_div_contents($tabs);
-			// Close.
-			$this->closeDiv('current_host',$tabs);
-			$this->current_host_div .= $this->div;
-			// Open.
-			$this->openDiv('change_host',$tabs,'');
-			$this->current_host_div .= $this->div;
-			$this->current_host_div .= "<span id=\"span_change_host\" class=\"span_change_host\" onclick=\"activate_host_change_option()\">Change this host</span>";
-			// Close.
-			$this->closeDiv('change_host',$tabs);
-			$this->current_host_div .= $this->div;
-		}
+		// Open.
+		$this->openDiv('current_host',$tabs,'');
+		$this->current_host_div = $this->div;
+		// Get current-host div contents.
+		$this->current_host_div .= $this->get_current_host_div_contents($tabs);
+		// Close.
+		$this->closeDiv('current_host',$tabs);
+		$this->current_host_div .= $this->div;
+		// Open.
+		$this->openDiv('change_host',$tabs,'');
+		$this->current_host_div .= $this->div;
+		$this->current_host_div .= "<span id=\"span_change_host\" class=\"span_change_host\" onclick=\"activate_host_change_option()\">Change this host</span>";
+		// Close.
+		$this->closeDiv('change_host',$tabs);
+		$this->current_host_div .= $this->div;
 	}
 
 	// Get current-host div contents.

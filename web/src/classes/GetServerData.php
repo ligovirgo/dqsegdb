@@ -121,6 +121,95 @@ class GetServerData {
 		return $r;
 	}
 	
+	// Get flag statistics table.
+	public function get_flag_statistics_table($c, $host, $ifo, $tabs) {
+		// Init.
+		$r = NULL;
+		// If in the right place.
+		if($c == 35) {
+			// Instantiate.
+			$structure = new GetStructure();
+			// Add number of tabs required.
+			$structure->getRequiredTabs($tabs);
+			// Get file contents.
+			$a = json_decode(file_get_contents($host.'/report/coverage'), true);
+			// If array has been returned.
+			if(isset($a['results']) && is_array($a['results'])) {
+				// Set.
+				$i = 0;
+				// Open table.
+				$r .= $structure->tabStr."<table cellpadding=\"0\" cellspacing=\"1\" border=\"0\" id=\"tbl_flag_statistics\">\n";
+				// Headings.
+				$r .= $structure->tabStr."	<tr>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" rowspan=\"2\">GET JSON</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" rowspan=\"2\">FLAG / VERSION</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" colspan=\"3\">ACTIVE</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" colspan=\"3\">KNOWN</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" colspan=\"3\">TOTAL</td>\n";
+				$r .= $structure->tabStr."	</tr>\n";
+				$r .= $structure->tabStr."	<tr>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">TOTAL</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">START</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">STOP</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">TOTAL</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">START</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">STOP</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">TOTAL</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">START</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">STOP</td>\n";
+				$r .= $structure->tabStr."	</tr>\n";
+				// Sort array by key.
+				ksort($a['results']);
+				// Loop URI array.
+				foreach($a['results'] as $uri => $data) {
+					// Explode the URI.
+					$e = explode('/', $uri);
+					// If matching current IFO.
+					if($e[2] == $ifo) {
+						// Re-build the flag-version.
+						$f = $e[3].'/'.$e[4];
+						$f_fmt = $f = $e[3].'_'.$e[4];
+						// Set bg.
+						$i++;
+						$css = NULL;
+						if($i == 2) {
+							$css = "_hl";
+							$i = 0;
+						}
+						// Calculate segment total and earliest and latest segment times.
+						$segment_total = $data['total_active_segments'] + $data['total_known_segments'];
+						$earliest_segment = $data['earliest_active_segment'];
+						if($data['earliest_known_segment'] < $data['earliest_active_segment']) {
+							$earliest_segment = $data['earliest_known_segment']; 
+						}
+						$latest_segment = $data['latest_active_segment'];
+						if($data['latest_known_segment'] < $data['latest_active_segment']) {
+							$latest_segment = $data['latest_known_segment'];
+						}
+						// Output as row.
+						$r .= $structure->tabStr."	<tr>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"4%\"><img src=\"images/arrow_on_blue.png\" id=\"img_get_json_".$f_fmt."\" class=\"img_get_json\" alt=\"Retrieve JSON payload for ".$f."\" title=\"Retrieve JSON payload for ".$f."\" onclick=\"get_json_payload_for_uri('".$uri."', '".$f."', '".$f_fmt."')\" /></td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"15%\"><span id=\"span_json_link_".$f_fmt."\">".$f."</span></td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['total_active_segments']."</td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['earliest_active_segment']."</td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['latest_active_segment']."</td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['total_known_segments']."</td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['earliest_known_segment']."</td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['latest_known_segment']."</td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$segment_total."</td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$earliest_segment."</td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$latest_segment."</td>\n";
+						$r .= $structure->tabStr."	<tr>\n";
+					}
+				}
+				// Close table.
+				$r .= $structure->tabStr."</table>\n";
+			}
+		}
+		// Return.
+		return $r;
+	}
+	
 	// Get array of available IFO.
 	public function get_ifo_array($host) {
 		// Get file contents.

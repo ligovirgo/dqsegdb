@@ -90,6 +90,23 @@ function deselect_version_uri(span_name, uri) {
 	});
 }
 
+// Get JSON payload for a specific flag-version URI and then update link in page.
+function get_json_payload_for_uri(u, n, n_fmt) {
+	// Change image to retrieving segments.
+	$('#img_get_json_' + n_fmt).attr('src', 'images/retrieving_segments_mini.gif');
+	// Update version div.
+	$.get("scripts/actions.php?req=build_individual_json_payload&uri=" + u , function(r) {
+		// If result retrieved
+		if(r != 0) {
+			// Set new contents.
+			h = '<a href="' + r + '" target="_blank">' + n + '</a>';
+			// Update span contents.
+			$('#span_json_link_' + n_fmt).html(h);
+			// Change image back again.
+			$('#img_get_json_' + n_fmt).attr('src', 'images/arrow_on_blue.png');
+		}
+	});
+}
 
 // Retrieve segments.
 function retrieve_segments() {

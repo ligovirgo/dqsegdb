@@ -154,6 +154,8 @@ class GetContent {
 			$content_details .= $this->get_server_log_files($content_id, $tabs);
 			// Add server statistics for all available IFO on all available hosts.
 			$content_details .= $this->get_all_server_statistics($content_id, $tabs+2);
+			// Add flag statistics for the currently-selected host.
+			$content_details .= $this->get_flag_statistics($content_id, $tabs+2);
 			// Get enclosed display div.
 			$structure->getFlatLightBlueDiv('div_content_'.$content_id,$content_name,$content_details,NULL,"_on_white",$tabs+1);
 		}
@@ -306,6 +308,55 @@ class GetContent {
 		// Close div.
 		$structure->closeDiv('recent_query_results', $tabs);
 		$r .= $structure->div;
+		// Return.
+		return $r;
+	}
+	
+	// Add flag statistics for the currently-selected host.
+	private function get_flag_statistics($c, $tabs) {
+		// Init.
+		$r = NULL;
+		// If in correct section.
+		if($c == 35) {
+			// Instantiate.
+			$dao = new DAO();
+			$serverdata = new GetServerData();
+			$structure = new GetStructure();
+			// Add number of tabs required.
+			$structure->getRequiredTabs($tabs);
+			// If current host is set.
+			if(isset($_SESSION['default_host'])) {
+				// Get additional text available for this host.
+				$add_info = $dao->get_value_add_info($_SESSION['default_host']);
+				// Set host name.
+				$host_name = $serverdata->set_host_name($_SESSION['default_host'], $add_info);
+				// Output header.
+				$r .= $structure->tabStr."<h3>".$host_name." flag statistics</h3>\n";
+				// Get array of IFO available on current host.
+				$a_i = $serverdata->get_ifo_array($_SESSION['default_host']);
+				// If IFO returned.
+				if(!empty($a_i)) {
+					// Output header.
+					$r .= $structure->tabStr."<p>To view flag statistics for a specific IFO on this host, click on the relevant link below:</p>\n";
+					// Indent.
+					$r .= $structure->tabStr."<ul>\n";
+					// Loop IFO.
+					foreach($a_i['Ifos'] as $ifo_id => $ifo) {
+						// Output link.
+						$r .= $structure->tabStr."	<li><a href=\"#".$ifo."\">".$ifo."</a></li>\n";
+					}
+					// Indent.
+					$r .= $structure->tabStr."</ul>\n";
+					// Loop IFO.
+					foreach($a_i['Ifos'] as $ifo_id => $ifo) {
+						// Output header.
+						$r .= $structure->tabStr."<h4><a name=\"".$ifo."\"></a>".$ifo."</h4>\n";
+						// Get the flag statistics table.
+						$r .= $serverdata->get_flag_statistics_table($c, $_SESSION['default_host'], $ifo, $tabs);
+					}
+				}
+			}
+		}
 		// Return.
 		return $r;
 	}
