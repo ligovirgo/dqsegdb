@@ -1471,7 +1471,7 @@ class DAOHandle:
             if request == 'known' or request == 'all':
                 tbl = '_summary'
             # If request within acceptable range, i.e. 'active', 'known', etc., get list of all flags over period requested by args.
-            if not admin.check_request('seg', request) == False:
+            if (not admin.check_request('seg', request) == False) or request == 'all':
                 # If user is not requesting just the metadata.
                 if not 'metadata' in request_array:
                     # Get the segment start/stop fields from the DB.
@@ -1510,7 +1510,9 @@ class DAOHandle:
                             elif request == 'all': 
                                 payload[i]['known']=[]
                                 # Append all the active segments into this flag's payload
-                                payload[i]['active']=active_data_dictionary[i]
+                                if i in active_data_dictionary.keys():
+                                    # Not every flag will have active segments
+                                    payload[i]['active']=active_data_dictionary[i]
                         if request == 'all':
                             t1 = int(row.segment_start_time)
                             t2 = int(row.segment_stop_time)
@@ -1532,19 +1534,19 @@ class DAOHandle:
         # Return.
         return d
 
-    def get_active_segments_only(w,seg_sql):
+    def get_active_segments_only(self,w,seg_sql):
         """ 
         Function used by /report/all to get the active segments.
         Returns a dictionary with keys of dq_flag_version_fk and buckets
         containing the active flags for that flag_version_fk in a list.
         """
-        cur = cnxn.cursor()
+        curs = cnxn.cursor()
         try:
             # Get active segments and flag_version_fk.
             # w = ' segment_stop_time >= ' + t1 + ' AND segment_start_time <= ' + t2
             # w = ' WHERE ' + w
             # seg_sql = ', segment_start_time, segment_stop_time ' 
-            cur.execute("""
+            curs.execute("""
                        SELECT dq_flag_version_fk""" + seg_sql + """
                        FROM tbl_segments""" + w + """
                        ORDER BY dq_flag_version_fk
@@ -1555,7 +1557,7 @@ class DAOHandle:
         else:
             output={}
             # Loop.
-            for row in cur:
+            for row in curs:
                 i = row.dq_flag_version_fk
                 if i not in output.keys():
                     output[i] = []
@@ -1563,5 +1565,5 @@ class DAOHandle:
                 t2 = int(row.segment_stop_time)
                 # Append segments to list.  
                 output[i].append([t1,t2])
-        del cur
+        del curs
         return output

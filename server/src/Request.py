@@ -192,7 +192,7 @@ class RequestHandle():
                                 # Set HTTP code and log.
                                 admin.log_and_set_http_code(200, 39, req_method, None, full_uri)
                         # If request within acceptable range, i.e. 'active', 'known', etc., get list of all flags over period requested by args.
-                        elif admin.check_request('seg', request) == False:
+                        elif admin.check_request('seg', request) == False and not request == 'all':
                             # Set HTTP code and log.
                             e = admin.log_and_set_http_code(404, 11, req_method, None, full_uri)
                         # Otherwise, it must be 'known' or 'active'.
