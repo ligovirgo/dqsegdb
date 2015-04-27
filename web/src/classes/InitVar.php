@@ -24,7 +24,7 @@ class Variables {
 
 	public function get_app_variables() {
 		// Application-related variables.
-		$this->app_version = "1.2";
+		$this->app_version = "1.4";
 		$this->max_selectable_flags = 10;
 	}
 	

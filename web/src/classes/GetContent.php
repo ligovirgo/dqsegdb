@@ -156,6 +156,8 @@ class GetContent {
 			$content_details .= $this->get_all_server_statistics($content_id, $tabs+2);
 			// Add flag statistics for the currently-selected host.
 			$content_details .= $this->get_flag_statistics($content_id, $tabs+2);
+			// Add process information for the currently-selected host.
+			$content_details .= $this->get_processes($content_id, $tabs+2);
 			// Get enclosed display div.
 			$structure->getFlatLightBlueDiv('div_content_'.$content_id,$content_name,$content_details,NULL,"_on_white",$tabs+1);
 		}
@@ -418,6 +420,39 @@ class GetContent {
 		return $r;
 	}
 	
+	// Add recently-run processes for the currently-selected host.
+	private function get_processes($c, $tabs) {
+		// Init.
+		$r = NULL;
+		// If in correct section.
+		if($c == 38) {
+			// Instantiate.
+			$dao = new DAO();
+			$serverdata = new GetServerData();
+			$structure = new GetStructure();
+			// Add number of tabs required.
+			$structure->getRequiredTabs($tabs);
+			// If current host is set.
+			if(isset($_SESSION['default_host'])) {
+				// Get additional text available for this host.
+				$add_info = $dao->get_value_add_info($_SESSION['default_host']);
+				// Set host name.
+				$host_name = $serverdata->set_host_name($_SESSION['default_host'], $add_info);
+				// Output header.
+				$r .= $structure->tabStr."<h3>".$host_name." processes</h3>\n";
+				// Get array of IFO available on current host.
+				$a_i = $serverdata->get_ifo_array($_SESSION['default_host']);
+				// If IFO returned.
+				if(!empty($a_i)) {
+					// Get the processes table.
+					$r .= $serverdata->get_processes_table($c, $_SESSION['default_host'], $tabs);
+				}
+			}
+		}
+		// Return.
+		return $r;
+	}
+
 }
 
 ?>

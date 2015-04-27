@@ -168,7 +168,7 @@ class GetServerData {
 					if($e[2] == $ifo) {
 						// Re-build the flag-version.
 						$f = $e[3].'/'.$e[4];
-						$f_fmt = $f = $e[3].'_'.$e[4];
+						$f_fmt = $e[3].'_'.$e[4];
 						// Set bg.
 						$i++;
 						$css = NULL;
@@ -201,6 +201,101 @@ class GetServerData {
 						$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$latest_segment."</td>\n";
 						$r .= $structure->tabStr."	<tr>\n";
 					}
+				}
+				// Close table.
+				$r .= $structure->tabStr."</table>\n";
+			}
+		}
+		// Return.
+		return $r;
+	}
+	
+	// Get processes table.
+	public function get_processes_table($c, $host,  $tabs) {
+		// Init.
+		$r = NULL;
+		// If in the right place.
+		if($c == 38) {
+			// Instantiate.
+			$structure = new GetStructure();
+			// Add number of tabs required.
+			$structure->getRequiredTabs($tabs);
+			// Get file contents.
+			$a = json_decode(file_get_contents($host.'/report/process'), true);
+			// If array has been returned.
+			if(isset($a['results']) && is_array($a['results'])) {
+				// Set.
+				$i = 0;
+				// Output header.
+				$r .= $structure->tabStr."<p>Situation as of GPS: ".$a['query_information']['server_timestamp']."\n";
+				// Open table.
+				$r .= $structure->tabStr."<table cellpadding=\"0\" cellspacing=\"1\" border=\"0\" id=\"tbl_flag_statistics\">\n";
+				// Headings.
+				$r .= $structure->tabStr."	<tr>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" rowspan=\"2\">JSON</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" rowspan=\"2\">PID</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" rowspan=\"2\">PROCESS NAME</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" rowspan=\"2\">FQDN</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" rowspan=\"2\">STARTED BY</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" rowspan=\"2\">WRITING TO</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" colspan=\"3\">ACTIVE</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" colspan=\"3\">KNOWN</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" colspan=\"3\">PROCESS</td>\n";
+				$r .= $structure->tabStr."	</tr>\n";
+				$r .= $structure->tabStr."	<tr>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">TOTAL</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">START</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">STOP</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">TOTAL</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">START</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">STOP</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">STARTED</td>\n";
+				$r .= $structure->tabStr."		<td class=\"query_results_hdr\">LAST USED</td>\n";
+				$r .= $structure->tabStr."	</tr>\n";
+				// Sort array by key.
+				ksort($a['results']);
+				// Loop URI array.
+				foreach($a['results'] as $process_id => $data) {
+					// Re-build the flag-version.
+					$f = $data['uri'];
+					$f_fmt = str_replace('/', '_', $f);
+					// Set bg.
+					$i++;
+					$css = NULL;
+					if($i == 2) {
+						$css = "_hl";
+						$i = 0;
+					}
+					// Calculate segment total and earliest and latest segment times.
+					$segment_total = $data['total_active_segments'] + $data['total_known_segments'];
+					$earliest_segment = $data['earliest_known_segment'];
+					if($data['earliest_known_segment'] == 0
+					|| ($data['earliest_active_segment'] != 0 && $data['earliest_active_segment'] < $data['earliest_known_segment'])) {
+						$earliest_segment = $data['earliest_active_segment']; 
+					}
+					$latest_segment = $data['latest_known_segment'];
+					if($data['latest_known_segment'] == 0
+					|| ($data['latest_active_segment'] != 0 && $data['latest_active_segment'] > $data['latest_known_segment'])) {
+						$latest_segment = $data['latest_active_segment'];
+					}
+					$uri = "/dq/".$data['uri']."?s=".$earliest_segment."&e=".$latest_segment;
+					// Output as row.
+					$r .= $structure->tabStr."	<tr>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"4%\"><img src=\"images/arrow_on_blue.png\" id=\"img_get_json_".$f_fmt."\" class=\"img_get_json\" alt=\"Retrieve JSON payload for ".$f."\" title=\"Retrieve JSON payload for ".$f."\" onclick=\"get_json_payload_for_uri('".$uri."', '".$f."', '".$data['pid']."_".$f_fmt."')\" /></td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"4%\">".$data['pid']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"4%\">".$data['process_full_name']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"4%\">".$data['fqdn']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"4%\">".$data['username']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"15%\"><span id=\"span_json_link_".$data['pid']."_".$f_fmt."\">".$f."</span></td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['total_active_segments']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['earliest_active_segment']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['latest_active_segment']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['total_known_segments']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['earliest_known_segment']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['latest_known_segment']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['process_time_started']."</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$css."\" width=\"9%\">".$data['process_time_last_used']."</td>\n";
+					$r .= $structure->tabStr."	<tr>\n";
 				}
 				// Close table.
 				$r .= $structure->tabStr."</table>\n";
