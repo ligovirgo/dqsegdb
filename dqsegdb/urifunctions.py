@@ -58,7 +58,7 @@ def getDataHttplib(url):
     data1=r1.read()
     return data1
 
-def getDataUrllib2(url,timeout=900,logger=None):
+def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
     socket.setdefaulttimeout(timeout)
     """
     Takes a url such as:
@@ -81,13 +81,23 @@ def getDataUrllib2(url,timeout=900,logger=None):
             #print "attempting to send http query"
             output=urllib2.urlopen(url)
     except urllib2.HTTPError,e:
-        #print e.read()
-        print "Warning: Issue accessing url: %s" % url
-        print "Code: "
-        print e.code
-        #print e.reason
-        #print url
-        print "May be handled cleanly by calling instance: otherwise will result in an error."
+        print "Warnings setting FIX:"
+        print warnings
+        if warnings:
+            handleHTTPError("GET",url,e)
+        else:
+            handleHTTPError("QUIET",url,e)
+
+        ##print e.read()
+        #print "Warning: Issue accessing url: %s" % url
+        #print "Code: "
+        #print e.code
+        #print e.msg
+        ##import pdb
+        ##pdb.set_trace()
+        ##print e.reason
+        ##print url
+        #print "May be handled cleanly by calling instance: otherwise will result in an error."
         raise
     except urllib2.URLError,e:
         #print e.read()
@@ -232,15 +242,21 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
     try:
         urlreturned = opener.open(request)
     except urllib2.HTTPError,e:
-        #print e.read()
-        print "Warning: Issue accessing url: %s" % url
-        print "Code: "
-        print e.code
-        #print e.reason
-        #print url
-        print "May be handled cleanly by calling instance: otherwise will result in an error."
-        #print e.reason
-        #print urlreturned
+        handleHTTPError("PUT",url,e)
+        ##print e.read()
+        #if int(e.code)==404:
+        #    print "Flag does not exist in database yet for url: %s" % url
+        #else:
+        #    print "Warning: Issue accessing url: %s" % url
+        #    print "Code: "
+        #    print e.code
+        #    print "Message: "
+        #    print e.msg
+        #    #print e.reason
+        #    #print url
+        #    print "May be handled cleanly by calling instance: otherwise will result in an error."
+        ##print e.reason
+        ##print urlreturned
         raise
     except urllib2.URLError,e:
         #print e.read()
@@ -280,13 +296,14 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
     try:
         urlreturned = opener.open(request)
     except urllib2.HTTPError,e:
-        #print e.read()
-        print "Warning: Issue accessing url: %s" % url
-        print "Code: "
-        print e.code
-        #print e.reason
-        #print url
-        print "May be handled cleanly by calling instance: otherwise will result in an error."
+        handleHTTPError("PATCH",url,e)
+        ##print e.read()
+        #print "Warning: Issue accessing url: %s" % url
+        #print "Code: "
+        #print e.code
+        ##print e.reason
+        ##print url
+        #print "May be handled cleanly by calling instance: otherwise will result in an error."
         raise
     except urllib2.URLError,e:
         #print e.read()
@@ -298,3 +315,25 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
         logger.debug("Completed url call: %s" % url)
     return url
 
+def handleHTTPError(method,url,e):
+    if int(e.code)!=404:
+        print "Warning: Issue accessing url: %s" % url
+        print "Code: "
+        print e.code
+        print "Message: "
+        print e.msg
+        #print e.reason
+        #print url
+        print "May be handled cleanly by calling instance: otherwise will result in an error."
+    else:
+        if method == "PUT" or method == "PATCH":
+            print "Info: Flag does not exist in database yet for url: %s" % url
+        elif method == "GET":
+            print "Warning: Issue accessing url: %s" % url
+            print "yo! FIX"
+            print "Code: "
+            print e.code
+            print "Message: "
+            print e.msg
+            print "May be handled cleanly by calling instance: otherwise will result in an error."
+        # If method == "QUIET" print nothing:  used for GET checks that don't need to toss info on a 404

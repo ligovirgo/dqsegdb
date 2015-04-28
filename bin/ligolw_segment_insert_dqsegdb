@@ -246,8 +246,12 @@ else:
   if options.append:
     data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
     maxEndTime=max([i[1] for i in data_dict['known']])
-  elif options.insert:
-    maxEndTime=0 # The version is greater than the existing versions, so we're ok to go forward regardless of what the summary segments are in the payload!
+  elif options.insert and version == maxVersion + 1:
+    maxEndTime=0 # The version is greater than the existing versionsi bye one, so we're ok to go forward regardless of what the summary segments are in the payload!
+  else:
+    print "Specified version is not next version available to insert into database;  Existing max version is %d and provided version was %d." % (maxVersion,version)
+    raise ValueError
+
 
 
 #-----------------Determine max_end_time of existing data in database-------------------------

@@ -92,18 +92,21 @@ def dqsegdbMaxVersion(protocol,server,ifo,name):
     """
     queryurl=urifunctions.constructFlagQueryURL(protocol,server,ifo)
     try:
-        result=urifunctions.getDataUrllib2(queryurl)
+        result=urifunctions.getDataUrllib2(queryurl,warnings=False)
     except HTTPError as e:
-        if e.code==404:
+        print "e.code: %s  FIX!" % str(e.code)
+        if int(e.code)==404:
             return 0
         else:
+            # Print all the messages this time
+            result=urifunctions.getDataUrllib2(queryurl,warnings=True)
             raise
     # Now parse result for max version:
     queryurl=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
     try: 
         result=urifunctions.getDataUrllib2(queryurl)
     except HTTPError as e:
-        if e.code==404:
+        if int(e.code)==404:
             return 0
         else:
             raise
@@ -595,9 +598,7 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
             startTime=testing_options['synchronize']
             inlogger.debug("Trying to patch synchronously at time %s" % startTime)
             waitTill(startTime)
-            patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
-        else:
-            patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
+        patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
         if debug:
             inlogger.debug("Patch alone succeeded for %s" % url)
             #print "Patch alone succeeded for %s" % url
@@ -763,7 +764,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             process_dict[temp_process_id]['process_metadata'] = {}
             if hackDec11:
                 process_dict[temp_process_id]['process_metadata']['process_start_time'] = process_dict[temp_process_id]['start_time']
-            else:
+            else: # This is for the newer server APIs:  (April 24 2015 we checked it (it probably changed before ER6 finally))
                 process_dict[temp_process_id]['process_metadata']['process_start_timestamp'] = process_dict[temp_process_id]['start_time']
             if new_comments:
                 process_dict[temp_process_id]['process_comment']=process_dict[temp_process_id]['comment']
@@ -903,20 +904,21 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
                 start = flag_versions[i].temp_process_ids[pid]['insert_data_start']
                 stop = flag_versions[i].temp_process_ids[pid]['insert_data_stop']
                 if new_comments:
-                    flag_versions[i].flag_version_comment=process_dict[pid]['process_comment']  # Fix!!! Test!
+                    flag_versions[i].flag_version_comment=process_dict[pid]['process_comment']  
                 insert_history_dict = {}
                 try:
                     insert_history_dict['process_metadata'] = process_dict[pid]['process_metadata']
                 except:
-                    import pdb
-                    pdb.set_trace()
+                    raise
+                #    import pdb
+                #    pdb.set_trace()
                 insert_history_dict['insertion_metadata'] = {}
                 insert_history_dict['insertion_metadata']['insert_data_stop'] = stop
                 insert_history_dict['insertion_metadata']['insert_data_start'] = start
                 ifo = flag_versions[i].ifo
                 version = flag_versions[i].version
                 name = flag_versions[i].name
-                insert_history_dict['insertion_metadata']['uri'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])
+                insert_history_dict['insertion_metadata']['uri'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])  # FIX make dq a constant string in case we ever change it
                 #print ifo,name,version
                 insert_history_dict['insertion_metadata']['timestamp'] = _UTCToGPS(time.gmtime())
                 insert_history_dict['insertion_metadata']['auth_user']=process.get_username()

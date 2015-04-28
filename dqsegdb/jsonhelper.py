@@ -168,7 +168,7 @@ class PatchFlagVersion(FlagVersion):
                         print i
                         print "printing j for comparison"
                         print j
-                    if process_name==j['process_metadata']['name'] and process_pid==j['process_metadata']['pid'] and process_uid==j['process_metadata']['uid']:
+                    if process_name==j['process_metadata']['name'] and process_pid==j['process_metadata']['pid'] and process_uid==j['process_metadata']['uid']:  # FIX!!! Should we sort these by time order and then match end time of file_history element to start_time of insert_history element?
                         j['insertion_metadata']['insert_data_stop']=max(j['insertion_metadata']['insert_data_stop'],i['insertion_metadata']['insert_data_stop'])
                         j['insertion_metadata']['insert_data_start']=min(j['insertion_metadata']['insert_data_start'],i['insertion_metadata']['insert_data_start'])
                         if debug:
