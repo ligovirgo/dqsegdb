@@ -8,22 +8,24 @@ import glob
 import os.path
 import subprocess
 from distutils import log
-try:
-    from setuptools import setup
-except ImportError as e:
-    if os.path.basename(os.path.dirname(__file__)).startswith('pip-'):
-        e.args = ('setuptools module not found, cannot proceed with pip '
-                  'install',)
-        raise
-    from distutils.core import setup
-    from distutils.command import install
-    from distutils.command import build_py
-    from distutils.command import sdist
-    from distutils.command import clean
-else:
-    from setuptools import setup 
-    #from setuptools import find_packages
-    from setuptools.command import (build_py, install, sdist)
+#try:
+#    from setuptools import setup
+#except ImportError as e:
+#    if os.path.basename(os.path.dirname(__file__)).startswith('pip-'):
+#        e.args = ('setuptools module not found, cannot proceed with pip '
+#                  'install',)
+#        raise
+#    from distutils.core import setup
+#    from distutils.command import install
+#    from distutils.command import build_py
+#    from distutils.command import sdist
+#    from distutils.command import clean
+#else:
+#    from setuptools import setup 
+#    #from setuptools import find_packages
+#    from setuptools.command import (build_py, install, sdist)
+from setuptools import (setup, find_packages)
+from setuptools.command import (build_py, install, sdist)
 
 PACKAGENAME = 'dqsegdb'
 DESCRIPTION = 'Client library for DQSegDB'
@@ -32,7 +34,7 @@ AUTHOR = 'Ryan Fisher'
 AUTHOR_EMAIL = 'ryan.fisher@ligo.org'
 LICENSE = None
 #rel_version="0.9"
-rel_version="1.1.3"
+rel_version="1.1.4"
 release=True
 
 
