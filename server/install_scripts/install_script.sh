@@ -1,9 +1,6 @@
 #!/bin/bash
 # Set server version number.
-export SERVER_VERSION='2.1.2'
-
-# Set web interface version number.
-export WEB_VERSION='1.0'
+export SERVER_VERSION='2.1.9'
 
 # Install Apache server.
 yum -y install httpd
@@ -60,15 +57,6 @@ mv src.tar /opt/dqsegdb/python_server/src/
 cd /opt/dqsegdb/python_server/src/
 tar -xvf src.tar 
 
-# Add web files.
-curl http://10.20.5.14/repos/segdb/dqsegdb_web/$WEB_VERSION/src.tar > web_src.tar
-mv web_src.tar /usr/share/dqsegdb_web/
-cd /usr/share/dqsegdb_web/
-tar -xvf web_src.tar 
-
-# Make web interface file download directory write-able.
-chmod 777 downloads
-
 # Change dir.
 cd /root
 
@@ -110,13 +98,6 @@ mysql -e "DROP DATABASE IF EXISTS dqsegdb"
 mysql -e "CREATE DATABASE dqsegdb"
 mysql -e "use dqsegdb"
 mysql dqsegdb < dqsegdb.sql
-
-# Import data and create web database.
-curl http://10.20.5.14/repos/segdb/dqsegdb_web/dqsegdb_web.sql > dqsegdb_web.sql
-mysql -e "DROP DATABASE IF EXISTS dqsegdb_web"
-mysql -e "CREATE DATABASE dqsegdb_web"
-mysql -e "use dqsegdb_web"
-mysql dqsegdb_web < dqsegdb_web.sql
 
 # Create database users.
 mysql -e "CREATE USER 'dqsegdb_user'@'localhost' IDENTIFIED BY 'Q6a6jS6L63RtqnDm'"
