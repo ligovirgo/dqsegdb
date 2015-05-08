@@ -47,6 +47,7 @@ lockfile=${LOCKFILE-/var/lock/subsys/httpd}
 RETVAL=0
 STOP_TIMEOUT=${STOP_TIMEOUT-10}
 
+export OPENSSL_ALLOW_PROXY_CERTS=1
 export PYTHONPATH="/opt/dqsegdb/python_server/src:${PYTHONPATH}"
 
 # The semantics of these two functions differ from the way apachectl does
