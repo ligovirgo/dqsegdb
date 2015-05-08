@@ -64,7 +64,23 @@ cd /root
 echo "WSGIScriptAlias / /opt/dqsegdb/python_server/src/application.py" >> /etc/httpd/conf.d/wsgi.conf
 
 # Add Web Interface configuration.
-echo "Alias /dqsegdb_web /usr/share/dqsegdb_web" >> /etc/httpd/conf.d/dqsegdb_web.conf"
+echo "Alias /dqsegdb_web /usr/share/dqsegdb_web" >> /etc/httpd/conf.d/dqsegdb_web.conf
+
+# Configure application Apache:
+curl http://10.20.5.14/repos/segdb/dqsegdb/dqsegdb5_example.conf > dqsegdb.conf
+/bin/cp dqsegdb.conf /etc/httpd/conf.d/
+
+int_addr=`ifconfig eth0 |sed -n 's/.*inet addr:\([0-9\.]*\).*/\1/p'`
+
+ext_addr=`ifconfig eth1 |sed -n 's/.*inet addr:\([0-9\.]*\).*/\1/p'` 
+
+server_name=`hostname`
+
+sed -i "s/dqsegdb4\.phy\.syr\.edu/${server_name}/g" /etc/httpd/conf.d/dqsegdb.conf
+
+sed -i "s/128\.230\.190\.57/${ext_addr}/g" /etc/httpd/conf.d/dqsegdb.conf
+
+sed -i "s/10\.20\.5\.43/${int_addr}/g" /etc/httpd/conf.d/dqsegdb.conf
 
 # Install M2Crypto library.
 yum -y install M2Crypto
