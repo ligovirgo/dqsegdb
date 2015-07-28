@@ -721,7 +721,7 @@ if __name__ == '__main__':
             url_result=urifunctions.constructFlagQueryURL(protocol,server,ifo)
             json_out=urifunctions.getDataUrllib2(url_result)
             flags_information=json.loads(json_out)
-            server_version=flags_information['query_information']['server_code_version']
+            server_version=flags_information['query_information']['api_version']
             print "Server version is %s" % server_version
             sys.exit(0)
             

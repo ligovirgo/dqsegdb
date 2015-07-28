@@ -351,6 +351,7 @@ def parseKnown(jsonResult):
     #        "end": "1076401264", 
     #        "include": [], 
     #        "server": "dqsegdb5.phy.syr.edu", 
+    #        # Jul 28: api_version replaced server_code_version
     #        "server_code_version": "v1r5", 
     #        "server_elapsed_query_time": 2.3630100000000001, 
     #        "server_timestamp": 1079895401, 
