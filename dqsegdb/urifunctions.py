@@ -81,8 +81,8 @@ def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
             #print "attempting to send http query"
             output=urllib2.urlopen(url)
     except urllib2.HTTPError,e:
-        print "Warnings setting FIX:"
-        print warnings
+        #print "Warnings setting FIX:"
+        #print warnings
         if warnings:
             handleHTTPError("GET",url,e)
         else:
@@ -330,7 +330,7 @@ def handleHTTPError(method,url,e):
             print "Info: Flag does not exist in database yet for url: %s" % url
         elif method == "GET":
             print "Warning: Issue accessing url: %s" % url
-            print "yo! FIX"
+            #print "yo! FIX!!!"
             print "Code: "
             print e.code
             print "Message: "
