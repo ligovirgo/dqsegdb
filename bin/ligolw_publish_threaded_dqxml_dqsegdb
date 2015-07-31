@@ -13,40 +13,6 @@
 # 
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# Copyright (C) 2015 Ryan Fisher, Gary Hemming
-# 
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-# 
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# xml dq publishing script for virgo (or other) dq xml files
-#
-#
-# Copyright (C) 2013 Ryan Fisher
-# 
-# This is part of the Grid LSC User Environment (GLUE)
-# 
-# GLUE is free software: you can redistribute it and/or modify it under the
-# terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
-# 
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-# more details.
-# 
-# You should have received a copy of the GNU General Public License along with
-# this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 Publishing client used to publish DQMXML (usually produced by DMT) from a set
@@ -175,6 +141,12 @@ else:
 
 # check if a valid lock file already exists, and create one if not
 pidfile.get_lock(options.pid_file)
+import atexit
+
+def unlink_file(name):
+  os.unlink(name)
+
+atexit.register(unlink_file,options.pid_file)
 
 try:
   # set up logging
@@ -262,18 +234,9 @@ try:
       group_files_counter+=1
       current_segments|=segments.segmentlist([f.segment])
     if group_files_counter==num_files:
-      #print "group files counter before reset: %d" % group_files_counter
       group_files_counter=0
-      #print "group files counter after reset: %d" % group_files_counter
-      #print "current segments before copy"
-      #print current_segments
       grouped_segments=copy.deepcopy(current_segments)
-      #print "grouped segments after deepcopy:"
-      #print grouped_segments
       current_segments=segments.segmentlist([])
-      #print "grouped segments after current_segments reset:"
-      #print grouped_segments
-      #sys.exit(1)
       try:
         #fh = open(infile,'r')
         #xmltext = fh.read()
@@ -298,43 +261,52 @@ try:
       except Exception, e:
         logger.error("failed to publish %s (%s)" % (infiles, str(e)))
         traceback.print_exc()
-        raise
+        die_now = True
+        break
+        #raise
       else:
         if result:
           logger.debug("published segments in group: %s" % str(grouped_segments))
           published_segments |= grouped_segments
         else:
-          logger.debug("Failed to publish segments in group: %s" % str(grouped_segments))
+          logger.debug("Failed to publish segments in group: %s, exiting." % str(grouped_segments))
+          die_now = True
+          break
+
   if group_files_counter!=0: # publish remaining files
-      grouped_segments=current_segments
-      try:
-        #fh = open(infile,'r')
-        #xmltext = fh.read()
-        #fh.close()
-        if options.dry_run:
-          logger.debug("(dry-run) inserting %s" % infiles)
-          result = True
-        else:
-          logger.debug("inserting %s" % infiles)
-          #myClient = segmentdb_utils.setup_database(options.segment_url)
-          #result = myClient.insertdmt(xmltext)
-          #result=apicalls.publish_xml(xmltext)
-          #infile=[infile]
-          result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count)
-      except KeyboardInterrupt:
-        logger.info("caught keyboard interrupt")
-        if result:
-          logger.debug("published remaining segments before interrupt: %s" % str(grouped_segments))
-          published_segments |= grouped_segments
-        #die_now = True unneeded because there is no loop here, we are just cleaning up 
-      except Exception, e:
-        logger.error("failed to publish %s (%s)" % (infiles, str(e)))
+      result = False
+      if die_now:
+        pass
       else:
-        if result:
-          logger.debug("published remaining segments %s" % str(grouped_segments))
-          published_segments |= grouped_segments
-        else: 
-          logger.debug("Failed to publish segments in group: %s" % str(grouped_segments))
+          grouped_segments=current_segments
+          try:
+            #fh = open(infile,'r')
+            #xmltext = fh.read()
+            #fh.close()
+            if options.dry_run:
+              logger.debug("(dry-run) inserting %s" % infiles)
+              result = True
+            else:
+              logger.debug("inserting %s" % infiles)
+              #myClient = segmentdb_utils.setup_database(options.segment_url)
+              #result = myClient.insertdmt(xmltext)
+              #result=apicalls.publish_xml(xmltext)
+              #infile=[infile]
+              result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count)
+          except KeyboardInterrupt:
+            logger.info("caught keyboard interrupt")
+            if result:
+              logger.debug("published remaining segments before interrupt: %s" % str(grouped_segments))
+              published_segments |= grouped_segments
+            #die_now = True unneeded because there is no loop here, we are just cleaning up 
+          except Exception, e:
+            logger.error("failed to publish %s (%s)" % (infiles, str(e)))
+          else:
+            if result:
+              logger.debug("published remaining segments %s" % str(grouped_segments))
+              published_segments |= grouped_segments
+            else: 
+              logger.debug("Failed to publish segments in group: %s" % str(grouped_segments))
 
 
   if options.state_file:
@@ -359,6 +331,6 @@ except Exception, e:
   sys.exit(1)
 
 logger.info("exiting")
-os.unlink(options.pid_file)
+#os.unlink(options.pid_file)
 sys.exit(0)
 
