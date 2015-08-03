@@ -702,6 +702,11 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
     else:
         # Older server, so don't want to supply extra comments... 
         new_comments=False
+    if apiResult >= "2.1.15":
+        # Alteration to insertion_metadata from uri to comment to accomodate s6 data conversion
+        use_new_insertion_metadata=True
+    else:
+        use_new_insertion_metadata=False
 
 
     if 'offset' in testing_options:
@@ -933,7 +938,10 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
                 ifo = flag_versions[i].ifo
                 version = flag_versions[i].version
                 name = flag_versions[i].name
-                insert_history_dict['insertion_metadata']['uri'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])  # FIX make dq a constant string in case we ever change it
+                if use_new_insertion_metadata==True:
+                    insert_history_dict['insertion_metadata']['comment'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])  # FIX make dq a constant string in case we ever change it
+                else:
+                    insert_history_dict['insertion_metadata']['uri'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])  # FIX make dq a constant string in case we ever change it
                 #print ifo,name,version
                 insert_history_dict['insertion_metadata']['timestamp'] = _UTCToGPS(time.gmtime())
                 insert_history_dict['insertion_metadata']['auth_user']=process.get_username()
