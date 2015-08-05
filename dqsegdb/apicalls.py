@@ -118,7 +118,7 @@ def dqsegdbMaxVersion(protocol,server,ifo,name):
     # Now parse result for max version:
     queryurl=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
     try: 
-        result=urifunctions.getDataUrllib2(queryurl)
+        result=urifunctions.getDataUrllib2(queryurl,warnings=False)
     except HTTPError as e:
         if int(e.code)==404:
             return 0
