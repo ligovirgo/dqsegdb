@@ -3,3 +3,4 @@
 # Except these files
 !.gitignore
 !dqsegdb-1.0.spec
+!dqsegdb.spec
