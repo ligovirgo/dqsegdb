@@ -466,4 +466,6 @@ if __name__ == '__main__':
 
     if not options.keep_db:
         os.remove(temp_db)
-
+    if debug:
+        print "If you see this message, your call to ligolw_segments_from_cats was successful."
+        print "You may want to follow up on any warnings printed before this point, they will indicate any flags that didn't exist in the database but were in the veto definer file."
