@@ -312,6 +312,40 @@ def reportFlags(protocol,server,verbose):
     result=urifunctions.getDataUrllib2(queryurl)
     return result
 
+def reportActive(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time):
+    """
+    Construct url and issue query to get the reported list of all active segments for all flags in the time window provided.
+    From the API Doc:
+    Get a JSON string resource containing the active segments for all flags between t1 and t2. Note that this returns exactly what /dq/IFO/FLAG/VERSION does, except for ALL flags over the query period instead of one flag. The clients must assume that they may get empty active lists for flags that are unactive between times t1 and t2.
+
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    includeSegments : `boolean`
+        Ex: True
+    verbose : `boolean`
+        Ex: True
+    gps_start_time: `int`
+        Ex: 999999999
+    gps_end_time: `int`
+        Ex: 999999999
+
+    """
+    if includeSegments:
+        includeText=""
+        timeText="?s=%d&e=%d"%(gps_start_time,gps_end_time)
+    else:
+        includeText="?include=metadata"
+        timeText="&s=%d&e=%d"%(gps_start_time,gps_end_time)
+    queryurl=protocol+"://"+server+"/report/active"+includeText+timeText
+    if verbose:
+        print queryurl
+    result=urifunctions.getDataUrllib2(queryurl,timeout=1200)
+    return result,queryurl
+
 def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time):
     """
     Construct url and issue query to get the reported list of all known segments for all flags in the time window provided.
@@ -324,25 +358,20 @@ def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_t
         Ex: 'https'
     server : `string`
         Ex: 'dqsegdb5.phy.syr.edu'
-    ifo : `string`
-        Ex: 'L1'
-    name: `string`
-        Ex: 'DMT-SCIENCE'
-    version : `string` or `int`
-        Ex: '1'
-    include_list_string : `string`
-        Ex: "metadata,known,active"
-    startTime : `int`
+    includeSegments : `boolean`
+        Ex: True
+    verbose : `boolean`
+        Ex: True
+    gps_start_time: `int`
         Ex: 999999999
-    endTime : `int`
+    gps_end_time: `int`
         Ex: 999999999
-
     """
-    includeText="?include=metadata"
     if includeSegments:
         includeText=""
         timeText="?s=%d&e=%d"%(gps_start_time,gps_end_time)
     else:
+        includeText="?include=metadata"
         timeText="&s=%d&e=%d"%(gps_start_time,gps_end_time)
     queryurl=protocol+"://"+server+"/report/known"+includeText+timeText
     if verbose:
