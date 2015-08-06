@@ -1,7 +1,7 @@
 %define name dqsegdb
-%define version 1.1.4
-%define unmangled_version 1.1.4
-%define unmangled_version 1.1.4
+%define version 1.2.0
+%define unmangled_version 1.2.0
+%define unmangled_version 1.2.0
 %define release 1
 
 Summary: Client library for DQSegDB
@@ -33,7 +33,7 @@ python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUIL
 rm -rf $RPM_BUILD_ROOT/dqsegdb.egg-info
 rm -rf $RPM_BUILD_ROOT/etc/dqsegdb-user-env.sh
 rm -rf $RPM_BUILD_ROOT/etc/dqsegdb-user-env.csh
-rm -rf $RPM_BUILD_ROOT/dqsegdb-1.1.4-py2.6.egg-info
+rm -rf $RPM_BUILD_ROOT/dqsegdb-1.2.0-py2.6.egg-info
 
 %clean
 rm -rf $RPM_BUILD_ROOT

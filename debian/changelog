@@ -1,3 +1,9 @@
+dqsegdb (1.2.0-1) unstable; urgency=low
+
+  * ER8 release 
+
+ -- Ryan Fisher <ryan.fisher@ligo.org>  Thu, Aug 06 2015 18:00 -0500
+
 dqsegdb (1.1.4-1) unstable; urgency=low
 
   * Reverted previous 3 build changes and just added a BuildRequires to
