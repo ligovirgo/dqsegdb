@@ -304,14 +304,14 @@ if __name__ == '__main__':
 
 
     if options.start_pad:
-        start_pad = int(options.start_pad)
+        start_pad = abs(int(options.start_pad))
         if start_pad > 1000:
             raise ValueError("start_pad greater than 1000 seconds; Please contact the segment database maintainers if you believe you need to issue this large a query.")
     else:
         start_pad = 10
 
     if options.end_pad:
-        end_pad = int(options.end_pad)
+        end_pad = abs(int(options.end_pad))
         if end_pad > 1000:
             raise ValueError("end_pad greater than 1000 seconds; Please contact the segment database maintainers if you believe you need to issue this large a query.")
     else:
