@@ -1,3 +1,17 @@
+# Copyright (C) 2015 Ryan Fisher, Gary Hemming
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
 import operator
@@ -27,6 +41,24 @@ def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol,
     Function to query the dqsegdb for lists of included and excluded flags.
     Returns lists of JSON for the included and excluded flags and lists of 
     URLs used to query the database.
+
+    Parameters
+    ----------
+    includedList : `list`
+        List of ifo,name,version tuples
+    excludedList : `list`
+        List of ifo,name,version tuples
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
+    startTime : `int`
+        Ex: 999999999
+    endTime : `int`
+        Ex: 999999999
+
     """
     from dqsegdb import apicalls
     ## Form the results for included and excluded flags
@@ -57,6 +89,16 @@ def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
     """ 
     Calculate the result of the union of the active times for the included flag less the intersection of that result with the union of the excluded flags
     Inputs are 2 lists of python dictionaries representing the JSON (already have run json.loads() on the JSON), a start time, and end time, and the ifo name (it does not make sense to include/exclude across multiple ifos)
+
+    Parameters
+    ----------
+    startTime : `int`
+        Ex: 999999999
+    endTime : `int`
+        Ex: 999999999
+    ifo : `string`
+        Ex: 'L1'
+
     """
     total_active_list=segments.segmentlist([]) 
     for flag in includedJSON: 

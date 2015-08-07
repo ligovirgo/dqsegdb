@@ -1,0 +1,97 @@
+/*
+DQSEGDB Automatic Converter.
+Convert segdb-format CSV data to DQSEGDB schema.
+*/
+
+A - Installation
+----------------
+
+Release		Author		Date		Comments
+----------------------------------------------------------------------------------------------------------------
+v1r0 		G.Hemming 	12 Mar 15	- First release.
+v1r1 		G.Hemming 	13 Mar 15	- Modifications made to flag and version comment fields, plus version URI field.
+
+A.1 - Software requirements
+---------------------------
+
+1. DQSEGDB Automatic Converter requires a webserver running PHP 5.0 or later (www.php.net) and a MySQL 5.0 or later Database Management System (dev.mysql.com).
+2. Summary of PHP compilation requirements:
+
+Requirement 					Library 	URI
+--------------------------------------------------------------------------------------------------
+PHP Data Objects				PDO			http://php.net/manual/en/book.pdo.php
+
+A.2 - Building the database
+---------------------------
+
+N.B. The default database name is dqsegdb. This is used in this installation file. An alternative can be used as required.
+
+1. Start MySQL from the command line or via an interfacing client and create the required database: CREATE DATABASE dqsegdb;
+
+B - Configuration
+----------------
+
+B.1 - Connecting the DQSEGDB Automatic Converter to the database
+----------------------------------------------------------------
+
+1. Enter the MySQL username and password required to connect to the database in the file classes/Constants.php, changing the following lines:
+
+#21	$this->host = "localhost";
+#22	$this->db = "dqsegdb";
+#23	$this->db_user = "{MYSQL_USER}";
+#24	$this->db_pass = "{MYSQL_PASSWORD}";
+
+N.B. Line #21 - $this->host = "localhost"; - contains the name of the database host. This is frequently 'localhost', hence its default setting. If another host is being used, enter the information on this line.
+N.B. Line #22 - $this->db = "dqsegdb"; - contains the name of the database itself - 'dqsegdb' - created in the 'Building the database' section - A.2. If an alternative to the name 'dqsegdb' was used in this step, then this line must be updated accordingly as well.
+N.B. Ensure the MySQL user being used has full privileges on the database being used.
+
+B.2 - Locating the CSV source files.
+------------------------------------
+
+#29 $this->source_dir = "/path/to/csv/source/files/";
+
+N.B. Remember to include the trailing backslash '/' in the source directory variable.
+
+C - Use
+-------
+
+C.1 - Running DQSEGDB Automated Converter
+-----------------------------------------
+
+To run DQSEGDB Automated Converter, simply run it using PHP from the command line with the following command:
+
+php index.php
+
+C.2 - What does DQSEGDB Automated Converter do?
+-----------------------------------------------
+
+DQSEGDB Automated Converter takes CSV files containining the structure and date of an segdb-format database and converts them into a MySQL DQSEGDB-format database. In so doing, it undertakes the following steps:
+
+1. Creates segdb-format tables - PROCESS, PROCESS_PARAMS, SEGMENT, SEGMENT_DEFINER, SEGMENT_SUMMARY - in the empty DQSEGDB database.
+2. Imports segdb CSV data to the segdb-format tables.
+3. Creates DQSEGDB-format tables in the database.
+4. Inserts the names of the IFOs found in the segdb data to DQSEGDB.
+5. Inserts the usernames found in the segdb data to DQSEGDB.
+6. Converts segdb segment definers to DQSEGDB flags.
+7. Converts segdb segment definers to DQSEGDB flag versions.
+8. Associates versions to flag IDs in DQSEGDB flag version table.
+9. Converts segments from segdb to DQSEGDB format.
+10. Converts segment summaries from segdb to DQSEGDB format.
+11. Checks, defragments, analyses, optimises and flushes all DQSEGDB tables.
+12. Updates known version-segment totals.
+13. Updates active version-segment totals.
+14. Updates known earliest version-segment boundaries.
+15. Updates known latest version-segment boundaries.
+16. Updates active earliest version-segment boundaries.
+17. Updates active latest version-segment boundaries.
+18. Converts processes from segdb to DQSEGDB format.
+19. Coalesces converted processes, grouping by related flag-version ID and associated PID.
+20. Converts process parameters in segdb into DQSEGDB-format process args.
+21. Updates known start process-segment boundaries.
+22. Updates known end process-segment boundaries.
+23. Updates active start process-segment boundaries.
+24. Updates active end process-segment boundaries.
+25. Updates active process-segment totals.
+26. Updates known process-segment totals.
+27. Alters DQSEGDB schema altered, removing segdb-format fields used in conversion, as well as removing segdb tables.
+28. Checks, defragments, analyses, optimises and flushes all DQSEGDB tables.

@@ -9,13 +9,7 @@ class ConstantsHandle():
     # API version constants #
     ########################
     
-    api_version = 1
-
-    #############################
-    # Server version constants #
-    ###########################
-    
-    py_server_version = 'v1r25'
+    api_version = '2.1.8'
 
     ##############################
     # ODBC connection constants #

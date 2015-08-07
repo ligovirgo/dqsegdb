@@ -1,3 +1,17 @@
+# Copyright (C) 2015 Ryan Fisher, Gary Hemming
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import httplib
 import urlparse
@@ -58,7 +72,7 @@ def getDataHttplib(url):
     data1=r1.read()
     return data1
 
-def getDataUrllib2(url,timeout=900,logger=None):
+def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
     socket.setdefaulttimeout(timeout)
     """
     Takes a url such as:
@@ -81,16 +95,27 @@ def getDataUrllib2(url,timeout=900,logger=None):
             #print "attempting to send http query"
             output=urllib2.urlopen(url)
     except urllib2.HTTPError,e:
-        #print e.read()
-        print "Error accesing url: %s" % url
-        print e.code
-        #print e.reason
-        print url
-        print "May be handled cleanly by calling instance: raising error:"
+        #print "Warnings setting FIX:"
+        #print warnings
+        if warnings:
+            handleHTTPError("GET",url,e)
+        else:
+            handleHTTPError("QUIET",url,e)
+
+        ##print e.read()
+        #print "Warning: Issue accessing url: %s" % url
+        #print "Code: "
+        #print e.code
+        #print e.msg
+        ##import pdb
+        ##pdb.set_trace()
+        ##print e.reason
+        ##print url
+        #print "May be handled cleanly by calling instance: otherwise will result in an error."
         raise
     except urllib2.URLError,e:
         #print e.read()
-        print "Error accesing url: %s" % url
+        print "Issue accesing url: %s" % url
         print e.reason
         try:
             type, value, traceback_stack = sys.exc_info()
@@ -112,6 +137,26 @@ def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_
     """
     Simple url construction method for dqsegdb server flag:version queries 
     including restrictions on time ranges.
+
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
+    version : `string` or `int`
+        Ex: '1'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
+    startTime : `int`
+        Ex: 999999999
+    endTime : `int`
+        Ex: 999999999
+
     """
     url1=protocol+"://"+server+"/dq"
     url2='/'.join([url1,ifo,name,str(version)])
@@ -126,6 +171,21 @@ def constructSegmentQueryURL(protocol,server,ifo,name,version,include_list_strin
     """
     Simple url construction method for dqsegdb server flag:version queries 
     not including restrictions on time ranges.
+    
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
+    version : `string` or `int`
+        Ex: '1'
+    include_list_string : `string`
+        Ex: "metadata,known,active"
     """
     url1=protocol+"://"+server+"/dq"
     url2='/'.join([url1,ifo,name,version])
@@ -135,6 +195,17 @@ def constructSegmentQueryURL(protocol,server,ifo,name,version,include_list_strin
 def constructVersionQueryURL(protocol,server,ifo,name):
     """
     Simple url construction method for dqsegdb server version queries. 
+    
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
+    name: `string`
+        Ex: 'DMT-SCIENCE'
     """
     ## Simple url construction method:
     url1=protocol+"://"+server+"/dq"
@@ -144,6 +215,15 @@ def constructVersionQueryURL(protocol,server,ifo,name):
 def constructFlagQueryURL(protocol,server,ifo):
     """
     Simple url construction method for dqsegdb server flag queries. 
+    
+    Parameters
+    ----------
+    protocol : `string`
+        Ex: 'https'
+    server : `string`
+        Ex: 'dqsegdb5.phy.syr.edu'
+    ifo : `string`
+        Ex: 'L1'
     """
     ## Simple url construction method:
     url1=protocol+"://"+server+"/dq"
@@ -153,6 +233,14 @@ def constructFlagQueryURL(protocol,server,ifo):
 def putDataUrllib2(url,payload,timeout=900,logger=None):
     """
     Wrapper method for urllib2 that supports PUTs to a url.
+
+    Parameters
+    ----------
+    url : `string`
+        Ex: 'https://dqsegdb5.phy.syr.edu/L1/DMT-SCIENCE/1'
+    payload : `string`
+        JSON formatted string
+
     """
     socket.setdefaulttimeout(timeout)
     #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
@@ -168,17 +256,28 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
     try:
         urlreturned = opener.open(request)
     except urllib2.HTTPError,e:
-        #print e.read()
-        print e.code
-        #print e.reason
-        #print urlreturned
-        print url
+        handleHTTPError("PUT",url,e)
+        ##print e.read()
+        #if int(e.code)==404:
+        #    print "Flag does not exist in database yet for url: %s" % url
+        #else:
+        #    print "Warning: Issue accessing url: %s" % url
+        #    print "Code: "
+        #    print e.code
+        #    print "Message: "
+        #    print e.msg
+        #    #print e.reason
+        #    #print url
+        #    print "May be handled cleanly by calling instance: otherwise will result in an error."
+        ##print e.reason
+        ##print urlreturned
         raise
     except urllib2.URLError,e:
         #print e.read()
+        print "Warning: Issue accessing url: %s" % url
         print e.reason
+        print "May be handled cleanly by calling instance: otherwise will result in an error."
         #print urlreturned
-        print url
         raise
     if logger:
         logger.debug("Completed url call: %s" % url)
@@ -187,6 +286,14 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
 def patchDataUrllib2(url,payload,timeout=900,logger=None):
     """
     Wrapper method for urllib2 that supports PATCHs to a url.
+    
+    Parameters
+    ----------
+    url : `string`
+        Ex: 'https://dqsegdb5.phy.syr.edu/L1/DMT-SCIENCE/1'
+    payload : `string`
+        JSON formatted string
+
     """
     socket.setdefaulttimeout(timeout)
     #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
@@ -203,17 +310,44 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
     try:
         urlreturned = opener.open(request)
     except urllib2.HTTPError,e:
-        #print e.read()
-        print e.code
-        #print e.reason
-        print url
+        handleHTTPError("PATCH",url,e)
+        ##print e.read()
+        #print "Warning: Issue accessing url: %s" % url
+        #print "Code: "
+        #print e.code
+        ##print e.reason
+        ##print url
+        #print "May be handled cleanly by calling instance: otherwise will result in an error."
         raise
     except urllib2.URLError,e:
         #print e.read()
+        print "Warning: Issue accessing url: %s" % url
         print e.reason
-        print url
+        print "May be handled cleanly by calling instance: otherwise will result in an error."
         raise
     if logger:
         logger.debug("Completed url call: %s" % url)
     return url
 
+def handleHTTPError(method,url,e):
+    if int(e.code)!=404:
+        print "Warning: Issue accessing url: %s" % url
+        print "Code: "
+        print e.code
+        print "Message: "
+        print e.msg
+        #print e.reason
+        #print url
+        print "May be handled cleanly by calling instance: otherwise will result in an error."
+    else:
+        if method == "PUT" or method == "PATCH":
+            print "Info: Flag does not exist in database yet for url: %s" % url
+        elif method == "GET":
+            print "Warning: Issue accessing url: %s" % url
+            #print "yo! FIX!!!"
+            print "Code: "
+            print e.code
+            print "Message: "
+            print e.msg
+            print "May be handled cleanly by calling instance: otherwise will result in an error."
+        # If method == "QUIET" print nothing:  used for GET checks that don't need to toss info on a 404

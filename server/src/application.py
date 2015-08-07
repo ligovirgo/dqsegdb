@@ -4,17 +4,19 @@ Applcation class file
 '''
 # Import.
 import Admin
+import Constants
 import DAO
 import Request
 import LDBDWAuth
 import logging
-import Logging_Config
-
-# Instantiate logger.
-log = logging.getLogger(__name__)
-logging.basicConfig()
+import time
 
 def application(environ, start_response):
+    # Instantiate logger.
+    constant = Constants.ConstantsHandle()
+    logging.basicConfig(filename=constant.log_file_location + time.strftime("%Y-%m-%d",
+                        time.localtime()) + '.log', format="%(asctime)s:%(levelname)s:%(message)s",
+                        level=logging.DEBUG)
     # Instantiate objects.
     admin = Admin.AdminHandle()
     dao = DAO.DAOHandle()

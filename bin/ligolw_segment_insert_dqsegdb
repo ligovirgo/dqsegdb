@@ -1,4 +1,18 @@
 #!/usr/bin/python
+# Copyright (C) 2015 Ryan Fisher, Gary Hemming
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ###################################################################
 import os
@@ -163,8 +177,7 @@ def publishAndExit(filepath,debug=False):
     raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
   else:
     # We're done here
-    if debug:
-      print "Insert worked!"
+    print "Insert worked!"
     sys.exit()
 
 def del_file(name):
@@ -202,7 +215,7 @@ ligolwtypes.FromPyType[type(True)] = ligolwtypes.FromPyType[type(0)]
 
 process_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__,
              version = __version__,
-             cvs_entry_time = __date__, comment = options.comment).process_id
+             cvs_entry_time = __date__, comment = 'ligolw_segment_insert_dqsegdb client insert or append').process_id
 
 ##########################################################################
 #             Process segment-file and summary-file 
@@ -247,8 +260,12 @@ else:
   if options.append:
     data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
     maxEndTime=max([i[1] for i in data_dict['known']])
-  elif options.insert:
-    maxEndTime=0 # The version is greater than the existing versions, so we're ok to go forward regardless of what the summary segments are in the payload!
+  elif options.insert and version == maxVersion + 1:
+    maxEndTime=0 # The version is greater than the existing versionsi bye one, so we're ok to go forward regardless of what the summary segments are in the payload!
+  else:
+    print "Specified version is not next version available to insert into database;  Existing max version is %d and provided version was %d." % (maxVersion,version)
+    raise ValueError
+
 
 
 #-----------------Determine max_end_time of existing data in database-------------------------

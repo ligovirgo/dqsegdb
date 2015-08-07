@@ -1,4 +1,32 @@
 #!/usr/bin/env python
+## Copyright (C) 2015 Ryan Fisher, Gary Hemming
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright (C) 2015 Ryan Fisher, Gary Hemming
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
 # Copyright (C) 2009  Larne Pekowsky
@@ -444,4 +472,6 @@ if __name__ == '__main__':
 
     if not options.keep_db:
         os.remove(temp_db)
-
+    if debug:
+        print "If you see this message, your call to ligolw_segments_from_cats was successful."
+        print "You may want to follow up on any warnings printed before this point, they will indicate any flags that didn't exist in the database but were in the veto definer file."

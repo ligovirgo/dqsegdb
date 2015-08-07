@@ -1,3 +1,17 @@
+# Copyright (C) 2015 Ryan Fisher, Gary Hemming
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
 import glue.segments as segments
 
@@ -168,7 +182,7 @@ class PatchFlagVersion(FlagVersion):
                         print i
                         print "printing j for comparison"
                         print j
-                    if process_name==j['process_metadata']['name'] and process_pid==j['process_metadata']['pid'] and process_uid==j['process_metadata']['uid']:
+                    if process_name==j['process_metadata']['name'] and process_pid==j['process_metadata']['pid'] and process_uid==j['process_metadata']['uid']:  # FIX!!! Should we sort these by time order and then match end time of file_history element to start_time of insert_history element?
                         j['insertion_metadata']['insert_data_stop']=max(j['insertion_metadata']['insert_data_stop'],i['insertion_metadata']['insert_data_stop'])
                         j['insertion_metadata']['insert_data_start']=min(j['insertion_metadata']['insert_data_start'],i['insertion_metadata']['insert_data_start'])
                         if debug:
@@ -193,6 +207,30 @@ class InsertFlagVersion(PatchFlagVersion):
     def __init__(self,ifo,name,version):
         super(InsertFlagVersion, self).__init__(ifo,name,version)
         self.metadata={}
+        self.flag_version_comment=""
+        self.flag_description=""
+        self.provenance_url=""
+        self.deactivated=False
+        self.active_indicates_ifo_badness=None
+    def buildFlagDictFromInsertVersion(self):
+        ### Fix!!! I think I should make this a function that takes the self.x arguments
+        ### as inputs and returns a modified flagDict object, so I can use it other
+        ### places
+        self.buildFlagDictFromPatchVersion()
+        self.flagDict['metadata']={}
+        self.flagDict['metadata']['flag_description']=self.flag_description
+        self.flagDict['metadata']['flag_version_comment']=self.flag_version_comment
+        self.flagDict['metadata']['further_info_url']=self.provenance_url
+        self.flagDict['metadata']['deactivated']=self.deactivated
+        self.flagDict['metadata']['active_indicates_ifo_badness']=self.active_indicates_ifo_badness
+
+class InsertFlagVersionOld(PatchFlagVersion):
+    __doc__ = PatchFlagVersion.__doc__ + """ 
+    Adds metadata for initial inserts 
+    """
+    def __init__(self,ifo,name,version):
+        super(InsertFlagVersionOld, self).__init__(ifo,name,version)
+        self.metadata={}
         self.version_comment=""
         self.flag_comment=""
         self.provenance_url=""
@@ -209,6 +247,7 @@ class InsertFlagVersion(PatchFlagVersion):
         self.flagDict['metadata']['provenance_url']=self.provenance_url
         self.flagDict['metadata']['deactivated']=self.deactivated
         self.flagDict['metadata']['active_indicates_ifo_badness']=self.active_indicates_ifo_badness
+    
 
 ################################################################################
 #

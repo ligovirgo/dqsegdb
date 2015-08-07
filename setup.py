@@ -16,9 +16,9 @@ DESCRIPTION = 'Client library for DQSegDB'
 LONG_DESCRIPTION = ''
 AUTHOR = 'Ryan Fisher'
 AUTHOR_EMAIL = 'ryan.fisher@ligo.org'
-LICENSE = None
+LICENSE = 'GPLv3'
 #rel_version="0.9"
-rel_version="1.0"
+rel_version="1.2.0"
 release=True
 
 
@@ -159,6 +159,7 @@ setup(name=PACKAGENAME,
           },
       version=VERSION,
       description=DESCRIPTION,
+      url="http://www.lsc-group.phys.uwm.edu/daswg/",
       packages=packagenames,
       ext_modules=[],
       scripts=scripts,
