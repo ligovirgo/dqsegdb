@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+
+"""Query a DQSegDB URL for a flag and print the latency of the latest data
+
+This script outputs JSON in the format specified for dashboard.ligo.org
+https-shib scraping.
+"""
+
+import argparse
+import re
+import urlparse
+import json
+
+from glue.segments import (segment, segmentlist)
+from dqsegdb.apicalls import dqsegdbQueryTimes as query
+
+__author__ = 'Ryan Fisher <ryan.fisher@ligo.org>'
+__credits__ = 'Duncan Macleod <duncan.macleod@ligo.org>'
+
+FLAG_REGEX = re.compile(
+    r"\A(?P<ifo>[A-Z]\d):(?P<tag>[^/]+):(?P<version>\d+)\Z")
+
+# -- define command line ------------------------
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('gps-start-time', type=int, help='GPS start time of query')
+parser.add_argument('gps-end-time', type=int, help='GPS end time of query')
+parser.add_argument('flag', help='name of DQ flag to query, must be complete, '
+                    'e.g. L1:ODC-MASTER_SUMMARY:1')
+parser.add_argument('-u', '--url', default='https://dqsegdb5.phy.syr.edu',
+                    help='URL of (DQSegDB) segment database to test, '
+                         'default: %(default)s')
+parser.add_argument('--warning', type=float, default=15*60,
+                    help='latency (seconds) above which the database is in a '
+                         '\'warning\' state, default: %(default)s')
+parser.add_argument('--critical', type=float, default=20*60,
+                    help='latency (seconds) above which the database is in a '
+                         '\'critical\' state, default: %(default)s')
+parser.add_argument('--unknown', type=float, default=30*60,
+                    help='time (seconds) above which the output of this '
+                         'monitor is to be considered stale, '
+                         'default: %(default)s')
+parser.add_argument('--json', action='store_true',
+                    help='write to JSON, default: %(default)s')
+
+# -- parse command line and unpack --------------
+args = parser.parse_args()
+start = getattr(args, 'gps-start-time')
+end = getattr(args, 'gps-end-time')
+flag = args.flag
+try:
+    match = FLAG_REGEX.match(flag).groupdict()
+except AttributeError:
+    parser.error("Cannot parse %r into <ifo>:<flag-name>:<version>, "
+                 "please reformat" % flag)
+url = urlparse.urlparse(args.url)
+
+# -- query the database and calculate the latency
+result, _ = query(url.scheme, url.netloc, match['ifo'], match['tag'],
+                  int(match['version']), 'known', start, end)
+try:
+    latest = segmentlist(map(segment, result['known'])).coalesce()[-1][-1]
+except IndexError as e:
+    e.args = ('No known segments found for flag %r in given interval'
+              % flag,)
+    raise
+
+latency = end - latest
+
+# -- format info JSON and print to screen -------
+latencys = "latency for %s in %s is %d seconds" % (flag, url.geturl(), latency)
+if latency < args.warning:
+    state = 0
+    message = "OK: %s" % latencys
+elif latency < args.critical:
+    state = 1
+    message = "WARNING: %s" % latencys
+else:
+    state = 2
+    message = "CRTICAL: %s" % latencys
+
+if args.json:
+    out = {}
+    out = {
+        'created_gps': end,
+        'status_intervals': [
+            {'start_sec': 0,
+             'num_status': state,
+             'txt_status': message},
+            {'start_sec': int(args.unknown),
+             'num_status': 3,
+             'txt_status': ('UNKNOWN: %s latency check for %s not updating'
+                            % (url.geturl(), flag))},
+        ],
+    }
+    print(json.dumps(out))
+else:
+    print(message)
+sys.exit(state)

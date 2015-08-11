@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+# Ping a DQSegDB server and report status
+#
+# Usage: dqsegdb-nagios-ping <hostname> [<timeout>] [--json]
+#
+# Optional <timeout> argument will print
+
+URL=$1
+shift
+TIMER=$1
+if [ "$TIMER" == "--json" ]; then
+    JSON=1
+elif [ -n "$TIMER" ]; then
+    JSON=1
+else
+    shift
+    if [ -z "$1" ]; then
+        JSON=0
+    else
+        JSON=1
+    fi
+fi
+echo $JSON
+
+if [ -z "$TIMER" -o "$TIMER" == "--json" ]; then
+    TIMER=600
+fi
+
+TIMEOUT="UNKNOWN: ping test for $URL is not updating"
+
+MESSAGE=`ligolw_segment_query_dqsegdb --ping --segment-url $URL 2>&1`
+EXITCODE=$?
+
+if [ "$EXITCODE" -eq 0 ]; then
+    NUM=0
+    TXT="SUCCESS"
+else
+    MESSAGE=`echo "$MESSAGE" | awk 'END{print}'`
+    NUM=2
+    TXT="CRITICAL: $URL ping test failed"
+fi
+
+if [ "$JSON" -eq 1 ]; then
+    echo "{\"created_gps\": `lalapps_tconvert 2>/dev/null`, \"status_intervals\": [{\"start_sec\": 0, \"txt_status\": \"${TXT}: ${MESSAGE}\", \"num_status\": $NUM}, {\"start_sec\": $TIMER, \"txt_status\": \"$TIMEOUT\", \"num_status\": 3}]}"
+    exit $EXITCODE
+else
+    echo "${TXT}: ${MESSAGE}"
+    exit $NUM
+fi
