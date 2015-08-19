@@ -240,6 +240,9 @@ if debug:
   print "maxVersion=%d" % maxVersion
   print "Script call provided version=%d" % version
 
+if version > maxVersion+1:
+  # Should never insert or append to a version that is a 2 steps up from current version in db (including current version in DB = 0 case that is returned when flag does not yet exist in the database)
+  raise ValueError("Version in DB is %d. Version supplied, %d, is too high, and should only be equal to highest version in DB for appends or one greater for inserts." % (maxVersion,version))
 
 if maxVersion == 0:
   # Flag doesn't exist in db
