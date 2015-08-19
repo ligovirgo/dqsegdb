@@ -470,7 +470,7 @@ def parseKnown(jsonResult):
 
     return rows
 
-def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime):
+def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime, debug=False):
     """ 
     Queries server for needed flag_versions to generate the result of a
     cascaded query (was called a versionless query in S6).  
@@ -497,10 +497,13 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
         Ex: 999999999
     endTime : `int`
         Ex: 999999999
+    debug : `bool`
+        Ex: False
     """
-
-    #verbose=True
-    verbose=False
+    if debug==True:
+        verbose=True
+    else:
+        verbose=False
 
     ## Construct url and issue query to determine highest version from list 
     ## of versions
@@ -551,12 +554,14 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
             # For now, I say yes:
             # Fix!!! Improvement: Choose a better location for files to go automatically, so this can be run from other directories
             filename=queryurl.replace('/','_').split(':')[-1]+'.json'
-            try:
-                tmpfile=open(filename,'w')
-                json.dump(result_parsed,tmpfile)
-                tmpfile.close()
-            except:
-                print "Couldn't save partial results to disk.... continuing anyway."
+            if debug:
+                try:
+                    tmpfile=open(filename,'w')
+                    json.dump(result_parsed,tmpfile)
+                    tmpfile.close()
+                    print "Stored partial result for individual version to disk as %s" % filename
+                except:
+                    print "Couldn't save partial results to disk.... continuing anyway."
 
     ## Construct output segments lists from multiple JSON objects
     # The jsonResults are in order of decreasing versions, 
