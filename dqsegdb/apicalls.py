@@ -34,7 +34,10 @@ from glue.ligolw import ligolw
 from glue.ligolw.utils import process
 from glue.ligolw import types as ligolwtypes
 import os
-import pyRXP
+try:
+    import pyRXP
+except ImportError:
+    import pyRXPU as pyRXP
 import time
 from datetime import datetime, time as time2
 from dqsegdb.urifunctions import *
