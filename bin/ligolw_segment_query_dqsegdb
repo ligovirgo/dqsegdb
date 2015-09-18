@@ -362,16 +362,16 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
         spec = included.split(':')
 
         if len(spec) < 2 or len(spec) > 3:
-            print "Included segements must be of the form ifo:name:version or ifo:name:*"
-            sys.exit(1)
+            raise ValueError("Included segements must be of the form ifo:name:version or ifo:name:*")
+            #sys.exit(1)
         ifo     = spec[0]
         name    = spec[1]        # segdefs are actually segment summaries and need to look like this:
         if len(spec) is 3 and spec[2] is not '*':
             # This is a versioned query
             try:                version = int(spec[2])
             except ValueError:
-                print "Bad version specification, please provide a valid integer."
-                raise
+                raise ValueError("Bad version specification, please provide a valid integer.")
+                #raise
             if version < 1:
                 raise ValueError("Segment version numbers must be greater than zero")
                 sys.exit(1)
@@ -504,8 +504,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
             try:
                 version = int(spec[2])
             except ValueError:
-                print "Bad version specification, please provide a valid integer."
-                raise
+                raise ValueError("Bad version specification, please provide a valid integer.")
             if version < 1:
                 print >>sys.stderr, "Segment version numbers must be greater than zero"
                 sys.exit(1)
