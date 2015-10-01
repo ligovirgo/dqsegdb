@@ -340,7 +340,7 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
 
 def handleHTTPError(method,url,e):
     if int(e.code)!=404:
-        warnings.warn("Warning: Issue accessing url: %s" % url
+        warnings.warn("Warning: Issue accessing url: %s" % url)
         warnings.warn("Code: %s" % str(e.code)) 
         warnings.warn("Message: %s" % str(e.msg))
         #print e.reason
