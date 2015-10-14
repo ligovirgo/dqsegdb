@@ -117,7 +117,7 @@ class GetContent {
 			$rxStr .= $structure->div;
 		}
 		// Open About us div.
-		$structure->getGreyDiv("recent_activity","Recent activity",$rxStr,NULL,$tabs+2);
+		$structure->getGreyDiv("dataset_info","Dataset Info",$rxStr,NULL,$tabs+2);
 		$this->page .= $structure->div;
 		// Close middle-right div.
 		$structure->closeDiv('middle_right',$tabs);
@@ -158,6 +158,10 @@ class GetContent {
 			$content_details .= $this->get_flag_statistics($content_id, $tabs+2);
 			// Add process information for the currently-selected host.
 			$content_details .= $this->get_processes($content_id, $tabs+2);
+			// Get JSON Payloads.
+			$content_details .= $this->get_payloads($content_id, $tabs+2);
+			// Get Regression Tests.
+			$content_details .= $this->get_regression_tests($content_id, $tabs+2);
 			// Get enclosed display div.
 			$structure->getFlatLightBlueDiv('div_content_'.$content_id,$content_name,$content_details,NULL,"_on_white",$tabs+1);
 		}
@@ -306,7 +310,7 @@ class GetContent {
 		$structure->openDiv('recent_query_results', $tabs,'');
 		$r .= $structure->div;
 		// Get results.
-		$r .= $dao->get_recent_query_results($tabs+1);
+		$r .= $dao->get_recent_query_results(5, TRUE, $tabs+1);
 		// Close div.
 		$structure->closeDiv('recent_query_results', $tabs);
 		$r .= $structure->div;
@@ -383,35 +387,41 @@ class GetContent {
 			$r .= $structure->tabStr."<ul>\n";
 			// First of all, loop through and output internal links.
 			foreach($a as $key => $host) {
-				// Get additional text available for this host.
-				$add_info = $dao->get_value_add_info($host);
-				// Set host name.
-				$host_name = $serverdata->set_host_name($host, $add_info);
-				// Set.
-				$r .= $structure->tabStr."	<li><a href=\"#".$host."\">".$host_name."</a></li>\n";
+				// If currently in use.
+				if($dao->get_value_add_int($host)) {
+					// Get additional text available for this host.
+					$add_info = $dao->get_value_add_info($host);
+					// Set host name.
+					$host_name = $serverdata->set_host_name($host, $add_info);
+					// Set.
+					$r .= $structure->tabStr."	<li><a href=\"#".$host."\">".$host_name."</a></li>\n";
+				}
 			}
 			// Stop indent.
 			$r .= $structure->tabStr."</ul>\n";
 			// Loop through host array.
 			foreach($a as $key => $host) {
-				// Get additional text available for this host.
-				$add_info = $dao->get_value_add_info($host);
-				// Set host name.
-				$host_name = $serverdata->set_host_name($host, $add_info);
-				// Output header.
-				$r .= $structure->tabStr."<h3><a name=\"".$host."\"></a>".$host_name."</h3>\n";
-				// Get host statistics.
-				$r .= $serverdata->get_server_statistics($c, $host, NULL, $tabs);
-				// Get array of IFO available on this host.
-				$a_i = $serverdata->get_ifo_array($host);
-				// If array has been returned.
-				if(isset($a_i['Ifos']) && is_array($a_i['Ifos'])) {
-					// Loop through each IFO.
-					foreach($a_i['Ifos'] as $key_i => $ifo) {
-						// Output header.
-						$r .= $structure->tabStr."<h4>".$ifo."</h4>\n";
-						// Get IFO statistics.
-						$r .= $serverdata->get_server_statistics($c, $host, $ifo, $tabs);
+				// If currently in use.
+				if($dao->get_value_add_int($host)) {
+					// Get additional text available for this host.
+					$add_info = $dao->get_value_add_info($host);
+					// Set host name.
+					$host_name = $serverdata->set_host_name($host, $add_info);
+					// Output header.
+					$r .= $structure->tabStr."<h3><a name=\"".$host."\"></a>".$host_name."</h3>\n";
+					// Get host statistics.
+					$r .= $serverdata->get_server_statistics($c, $host, NULL, $tabs);
+					// Get array of IFO available on this host.
+					$a_i = $serverdata->get_ifo_array($host);
+					// If array has been returned.
+					if(isset($a_i['Ifos']) && is_array($a_i['Ifos'])) {
+						// Loop through each IFO.
+						foreach($a_i['Ifos'] as $key_i => $ifo) {
+							// Output header.
+							$r .= $structure->tabStr."<h4>".$ifo."</h4>\n";
+							// Get IFO statistics.
+							$r .= $serverdata->get_server_statistics($c, $host, $ifo, $tabs);
+						}
 					}
 				}
 			}
@@ -453,6 +463,147 @@ class GetContent {
 		return $r;
 	}
 
+	// Add payloads produced via the web interface.
+	private function get_payloads($c, $tabs) {
+		// Init.
+		$r = NULL;
+		// If in correct section.
+		if($c == 39) {
+			// Instantiate.
+			$dao = new DAO();
+			$serverdata = new GetServerData();
+			$structure = new GetStructure();
+			$variable = new Variables();
+			// Add number of tabs required.
+			$structure->getRequiredTabs($tabs);
+			// Get payload limit.
+			$variable->get_app_variables();
+			// Open table.
+			$r .= $this->get_payload_filter_form($tabs+1);
+			// Open payload filter form div.
+			$structure->openDiv('payload_filter_form', $tabs,'');
+			$r .= $structure->div;
+			// Get query results.
+			$r .= $dao->get_recent_query_results($variable->payloads_to_display, FALSE, $tabs+1);
+			// Close payload filter form div.
+			$structure->closeDiv('payload_filter_form',$tabs);
+			$r .= $structure->div;
+		}
+		// Return.
+		return $r;
+	}
+	
+	// Get payload filter form.
+	public function get_payload_filter_form($tabs) {
+		// Init.
+		$r = NULL;
+		// Instantiate.
+		$dao = new DAO();
+		$structure = new GetStructure();
+		$variable = new Variables();
+		// Get app variables.
+		$variable->get_app_variables();
+		// Get content call ID.
+		$variable->getContentCallID();
+		// OPEN FORM.
+		$r .= "	<form id=\"frm_payload_filter\">\n";
+		// USERS.
+		$f = 'User';
+		$s = "	<select id=\"user_id\" name=\"user_id\" onchange=\"update_payloads(".$variable->c.")\">\n";
+		// Set selected.
+		$sel = NULL;
+		if(isset($_SESSION['filter_user'])) {
+			if($_SESSION['filter_user'] == 0) {
+				$sel = " selected=\"selected\"";
+			}
+		}
+		// Set blank option.
+		$s .= "		<option value=\"0\"".$sel."></option>\n";
+		// Get user array.
+		$a = $dao->get_value_array(3);
+		// If user array has been returned.
+		foreach($a as $user_id => $username) {
+			// Set selected.
+			$sel = NULL;
+			if(isset($_SESSION['filter_user'])) {
+				if($user_id == $_SESSION['filter_user']) {
+					$sel = " selected=\"selected\"";
+				}
+			}
+			// Set options.
+			$s .= "		<option value=\"".$user_id."\"".$sel.">".$username."</option>\n";
+		}
+		// Close select.
+		$s .= "	</select>\n";
+		// Add to form.
+		$r .= $structure->get_form_structure($f, $s, NULL);
+		// DATA.
+		$f = 'Data';
+		$s = "	<select id=\"data_id\" name=\"data_id\" onchange=\"update_payloads(".$variable->c.")\">\n";
+		// Set selected.
+		$sel = NULL;
+		if(isset($_SESSION['filter_data'])) {
+			if($_SESSION['filter_data'] == 0) {
+				$sel = " selected=\"selected\"";
+			}
+		}
+		// Set blank option.
+		$s .= "		<option value=\"0\"".$sel."></option>\n";
+		// Get data array.
+		$a = $dao->get_value_array(2);
+		// If data array has been returned.
+		foreach($a as $data_id => $dataset) {
+			// Get full host name from ID.
+			$host = $dao->get_full_host_name_from_id($data_id);
+			// Set selected.
+			$sel = NULL;
+			if(isset($_SESSION['filter_data'])) {
+				if($data_id == $_SESSION['filter_data']) {
+					$sel = " selected=\"selected\"";
+				}
+			}
+			// Set options.
+			$s .= "		<option value=\"".$data_id."\"".$sel.">".$host."</option>\n";
+		}
+		// Close select.
+		$s .= "	</select>\n";
+		// Add to form.
+		$r .= $structure->get_form_structure($f, $s, NULL);
+		// Close form.
+		$r .= "	</form>\n";
+		// Return.
+		return $r;
+	}
+	
+	// Add regression test runs.
+	private function get_regression_tests($c, $tabs) {
+		// Init.
+		$r = NULL;
+		// If in correct section.
+		if($c == 40) {
+			// Instantiate.
+			$dao = new DAO();
+			$structure = new GetStructure();
+			$variable = new Variables();
+			// Add number of tabs required.
+			$structure->getRequiredTabs($tabs);
+			// If viewing specific RTS run.
+			if(isset($_GET['r'])) {
+				// Get specific regression test.
+				$r .= $dao->specific_regression_test($_GET['r'], $tabs+1);
+			}
+			// Otherwise, if viewing all RTS runs.
+			else {
+				// Get rts limit.
+				$variable->get_app_variables();
+				// Get recent regression tests.
+				$r .= $dao->get_recent_regression_test_runs($variable->rts_to_display, FALSE, $tabs+1);
+			}
+		}
+		// Return.
+		return $r;
+	}
+	
 }
 
 ?>

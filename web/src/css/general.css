@@ -25,6 +25,20 @@ p.p_comment_hdr {
 	margin: 5px 0 0 0;
 	color: #37E;	
 }
+p.filter_page_no, p.filter_page_no:hover, p.filter_btn {
+	position: relative;
+	float: left;
+	color: #FFF; 
+	margin: 0 3px 3px 0;
+	padding: 3px;
+	border: 2px solid #CCC;
+	border-radius: 5px;
+	background: #87AFE2;
+	cursor: pointer;
+}
+p.filter_page_no:hover, p.filter_btn:hover {
+	background: #397CA6;
+}
 
 /********
 ** h* **
@@ -327,7 +341,7 @@ line
 #tbl_flag_statistics {
 	font-size: 10px;
 }
-.query_results, .query_results_hl, .query_results_hdr {
+.query_results, .query_results_hl, .query_results_hdr, .query_results_error {
 	padding: 3px;
 	margin: 1px;
 	text-align: center;
@@ -338,6 +352,12 @@ line
 }
 .query_results_hdr {
 	background: rgb(181, 210, 246);
+}
+.query_results_error {
+	background: #FCA5A5;
+}
+.p_query_results_error {
+	color: #FCA5A5;
 }
 .span_frm_info {
 	font-size: 10px;

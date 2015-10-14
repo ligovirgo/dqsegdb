@@ -2,6 +2,7 @@
 
 // Get libraries.
 require_once('InitVar.php');
+require_once('GetServerData.php');
 
 // Data Access Object class.
 class DAO
@@ -38,6 +39,18 @@ class DAO
 */		}
 	}
 
+	// Connect to RTS database.	
+	public function db_rts_connect() {
+		// Create new variables object.
+		$variable = new Variables();
+		$variable->initVariables();
+		// If connection not made.
+		if(!isset($this->pdo_rts)) {
+			// Create new PDO object.
+			$this->pdo_rts = new PDO("mysql:host=".$variable->host.";dbname=".$variable->db_rts, $variable->db_user, $variable->db_pass);
+		}
+	}
+	
 	////////////////////////
 	// STRUCTURE-RELATED //
 	//////////////////////
@@ -299,6 +312,65 @@ class DAO
 		return $r;
 	}
 	
+	// Get value additional integer.
+	public function get_value_add_int($s) {
+		// Init.
+		$r = 0;
+		// If arg sent.
+		if(isset($s)) {
+			// Create PDO object
+			$this->dbConnect();
+			// Build prepared statement.
+			if(($stmt = $this->pdo->prepare("SELECT value_add_int
+											 FROM tbl_values
+											 WHERE value_txt=:s"))) {
+					// Execute.
+			if($stmt->execute(array(':s' => $s))) {
+				// Bind by column name.
+				$stmt->bindColumn('value_add_int', $value_add_int);
+				// Loop.
+				while($stmt->fetch()) {
+					// Check again.
+					$r = $value_add_int;
+				}
+			}
+			}
+		}
+		// Return.
+		return $r;
+	}
+	
+	// Get full host name from ID.
+	public function get_full_host_name_from_id($i) {
+		// Init.
+		$r = NULL;
+		// Initialise.
+		$serverdata = new GetServerData();
+		// If arg sent.
+		if(isset($i)) {
+			// Create PDO object
+			$this->dbConnect();
+			// Build prepared statement.
+			if(($stmt = $this->pdo->prepare("SELECT value_txt, value_add_info
+							 				 FROM tbl_values
+							 				 WHERE value_id=:i"))) {
+				// Execute.
+				if($stmt->execute(array(':i' => $i))) {
+					// Bind by column name.
+					$stmt->bindColumn('value_txt', $value_txt);
+					$stmt->bindColumn('value_add_info', $value_add_info);
+					// Loop.
+					while($stmt->fetch()) {
+						// Set.
+						$r = $serverdata->set_host_name($value_txt, $value_add_info);
+					}
+				}
+			}
+		}
+		// Return.
+		return $r;		
+	}
+	
 	// Get value-related ID.
 	public function get_value_id($s) {
 		// Init.
@@ -380,35 +452,171 @@ class DAO
 	}
 
 	// Get recent query results.
-	public function get_recent_query_results($tabs) {
+	public function get_recent_query_results($limit, $home, $tabs) {
 		// Init.
 		$r = NULL;
 		$i = 0;
+		$limit_s = 0;
+		$limit_str = NULL;
+		$tot_output = 0;
 		// Instantiate.
 		$variable = new Variables();
 		$structure = new GetStructure();
 		// Get file-related variables.
 		$variable->get_file_related_variables();
+		// Get app-related variables.
+		$variable->get_app_variables();
+		// Get content-call ID.
+		$variable->getContentCallID();
 		// Add number of tabs required.
 	 	$structure->getRequiredTabs($tabs);
+	 	// Sort ascending/descending.
+		$date_ad = 'asc';
+		$data_ad = 'asc';
+		$uri_ad = 'asc';
+		$size_ad = 'asc';
+		$user_ad = 'asc';
+		$date_ar = NULL;
+		$data_ar = NULL;
+		$uri_ar = NULL;
+		$size_ar = NULL;
+		$user_ar = NULL;
+	 	if(isset($_GET['date_ad']) || isset($_GET['data_ad']) || isset($_GET['uri_ad']) || isset($_GET['size_ad']) || isset($_GET['user_ad'])) {
+			if(isset($_GET['date_ad'])) {
+				// Set ORDER BY SQL.
+			 	$o = 'file_created '.strtoupper($_GET['date_ad']);
+			 	// Set output.
+			 	if($_GET['date_ad'] == 'asc') {
+			 		$date_ad = 'desc';
+			 	}
+			 	$date_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['date_ad']).".png\" alt=\"Sorting ".strtolower($_GET['date_ad'])."ending\" title=\"Sorting ".strtolower($_GET['date_ad'])."ending\" />";
+		 	}
+	 		if(isset($_GET['data_ad'])) {
+				// Set ORDER BY SQL.
+			 	$o = 'value_add_info '.strtoupper($_GET['data_ad']);
+			 	// Set output.
+			 	if($_GET['data_ad'] == 'asc') {
+			 		$data_ad = 'desc';
+			 	}
+			 	$data_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['data_ad']).".png\" alt=\"Sorting ".strtolower($_GET['data_ad'])."ending\" title=\"Sorting ".strtolower($_GET['data_ad'])."ending\" />";
+	 		}
+		 	if(isset($_GET['uri_ad'])) {
+		 		// Set ORDER BY SQL.
+		 		$o = 'file_uri_used '.strtoupper($_GET['uri_ad']);
+		 		// Set output.
+		 		if($_GET['uri_ad'] == 'asc') {
+		 			$uri_ad = 'desc';
+		 		}
+			 	$uri_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['uri_ad']).".png\" alt=\"Sorting ".strtolower($_GET['uri_ad'])."ending\" title=\"Sorting ".strtolower($_GET['uri_ad'])."ending\" />";
+		 	}
+	 		if(isset($_GET['size_ad'])) {
+		 		// Set ORDER BY SQL.
+		 		$o = 'file_size '.strtoupper($_GET['size_ad']);
+		 		// Set output.
+		 		if($_GET['size_ad'] == 'asc') {
+		 			$size_ad = 'desc';
+		 		}
+			 	$size_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['size_ad']).".png\" alt=\"Sorting ".strtolower($_GET['size_ad'])."ending\" title=\"Sorting ".strtolower($_GET['size_ad'])."ending\" />";
+	 		}
+	 		if(isset($_GET['user_ad'])) {
+		 		// Set ORDER BY SQL.
+		 		$o = 'users.username '.strtoupper($_GET['user_ad']);
+		 		// Set output.
+		 		if($_GET['user_ad'] == 'asc') {
+		 			$user_ad = 'desc';
+		 		}
+			 	$user_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['user_ad']).".png\" alt=\"Sorting ".strtolower($_GET['user_ad'])."ending\" title=\"Sorting ".strtolower($_GET['user_ad'])."ending\" />";
+	 		}
+	 	}
+	 	else {
+	 		$o = 'file_id DESC ';
+	 	}
+	 	// Set WHERE SQL clause.
+		$w_sql = NULL;
+		// If not on homepage.
+		if(!$home) {
+			// Filter for user.
+			if(isset($_SESSION['filter_user']) && !empty($_SESSION['filter_user']) && $_SESSION['filter_user'] != 0) {
+				$w_sql .= " AND user_fk=".$_SESSION['filter_user'];
+			}
+			// Filter for dataset.
+			if(isset($_SESSION['filter_data']) && !empty($_SESSION['filter_data']) && $_SESSION['filter_data'] != 0) {
+				$w_sql .= " AND host_fk=".$_SESSION['filter_data'];
+			}
+			// If WHERE SQL clause has been set.
+			if(!empty($w_sql)) {
+				$w_sql = "WHERE ".substr($w_sql, 4);
+			}
+		}
+		// Add break.
+		$structure->getBreak($tabs+1);
+		$r .= $structure->brk;
+		// Create PDO object
+		$this->dbConnect();
+		// Get total number of payloads.
+		if(($stmt = $this->pdo->prepare("SELECT COUNT(file_id) AS 'tot'
+										 FROM tbl_file_metadata ".$w_sql))) {
+			// Execute.
+			if($stmt->execute()) {
+				// Bind by column name.
+				$stmt->bindColumn('tot', $tot);
+				// Loop.
+				while($stmt->fetch()) {
+					$tot_output = $tot;
+				}
+			}
+		}
+		// If not on homepage.
+		if(!$home) {
+			// Set start and end display values.
+			$s = (($_SESSION['filter_start_page']-1) * $variable->payloads_to_display) + 1;
+			$e = ($s + $variable->payloads_to_display) - 1;
+			// Set total number of pages to be used.
+			$t = round($tot_output/$variable->payloads_to_display);
+			// If the end display value is above the total.
+			if($e > $tot_output) {
+				// Re-set it to the total.
+				$e = $tot_output;
+			}
+			// Set SQL LIMIT start.
+			$limit_s = $s-1;
+			// Output totals.
+			$r .= $structure->tabStr."<p>Displaying <strong>".$s."</strong> to <strong>".$e."</strong> of <strong>".$tot_output."</strong> payloads</p>\n";
+			// Set pages.
+			for($i=1; $i<=$t; $i++) {
+				// Set formatted page.
+				$i_fmt = $i;
+				// If currently selected page.
+				if($i == $_SESSION['filter_start_page']) {
+					$i_fmt = "<strong>".$i."</strong>";
+				}
+				// Add pages to output.
+				$r .= $structure->tabStr."<p id=\"filter_page_no_start\" class=\"filter_page_no\" onclick=\"set_filter_start_page_no(".$i.")\">".$i_fmt."</p>\n";
+			}
+		}
+		// Set limit.
+		if(!empty($limit) && $limit > 0) {
+			$limit_str = " LIMIT ".$limit_s.",".$limit;
+		}
 		// Open table.
 		$r .= $structure->tabStr."<table cellpadding=\"0\" cellspacing=\"1\" border=\"0\" id=\"tbl_query_results\">\n";
 		// Headings.
 		$r .= $structure->tabStr."	<tr>\n";
-		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">Date / Time</td>\n";
-		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">Data</td>\n";
-		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">URI used</td>\n";
-		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">File size</td>\n";
-		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">User</td>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&date_ad=".$date_ad."\">Date / Time</a>".$date_ar."</td>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&data_ad=".$data_ad."\">Data</a>".$data_ar."</td>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&uri_ad=".$uri_ad."\">URI used</a>".$uri_ar."</td>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&size_ad=".$size_ad."\">File size</a>".$size_ar."</td>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&user_ad=".$user_ad."\">User</a>".$user_ar."</td>\n";
 		$r .= $structure->tabStr."	</tr>\n";
-		// Create PDO object
-		$this->dbConnect();
 		// Build prepared statement.
-		if(($stmt = $this->pdo->prepare("SELECT *, DATE_FORMAT(file_created, '%Y-%m-%d %H:%i') AS 'file_created_fmt'
+		if(($stmt = $this->pdo->prepare("SELECT tbl_file_metadata.*, tbl_values.*, DATE_FORMAT(file_created, '%Y-%m-%d %H:%i') AS 'file_created_fmt', users.username
 										 FROM tbl_file_metadata
-										 LEFT JOIN tbl_values ON tbl_file_metadata.host_fk = tbl_values.value_id
-										 ORDER BY file_id DESC
-										 LIMIT 5"))) {
+										 LEFT join tbl_values ON tbl_file_metadata.host_fk = tbl_values.value_id
+										 LEFT join (
+										 SELECT value_id AS user_id, value_txt AS username FROM tbl_values
+										 WHERE value_group_fk=3) AS users ON tbl_file_metadata.user_fk = users.user_id
+										 ".$w_sql."
+										 ORDER BY ".$o.$limit_str))) {
 			// Execute.
 			if($stmt->execute()) {
 				// Bind by column name.
@@ -456,6 +664,262 @@ class DAO
 		// Return.
 		return $r;
 	}
+	
+	////////////////////////////
+	// RTS-RELATED FUNCTIONS //
+	//////////////////////////
+	
+	// Get recent query results.
+	public function get_recent_regression_test_runs($limit, $home, $tabs) {
+		// Init.
+		$r = NULL;
+		$limit_s = 0;
+		$limit_str = NULL;
+		$tot_output = 0;
+		// Instantiate.
+		$variable = new Variables();
+		$structure = new GetStructure();
+		// Get app-related variables.
+		$variable->get_app_variables();
+		// Get content-call ID.
+		$variable->getContentCallID();
+		// Add number of tabs required.
+		$structure->getRequiredTabs($tabs);
+		$dataset_ad = 'asc';
+		$date_start_ad = 'asc';
+		$date_stop_ad = 'asc';
+		$failures_ad = 'asc';
+		$dataset_ar = NULL;
+		$date_start_ar = NULL;
+		$date_stop_ar = NULL;
+		$failures_ar = NULL;
+		// If ordering.
+		if(isset($_GET['date_start_ad']) || isset($_GET['date_stop_ad']) || isset($_GET['failures_ad']) || isset($_GET['dataset_ad'])) {
+			// If dataset ordering is set.
+			if(isset($_GET['dataset_ad'])) {
+				// Set ORDER BY SQL.
+			 	$o = 'dataset '.strtoupper($_GET['dataset_ad']);
+			 	// Set output.
+			 	if($_GET['dataset_ad'] == 'asc') {
+			 		$dataset_ad = 'desc';
+			 	}
+			 	$dataset_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['dataset_ad']).".png\" alt=\"Sorting ".strtolower($_GET['dataset_ad'])."ending\" title=\"Sorting ".strtolower($_GET['dataset_ad'])."ending\" />";
+		 	}
+			// If start date ordering is set.
+			if(isset($_GET['date_start_ad'])) {
+				// Set ORDER BY SQL.
+			 	$o = 'test_run_start_time '.strtoupper($_GET['date_start_ad']);
+			 	// Set output.
+			 	if($_GET['date_start_ad'] == 'asc') {
+			 		$date_start_ad = 'desc';
+			 	}
+			 	$date_start_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['date_start_ad']).".png\" alt=\"Sorting ".strtolower($_GET['date_start_ad'])."ending\" title=\"Sorting ".strtolower($_GET['date_start_ad'])."ending\" />";
+		 	}
+		 	// If stop date ordering is set.
+			if(isset($_GET['date_stop_ad'])) {
+				// Set ORDER BY SQL.
+			 	$o = 'test_run_stop_time '.strtoupper($_GET['date_stop_ad']);
+			 	// Set output.
+			 	if($_GET['date_stop_ad'] == 'asc') {
+			 		$date_stop_ad = 'desc';
+			 	}
+			 	$date_stop_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['date_stop_ad']).".png\" alt=\"Sorting ".strtolower($_GET['date_stop_ad'])."ending\" title=\"Sorting ".strtolower($_GET['date_stop_ad'])."ending\" />";
+		 	}
+	 	 	// If failures ordering is set.
+			if(isset($_GET['failures_ad'])) {
+				// Set ORDER BY SQL.
+			 	$o = 'test_run_failures '.strtoupper($_GET['failures_ad']);
+			 	// Set output.
+			 	if($_GET['failures_ad'] == 'asc') {
+			 		$failures_ad = 'desc';
+			 	}
+			 	$failures_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['failures_ad']).".png\" alt=\"Sorting ".strtolower($_GET['failures_ad'])."ending\" title=\"Sorting ".strtolower($_GET['failures_ad'])."ending\" />";
+		 	}
+	 	}
+		else {
+	 		$o = 'test_run_id DESC ';
+	 	}
+	 	// Create PDO object
+		$this->db_rts_connect();
+		// Get total number of payloads.
+		if(($stmt = $this->pdo_rts->prepare("SELECT COUNT(test_run_id) AS 'tot'
+										 	 FROM tbl_test_runs"))) {
+			// Execute.
+			if($stmt->execute()) {
+				// Bind by column name.
+				$stmt->bindColumn('tot', $tot);
+				// Loop.
+				while($stmt->fetch()) {
+					$tot_output = $tot;
+				}
+			}
+		}
+		// Set start and end display values.
+		$s = (($_SESSION['rts_filter_start_page']-1) * $variable->rts_to_display) + 1;
+		$e = ($s + $variable->rts_to_display) - 1;
+		// Set total number of pages to be used.
+		$t = round($tot_output/$variable->rts_to_display);
+		// If the end display value is above the total.
+		if($e > $tot_output) {
+			// Re-set it to the total.
+			$e = $tot_output;
+		}
+		// Set SQL LIMIT start.
+		$limit_s = $s-1;
+		// Output totals.
+		$r .= $structure->tabStr."<p>Displaying <strong>".$s."</strong> to <strong>".$e."</strong> of <strong>".$tot_output."</strong> test runs</p>\n";
+		// Set pages.
+		for($i=1; $i<=$t; $i++) {
+			// Set formatted page.
+			$i_fmt = $i;
+			// If currently selected page.
+			if($i == $_SESSION['rts_filter_start_page']) {
+				$i_fmt = "<strong>".$i."</strong>";
+			}
+			// Add pages to output.
+			$r .= $structure->tabStr."<p id=\"rts_filter_page_no_start\" class=\"filter_page_no\" onclick=\"set_rts_filter_start_page_no(".$i.")\">".$i_fmt."</p>\n";
+		}
+		// Set limit.
+		if(!empty($limit) && $limit > 0) {
+			$limit_str = " LIMIT ".$limit_s.",".$limit;
+		}
+		// Open table.
+		$r .= $structure->tabStr."<table cellpadding=\"0\" cellspacing=\"1\" border=\"0\" id=\"tbl_query_results\">\n";
+		// Headings.
+		$r .= $structure->tabStr."	<tr>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&dataset_ad=".$dataset_ad."\">Dataset</a>".$dataset_ar."</td>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&date_start_ad=".$date_start_ad."\">Start time</a>".$date_start_ar."</td>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&date_stop_ad=".$date_stop_ad."\">Stop time</a>".$date_stop_ar."</td>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&failures_ad=".$failures_ad."\">Failures</a>".$failures_ar."</td>\n";
+		$r .= $structure->tabStr."	</tr>\n";
+		// Build prepared statement.
+		if(($stmt = $this->pdo_rts->prepare("SELECT *
+											 FROM tbl_test_runs
+											 LEFT join (
+											 SELECT value_id AS dataset_id, CONCAT(value_add_info, ' data (', value_txt, ')') AS dataset FROM tbl_values
+											 WHERE value_group_fk=4) AS datasets ON tbl_test_runs.dataset_fk = datasets.dataset_id
+											 ORDER BY ".$o.$limit_str))) {
+			// Execute.
+			if($stmt->execute()) {
+				// Bind by column name.
+				$stmt->bindColumn('test_run_id', $test_run_id);
+				$stmt->bindColumn('dataset', $dataset);
+				$stmt->bindColumn('test_run_start_time', $test_run_start_time);
+				$stmt->bindColumn('test_run_stop_time', $test_run_stop_time);
+				$stmt->bindColumn('test_run_failures', $test_run_failures);
+				// Loop.
+				while($stmt->fetch()) {
+					// Set.
+					$c = NULL;
+					$img = NULL;
+					// If failures were thrown up.
+					if($test_run_failures > 0) {
+						// Set different style call.
+						$c = "_error";
+					}
+					// If the run is underway.
+					if(empty($test_run_stop_time)) {
+						// Set image.
+						$img = "<img src=\"images/retrieving_segments_mini.gif\" alt=\"Test Run currently underway\" title=\"Test Run currently underway\" /> ";
+					}
+					// Set.
+					$r .= $structure->tabStr."	<tr>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$c."\"><a href=\"?c=".$variable->c."&r=".$test_run_id."\">".$img.$dataset."</a></td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$c."\"><a href=\"?c=".$variable->c."&r=".$test_run_id."\">".$test_run_start_time."</a></td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$c."\"><a href=\"?c=".$variable->c."&r=".$test_run_id."\">".$test_run_stop_time."</a></td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$c."\"><a href=\"?c=".$variable->c."&r=".$test_run_id."\">".$test_run_failures."</a></td>\n";
+					$r .= $structure->tabStr."	</tr>\n";
+				}
+			}
+		}
+		// Close table.
+		$r .= $structure->tabStr."</table>\n";
+		// Return.
+		return $r;
+	}
+	
+	// Get a specific regression test.
+	public function specific_regression_test($rt, $tabs) {
+		// Init.
+		$r = NULL;
+		// Instantiate.
+		$structure = new GetStructure();
+		$variable = new Variables();
+		// Add number of tabs required.
+		$structure->getRequiredTabs($tabs);
+		// Get content-call ID.
+		$variable->getContentCallID();
+		// If not RT passed.
+		if(!isset($rt)) {
+			// Set error message.
+			$r .= $structure->tabStr."<p>There are no available regression test results for this run.</p>\n";
+		}
+		else {
+		 	// Create PDO object
+			$this->db_rts_connect();
+			// Get RT info.
+			if(($stmt = $this->pdo_rts->prepare("SELECT *
+												 FROM tbl_test_runs
+												 WHERE test_run_id=:rt
+												 LIMIT 1"))) {
+				// Execute.
+				if($stmt->execute(array('rt' => $rt))) {
+					// Bind by column name.
+					$stmt->bindColumn('test_run_start_time', $test_run_start_time);
+					$stmt->bindColumn('test_run_stop_time', $test_run_stop_time);
+					$stmt->bindColumn('test_run_failures', $test_run_failures);
+					// Loop.
+					while($stmt->fetch()) {
+						// Set.
+						$r .= $structure->tabStr."<h4>Regression Test Run Details</h4>\n";
+						$r .= $structure->tabStr."<p><img alt=\"\" title=\"\" src=\"images/arrow_on_blue.png\" /><a href=\"?c=".$variable->c."\"> Return to list of regression test runs</a>.</p>\n";
+						$r .= $structure->tabStr."<p>Currently viewing details of regression test run started at <strong>".$test_run_start_time."</strong> and ended at <strong>".$test_run_stop_time."</strong>. This run contained <strong>".$test_run_failures."</strong> failures. N.B. Any failures are highlighted in <font class=\"p_query_results_error\">red</font>.</p>\n";
+					}
+				}
+			}
+			// Open table.
+			$r .= $structure->tabStr."<table cellpadding=\"0\" cellspacing=\"1\" border=\"0\" id=\"tbl_query_results\">\n";
+			// Headings.
+			$r .= $structure->tabStr."	<tr>\n";
+			$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><strong>Date/Time</strong></td>\n";
+			$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><strong>Test name</strong></td>\n";
+			$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><strong>Details</strong></td>\n";
+			$r .= $structure->tabStr."	</tr>\n";
+			// Build prepared statement.
+			if(($stmt = $this->pdo_rts->prepare("SELECT *
+												 FROM tbl_test_results
+												 LEFT JOIN tbl_values ON tbl_test_results.test_name_fk = tbl_values.value_id
+												 WHERE test_run_fk=:rt"))) {
+				// Execute.
+				if($stmt->execute(array(':rt' => $rt))) {
+					// Bind by column name.
+					$stmt->bindColumn('test_result_id', $test_result_id);
+					$stmt->bindColumn('value_txt', $test_name);
+					$stmt->bindColumn('test_success_level_fk', $test_success_level_fk);
+					$stmt->bindColumn('test_details', $test_details);
+					$stmt->bindColumn('test_time', $test_time);
+					// Loop.
+					while($stmt->fetch()) {
+						// Set bg.
+						$c = NULL;
+						if($test_success_level_fk == 4) {
+							$c = "_error";
+						}
+						// Set.
+						$r .= $structure->tabStr."	<tr>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$test_time."</td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$test_name."</td>\n";
+						$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".str_replace("u'", "<br />'", $test_details)."</td>\n";
+						$r .= $structure->tabStr."	</tr>\n";
+					}
+				}
+			}
+		}
+		// Close table.
+		$r .= $structure->tabStr."</table>\n";
+		// Return.
+		return $r;
+	}	
 	
 	/////////////////////////////
 	// USER-RELATED FUNCTIONS //

@@ -46,11 +46,10 @@ class GetStructure
 		$this->hdr .= "	<title>DQSEGDB - Data Quality Segment DataBase - Web Interface</title>\n";
 		$this->hdr .= "	<!-- Call Javascripts. -->\n";
 		$this->hdr .= "	<script type=\"text/javascript\" src=\"scripts/custom.js\"></script>\n";
-		$this->hdr .= "	<script type=\"text/javascript\" src=\"scripts/jquery/jquery-1.7.1.js\"></script>\n";
+		$this->hdr .= "	<script type=\"text/javascript\" src=\"scripts/jquery/jquery-1.11.3.min.js\"></script>\n";
 		$this->hdr .= "	<script type=\"text/javascript\" src=\"scripts/jquery/jquery.easing.1.3.js\"></script>\n";
 		$this->hdr .= "	<script type=\"text/javascript\" src=\"scripts/jquery/jquery.hoverIntent.minified.js\"></script>\n";
 		$this->hdr .= "	<script type=\"text/javascript\" src=\"scripts/jquery/jquery.naviDropDown.1.0.js\"></script>\n";
-		$this->hdr .= "	<script type=\"text/javascript\" src=\"scripts/d3/d3.v3.js\" charset=\"utf-8\"></script>\n";
 		// Get menu call.
 		$this->getMenuCall();
 		$this->hdr .= $this->menuCall;
@@ -500,19 +499,22 @@ class GetStructure
 			$a = $dao->get_value_array(2);
 			// Loop array.
 			foreach($a as $id => $host) {
-				// Get additional text available for this host.
-				$add_info = $dao->get_value_add_info($host);
-				// Set host name.
-				$host_name = $serverdata->set_host_name($host, $add_info);
-				// Set selected.
-				$sel = NULL;
-				// If host is current default host.
-				if($host == $_SESSION['default_host']) {
-					// Set selected option.
-					$sel = " selected=\"selected\"";
+				// If currently in use.
+				if($dao->get_value_add_int($host)) {
+					// Get additional text available for this host.
+					$add_info = $dao->get_value_add_info($host);
+					// Set host name.
+					$host_name = $serverdata->set_host_name($host, $add_info);
+					// Set selected.
+					$sel = NULL;
+					// If host is current default host.
+					if($host == $_SESSION['default_host']) {
+						// Set selected option.
+						$sel = " selected=\"selected\"";
+					}
+					// Set option.
+					$r .= $this->tabStr."	<option value=\"".$host."\"".$sel.">".$host_name."</option>\n";
 				}
-				// Set option.
-				$r .= $this->tabStr."	<option value=\"".$host."\"".$sel.">".$host_name."</option>\n";
 			}
 			// Close select.
 			$r .= $this->tabStr."</select>\n";

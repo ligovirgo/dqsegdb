@@ -68,6 +68,23 @@ class JSAction {
 				}
 			}
 		}
+		// Filter JSON payload list.
+		elseif($variable->req == 'filter_json_payloads') {
+			// Get app variables.
+			$variable->get_app_variables();
+			// Set user filter.
+			if(isset($_GET['u'])) {
+				$_SESSION['filter_user'] = $_GET['u'];
+			}
+			// Set data filter.
+			if(isset($_GET['d'])) {
+				$_SESSION['filter_data'] = $_GET['d'];
+			}
+			// Reset filter start page.
+			$_SESSION['filter_start_page'] = $variable->default_filter_start_page;
+			// Set return.
+			$this->document = $dao->get_recent_query_results($variable->payloads_to_display, FALSE, 4);
+		}
 		// Update version div.
 		elseif($variable->req == 'update_version_div') {
 			// If flag passed.
@@ -147,7 +164,10 @@ class JSAction {
 		}
 		// If re-populating recent query results div.
 		elseif($variable->req == 'get_recent_query_results') {
-			$this->document = $dao->get_recent_query_results(3);
+			// Get application variables.
+			$variable->get_app_variables();
+			// Get recent results.
+			$this->document = $dao->get_recent_query_results($variable->payloads_to_display, FALSE, 3);
 		}
 		// If providing option to change host.
 		elseif($variable->req == 'get_current_host_box') {
@@ -182,7 +202,10 @@ class JSAction {
 			// Get currently selected option.
 			$this->document = $serverdata->get_choose_flag_option(3);
 		}
-		
+		// Set filter start page number.
+		elseif($variable->req == 'set_filter_start_page_no') {
+			$_SESSION['filter_start_page'] = $_GET['p'];
+		}
 		// Output response.
 		echo $this->document;
 	}

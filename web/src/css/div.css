@@ -514,9 +514,11 @@ span.span_change_host:hover {
 }
 span.span_logged_in {
 	position: relative;
-	top: 10px;
+	float: right;
+	top: 12px;
 	text-align: right;
 	color: #FFF;
+	margin: 0 3px 0 0;
 }
 
 /* === SEGMENT RETRIEVAL === */

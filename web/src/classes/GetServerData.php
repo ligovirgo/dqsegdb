@@ -23,31 +23,34 @@ class GetServerData {
 		$host_array = $dao->get_value_array(2);
 		// Loop host array.
 		foreach($host_array as $key=> $host) {
-			// Get additional text available for this host.
-			$add_info = $dao->get_value_add_info($host);
-			// Set host name.
-			$host_name = $this->set_host_name($host, $add_info);
-			// Set start time.
-			$start_time = microtime(TRUE);
-			$g = @file_get_contents($host.'/dq');
-			// Get file contents.
-			if(!empty($g)) {
+			// If currently in use.
+			if($dao->get_value_add_int($host)) {
+				// Get additional text available for this host.
+				$add_info = $dao->get_value_add_info($host);
+				// Set host name.
+				$host_name = $this->set_host_name($host, $add_info);
+				// Set start time.
+				$start_time = microtime(TRUE);
+				$g = @file_get_contents($host.'/dq');
 				// Get file contents.
-				$a = json_decode($g, true);
-				// Set stop time.
-				$stop_time = microtime(TRUE);
-				// Set elapsed time.
-				$elapsed_time = round($stop_time-$start_time, 5);
-				// If returned contents are array.
-				if(is_array($a)) {
-					// Include with p tag.
-					$this->server_status .= '<p><img src="images/green_arrow.png" alt="" title="" id="green_arrow_virgo" class="green_arrow" />'.$host_name.' - instance responding in '.$elapsed_time.' seconds</p>';
+				if(!empty($g)) {
+					// Get file contents.
+					$a = json_decode($g, true);
+					// Set stop time.
+					$stop_time = microtime(TRUE);
+					// Set elapsed time.
+					$elapsed_time = round($stop_time-$start_time, 5);
+					// If returned contents are array.
+					if(is_array($a)) {
+						// Include with p tag.
+						$this->server_status .= '<p><img src="images/green_arrow.png" alt="" title="" id="green_arrow_virgo" class="green_arrow" />'.$host_name.' - instance responding in '.$elapsed_time.' seconds</p>';
+					}
 				}
-			}
-			// Otherwise.
-			else {
-				// Include with p tag.
-				$this->server_status .= '<p><img src="images/green_faded_arrow.png" alt="" title="" id="green_arrow_virgo" class="green_arrow" />'.$host_name.' - instance currently unavailable</p>';
+				// Otherwise.
+				else {
+					// Include with p tag.
+					$this->server_status .= '<p><img src="images/green_faded_arrow.png" alt="" title="" id="green_arrow_virgo" class="green_arrow" />'.$host_name.' - instance currently unavailable</p>';
+				}
 			}
 		}
 	}
@@ -649,22 +652,25 @@ class GetServerData {
 		// Get host array.
 		$host_array = $dao->get_value_array(2);
 		// Loop host array.
-		foreach($host_array as $key=> $host) {
-			// Get file contents.
-			$a = json_decode(file_get_contents($host.'/dq'), true);
-			// If an array is returned.
-			if(is_array($a)) {
-				// Set stop time.
-				$stop_time = microtime(TRUE);
-				// Set elapsed time.
-				$elapsed_time = round($stop_time-$start_time, 5);
-			}
-			// Check.
-			if($elapsed_time < $quickest_reply) {
-				// Set as quickest replying host.
-				$r = $host;
-				// Reset quickest reply.
-				$quickest_reply = $elapsed_time;
+		foreach($host_array as $key => $host) {
+			// If currently in use.
+			if($dao->get_value_add_int($host)) {
+				// Get file contents.
+				$a = json_decode(file_get_contents($host.'/dq'), true);
+				// If an array is returned.
+				if(is_array($a)) {
+					// Set stop time.
+					$stop_time = microtime(TRUE);
+					// Set elapsed time.
+					$elapsed_time = round($stop_time-$start_time, 5);
+				}
+				// Check.
+				if($elapsed_time < $quickest_reply) {
+					// Set as quickest replying host.
+					$r = $host;
+					// Reset quickest reply.
+					$quickest_reply = $elapsed_time;
+				}
 			}
 		}
 		// Return.

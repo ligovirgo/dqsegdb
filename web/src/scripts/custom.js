@@ -18,7 +18,7 @@ function update_div_query_server() {
 
 // Update the flag version div.
 function update_div_flag_versions(max) {
-	// Get currently selected IFO.
+	// Get currently selected flag.
 	var dq_flag = $("#dq_flag").val();
 	// If number of elements in list is less than or equal to 10.
 	if(dq_flag.length <= 10) {
@@ -139,8 +139,17 @@ function rebuild_recent_query_results_list() {
 	$.get("scripts/actions.php?req=get_recent_query_results", function(r) {
 		// If results retrieved.
 		if(r != 0) {
-			$('#div_recent_query_results').html(r);
+			$('#div_payload_filter_form').html(r);
 		}
+	});
+}
+
+// Set the HWDB filter start page number.
+function set_filter_start_page_no(p) {
+	// Set mode.
+	$.get("scripts/actions.php?req=set_filter_start_page_no&p=" + p, function() {
+		// Re-build the Recent Query Results list.
+		rebuild_recent_query_results_list();
 	});
 }
 
@@ -176,6 +185,20 @@ function alternate_flag_option() {
 		// If result returned.
 		if(r != 0) {
 			$('#input_Flags_val').html(r);
+		}
+	});
+}
+
+// Upload list of filtered JSON payloads.
+function update_payloads(c) {
+	// Init.
+	var user_id = $('#user_id').val();
+	var data_id = $('#data_id').val();
+	// Set session.
+	$.get("scripts/actions.php?req=filter_json_payloads&c=" + c + "&u=" + user_id + "&d=" + data_id, function(r) {
+		// If result returned.
+		if(r != 0) {
+			$('#div_payload_filter_form').html(r);
 		}
 	});
 }

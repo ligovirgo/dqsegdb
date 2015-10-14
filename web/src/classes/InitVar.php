@@ -8,9 +8,14 @@ class Variables {
 
 	public $app_version;
 	public $max_selectable_flags;
+	public $payloads_to_display;
+	public $rts_to_display;
+	public $default_filter_start_page;
+	public $default_rts_filter_start_page;
 	
 	public $host;
 	public $db;
+	public $db_rts;
 	public $db_user;
 	public $db_pass;
 
@@ -24,14 +29,19 @@ class Variables {
 
 	public function get_app_variables() {
 		// Application-related variables.
-		$this->app_version = "1.4";
+		$this->app_version = "1.5";
 		$this->max_selectable_flags = 10;
+		$this->payloads_to_display = 20;
+		$this->rts_to_display = 30;
+		$this->default_filter_start_page = 1;
+		$this->default_rts_filter_start_page = 1;
 	}
 	
 	public function initVariables() {
 		// DB & server connection variables.
 		$this->host = "localhost";
 		$this->db = "dqsegdb_web";
+		$this->db_rts = "dqsegdb_regression_tests";
 		$this->db_user = "admin";
 		$this->db_pass = "lvdb_11v35";
 	}
@@ -61,6 +71,9 @@ class Variables {
 
 	// Initialise sessions.
 	public function initialise_sessions() {
+		// Get app variables.
+		$this->get_app_variables();
+		// Set sessions.
 		if(!isset($_SESSION['default_gps_start'])) {
 			$_SESSION['default_gps_start'] = '';
 		}
@@ -70,8 +83,20 @@ class Variables {
 		if(!isset($_SESSION['changing_current_host'])) {
 			$_SESSION['changing_current_host'] = FALSE;
 		}
-		if(!isset($_SESSION['flag_choice_option'])) {
+			if(!isset($_SESSION['flag_choice_option'])) {
 			$_SESSION['flag_choice_option'] = 0;
+		}
+		if(!isset($_SESSION['filter_user'])) {
+			$_SESSION['filter_user'] = 0;
+		}
+		if(!isset($_SESSION['filter_data'])) {
+			$_SESSION['filter_data'] = 0;
+		}
+		if(!isset($_SESSION['filter_start_page'])) {
+			$_SESSION['filter_start_page'] = $this->default_filter_start_page;
+		}
+		if(!isset($_SESSION['rts_filter_start_page'])) {
+			$_SESSION['rts_filter_start_page'] = $this->default_rts_filter_start_page;
 		}
 	}
 }
