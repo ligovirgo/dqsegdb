@@ -167,7 +167,7 @@ class JSAction {
 			// Get application variables.
 			$variable->get_app_variables();
 			// Get recent results.
-			$this->document = $dao->get_recent_query_results($variable->payloads_to_display, FALSE, 3);
+			$this->document = $dao->get_recent_query_results($variable->payloads_to_display_on_homepage, TRUE, 3);
 		}
 		// If providing option to change host.
 		elseif($variable->req == 'get_current_host_box') {

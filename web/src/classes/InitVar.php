@@ -9,6 +9,7 @@ class Variables {
 	public $app_version;
 	public $max_selectable_flags;
 	public $payloads_to_display;
+	public $payloads_to_display_on_homepage;
 	public $rts_to_display;
 	public $default_filter_start_page;
 	public $default_rts_filter_start_page;
@@ -29,9 +30,10 @@ class Variables {
 
 	public function get_app_variables() {
 		// Application-related variables.
-		$this->app_version = "1.5";
+		$this->app_version = "1.6";
 		$this->max_selectable_flags = 10;
 		$this->payloads_to_display = 20;
+		$this->payloads_to_display_on_homepage = 5;
 		$this->rts_to_display = 30;
 		$this->default_filter_start_page = 1;
 		$this->default_rts_filter_start_page = 1;

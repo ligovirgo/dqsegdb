@@ -669,7 +669,7 @@ class DAO
 	// RTS-RELATED FUNCTIONS //
 	//////////////////////////
 	
-	// Get recent query results.
+	// Get test runs.
 	public function get_recent_regression_test_runs($limit, $home, $tabs) {
 		// Init.
 		$r = NULL;
@@ -741,7 +741,7 @@ class DAO
 	 	}
 	 	// Create PDO object
 		$this->db_rts_connect();
-		// Get total number of payloads.
+		// Get total number of tests.
 		if(($stmt = $this->pdo_rts->prepare("SELECT COUNT(test_run_id) AS 'tot'
 										 	 FROM tbl_test_runs"))) {
 			// Execute.
@@ -838,6 +838,69 @@ class DAO
 		return $r;
 	}
 	
+	// Get five test runs for the homepage.
+	public function get_last_five_test_runs_for_homepage($tabs) {
+		// Init.
+		$r = NULL;
+		// Instantiate.
+		$variable = new Variables();
+		$structure = new GetStructure();
+		// Add number of tabs required.
+		$structure->getRequiredTabs($tabs);
+	 	// Create PDO object
+		$this->db_rts_connect();
+		// Open table.
+		$r .= $structure->tabStr."<table cellpadding=\"0\" cellspacing=\"1\" border=\"0\" id=\"tbl_query_results\">\n";
+		// Headings.
+		$r .= $structure->tabStr."	<tr>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">Start time</td>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\">Failures</td>\n";
+		$r .= $structure->tabStr."	</tr>\n";
+		// Build prepared statement.
+		if(($stmt = $this->pdo_rts->prepare("SELECT *
+											 FROM tbl_test_runs
+											 LEFT join (
+											 SELECT value_id AS dataset_id, CONCAT(value_add_info, ' data (', value_txt, ')') AS dataset FROM tbl_values
+											 WHERE value_group_fk=4) AS datasets ON tbl_test_runs.dataset_fk = datasets.dataset_id
+											 ORDER BY test_run_id DESC
+											 LIMIT 5"))) {
+			// Execute.
+			if($stmt->execute()) {
+				// Bind by column name.
+				$stmt->bindColumn('test_run_id', $test_run_id);
+				$stmt->bindColumn('dataset', $dataset);
+				$stmt->bindColumn('test_run_start_time', $test_run_start_time);
+				$stmt->bindColumn('test_run_stop_time', $test_run_stop_time);
+				$stmt->bindColumn('test_run_failures', $test_run_failures);
+				// Loop.
+				while($stmt->fetch()) {
+					// Set.
+					$c = NULL;
+					$img = NULL;
+					// If failures were thrown up.
+					if($test_run_failures > 0) {
+						// Set different style call.
+						$c = "_error";
+					}
+					// If the run is underway.
+					if(empty($test_run_stop_time)) {
+						// Set image.
+						$img = "<img src=\"images/retrieving_segments_mini.gif\" alt=\"Test Run currently underway\" title=\"Test Run currently underway\" /> ";
+					}
+					// Set.
+					$r .= $structure->tabStr."	<tr>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$c."\"><a href=\"?c=40&r=".$test_run_id."\">".$img.$test_run_start_time."</a></td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$c."\"><a href=\"?c=40&r=".$test_run_id."\">".$test_run_failures."</a></td>\n";
+					$r .= $structure->tabStr."	</tr>\n";
+				}
+			}
+		}
+		// Close table.
+		$r .= $structure->tabStr."</table>\n";
+		// Return.
+		return $r;
+	}
+	
 	// Get a specific regression test.
 	public function specific_regression_test($rt, $tabs) {
 		// Init.
@@ -852,7 +915,7 @@ class DAO
 		// If not RT passed.
 		if(!isset($rt)) {
 			// Set error message.
-			$r .= $structure->tabStr."<p>There are no available regression test results for this run.</p>\n";
+			$r .= $structure->tabStr."<p>There are no available component-interface and data-integrity test results for this run.</p>\n";
 		}
 		else {
 		 	// Create PDO object
@@ -871,9 +934,9 @@ class DAO
 					// Loop.
 					while($stmt->fetch()) {
 						// Set.
-						$r .= $structure->tabStr."<h4>Regression Test Run Details</h4>\n";
-						$r .= $structure->tabStr."<p><img alt=\"\" title=\"\" src=\"images/arrow_on_blue.png\" /><a href=\"?c=".$variable->c."\"> Return to list of regression test runs</a>.</p>\n";
-						$r .= $structure->tabStr."<p>Currently viewing details of regression test run started at <strong>".$test_run_start_time."</strong> and ended at <strong>".$test_run_stop_time."</strong>. This run contained <strong>".$test_run_failures."</strong> failures. N.B. Any failures are highlighted in <font class=\"p_query_results_error\">red</font>.</p>\n";
+						$r .= $structure->tabStr."<h4>Component-Interface and Data-Integrity Run Details</h4>\n";
+						$r .= $structure->tabStr."<p><img alt=\"\" title=\"\" src=\"images/arrow_on_blue.png\" /><a href=\"?c=".$variable->c."\"> Return to list of component-interface and data-integrity test runs</a>.</p>\n";
+						$r .= $structure->tabStr."<p>Currently viewing details of component-interface and data-integrity test run started at <strong>".$test_run_start_time."</strong> and ended at <strong>".$test_run_stop_time."</strong>. This run contained <strong>".$test_run_failures."</strong> failures. N.B. Any failures are highlighted in <font class=\"p_query_results_error\">red</font>.</p>\n";
 					}
 				}
 			}

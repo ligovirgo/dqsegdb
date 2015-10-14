@@ -111,12 +111,16 @@ class GetContent {
 		// Loop.
 		while($res->fetch()) {
 			// Add current server statistics.
+			$content_details .= $structure->tabStr."<p><a href=\"?c=34\">Latest Flag/Version/Segment info</a></p>\n";
 			$content_details .= $serverdata->get_server_statistics($content_id, $_SESSION['default_host'], NULL, $tabs+2);
+			// Add latest Component-Interface and Data-Integrity tests.
+			$content_details .= $structure->tabStr."<p><a href=\"?c=40\">Recent Interface/Integrity Tests</a></p>\n";
+			$content_details .= $dao->get_last_five_test_runs_for_homepage($tabs+2);
 			// Get enclosed display div.
 			$structure->getFlatLightBlueDiv('lx_'.$content_id,$content_name,$content_details,NULL,NULL,$tabs+3);
 			$rxStr .= $structure->div;
 		}
-		// Open About us div.
+		// Open Dataset Info div.
 		$structure->getGreyDiv("dataset_info","Dataset Info",$rxStr,NULL,$tabs+2);
 		$this->page .= $structure->div;
 		// Close middle-right div.
@@ -307,12 +311,12 @@ class GetContent {
 		$dao = new DAO();
 		$structure = new GetStructure();
 		// Open div.
-		$structure->openDiv('recent_query_results', $tabs,'');
+		$structure->openDiv('payload_filter_form', $tabs,'');
 		$r .= $structure->div;
 		// Get results.
 		$r .= $dao->get_recent_query_results(5, TRUE, $tabs+1);
 		// Close div.
-		$structure->closeDiv('recent_query_results', $tabs);
+		$structure->closeDiv('payload_filter_form', $tabs);
 		$r .= $structure->div;
 		// Return.
 		return $r;

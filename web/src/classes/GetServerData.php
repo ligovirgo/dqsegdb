@@ -76,15 +76,20 @@ class GetServerData {
 		// If in the right place.
 		if($c == 26  || $c == 34) {
 			// Instantiate.
+			$dao = new DAO();
 			$structure = new GetStructure();
 			// Add number of tabs required.
 		 	$structure->getRequiredTabs($tabs);
+		 	// Get host ID.
+		 	$host_id = $dao->get_value_id($host);
+		 	// Set full server name.
+		 	$host_full_name = $dao->get_full_host_name_from_id($host_id);
 		 	// Set title.
-		 	$title = $host;
+		 	$title = $host_full_name;
 		 	// If IFO passed.
 		 	if(isset($ifo)) {
 		 		// Set.
-		 		$title = $host." (".$ifo.")";
+		 		$title = $host_full_name." (".$ifo.")";
 		 		$ifo = '/'.$ifo;
 		 	}
 			// Get file contents.
@@ -109,6 +114,14 @@ class GetServerData {
 					if($i == 2) {
 						$css = "_hl";
 						$i = 0;
+					}
+					// If not a GPS value.
+					if($key == 'total_known_segments'
+					|| $key == 'total_active_segments'
+					|| $key == 'total_flags'
+					|| $key == 'total_versions') {
+						// Format for thousand separator if necessary.
+						$val = number_format ($val, 0, ".", ",");
 					}
 					// Output as row.
 					$r .= $structure->tabStr."	<tr>\n";
