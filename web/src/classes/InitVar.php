@@ -30,7 +30,7 @@ class Variables {
 
 	public function get_app_variables() {
 		// Application-related variables.
-		$this->app_version = "1.6";
+		$this->app_version = "1.7";
 		$this->max_selectable_flags = 10;
 		$this->payloads_to_display = 20;
 		$this->payloads_to_display_on_homepage = 5;
@@ -99,6 +99,9 @@ class Variables {
 		}
 		if(!isset($_SESSION['rts_filter_start_page'])) {
 			$_SESSION['rts_filter_start_page'] = $this->default_rts_filter_start_page;
+		}
+		if(!isset($_SESSION['uri_deselected'])) {
+			$_SESSION['uri_deselected'] = array();
 		}
 	}
 }
