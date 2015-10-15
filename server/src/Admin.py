@@ -341,7 +341,7 @@ class AdminHandle:
         # Init.
         r = v2
         # If higher or lower.
-        if ((hl == 'h' and v1 > v2) or (hl == 'l' and (v1 < v2 or v2 == 0))):
+        if ((hl == 'h' and v1 > v2) or (hl == 'l' and v1 > 0 and (v1 < v2 or v2 == 0))):
             # Set.
             r = v1
         # Return.

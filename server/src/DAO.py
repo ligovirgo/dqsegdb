@@ -1598,7 +1598,12 @@ class DAOHandle:
                 cur.close()
                 del cur
         # Set in overall dictionary.
-        d['results'] = payload
+	# Fix? for incompatible API change going to 2.1.10
+	# Also hack to fix API change that Ryan didn't handle properly in the parseKnown function in the current client release:
+        payload_vals=payload.values()
+        for i,j in enumerate(payload_vals):
+            payload_vals[i]['metadata']['comment']=j['metadata']['flag_description']
+        d['results'] = payload_vals
         # Return.
         return d
 
