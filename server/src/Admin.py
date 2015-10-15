@@ -308,6 +308,7 @@ class AdminHandle:
                                     41: [4, 'Problem with ODBC statement execution'],
                                     42: [2, 'Flag-Version coverage statistics unavailable'],
                                     43: [4, 'Transaction not committed to database'],
+                                    44: [1, 'In inserting segments process']
                                 }
         # Return.
         return log_state_dictionary

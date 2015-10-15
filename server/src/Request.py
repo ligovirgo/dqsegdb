@@ -285,19 +285,25 @@ class RequestHandle():
         # Instantiate objects.
         admin = Admin.AdminHandle()
         dao = DAO.DAOHandle()
+        # Set HTTP code and log.
+        admin.log_and_set_http_code(0, 44, req_method, 'serving request', full_uri)
         # If trailing slash found.
         if admin.check_for_last_str_char(full_uri, '/'):
             # Set HTTP code and log.
             e = admin.log_and_set_http_code(400, 16, req_method, None, full_uri)
         # Otherwise, trailing slash not found at end of URI.
         else:
-            # Load JSON to array.
             try:
+                # Set HTTP code and log.
+                admin.log_and_set_http_code(0, 44, req_method, 'loading JSON', full_uri)
+                # Load JSON to array.
                 a = json.loads(j)
             except:
                 # Set HTTP code and log.
                 e = admin.log_and_set_http_code(400, 1, req_method, None, full_uri)
             else:
+                # Set HTTP code and log.
+                admin.log_and_set_http_code(0, 44, req_method, 'checking payload', full_uri)
                 # Check the payload.
                 payload_check = admin.check_json_payload(a, req_method)
                 # If problem found.
@@ -305,6 +311,8 @@ class RequestHandle():
                     # Set HTTP code and log.
                     e = admin.log_and_set_http_code(400, 33, req_method, str(payload_check), full_uri)
                 else:
+                    # Set HTTP code and log.
+                    admin.log_and_set_http_code(0, 44, req_method, 'handling URI', full_uri)
                     # Get server request timestamp.
                     server_start_time = time.time()
                     # Split the script URL to a list.
@@ -323,12 +331,16 @@ class RequestHandle():
                             e = admin.log_and_set_http_code(404, 5, req_method, None, full_uri)
                         else:
                             flag = f[2]
+                            # Set HTTP code and log.
+                            admin.log_and_set_http_code(0, 44, req_method, 'adding query info to passed JSON', full_uri)
                             # Add query info to passed JSON.
                             a.update(admin.add_query_info_to_flag_resource(full_uri, a, 0, 0, request_array, server_start_time))
                             # Put new flag.
                             if l == 3:
                                 # If PUT.
                                 if req_method == 'PUT':
+                                    # Set HTTP code and log.
+                                    admin.log_and_set_http_code(0, 44, req_method, 'putting new flag', full_uri)
                                     e = dao.insert_flag(req_method, full_uri, ifo_id, ifo, flag, a)
                                 else:
                                     # Set HTTP code and log.
@@ -348,6 +360,8 @@ class RequestHandle():
                                     if l == 4:
                                         # If PUT.
                                         if req_method == 'PUT':
+                                            # Set HTTP code and log.
+                                            admin.log_and_set_http_code(0, 44, req_method, 'putting new flag-version', full_uri)
                                             # Insert new version.
                                             e = dao.insert_flag_version(req_method, full_uri, ifo_id, ifo, flag_id, flag, version, a)
                                         # Get version ID.
@@ -362,24 +376,36 @@ class RequestHandle():
                                                 # Set HTTP code and log.
                                                 e = admin.log_and_set_http_code(400, 18, req_method, None, full_uri)
                                             else:
+                                                # Set HTTP code and log.
+                                                admin.log_and_set_http_code(0, 44, req_method, 'putting known segments', full_uri)
                                                 # Put new 'known' segments.
                                                 known_insert = dao.insert_segments('known', req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, a)
                                                 # Set error info.
                                                 e = known_insert['error_info']
                                                 # If no error code returned following known insert.
                                                 if not e:
+                                                    # Set HTTP code and log.
+                                                    admin.log_and_set_http_code(0, 44, req_method, 'putting active segments', full_uri)
                                                     # Put new 'active' segments.
                                                     active_insert = dao.insert_segments('active', req_method, full_uri, ifo_id, ifo, flag_id, flag, version_id, version, a)
                                                     # Set error info.
                                                     e = active_insert['error_info']
                                                     # If no error code returned following known insert and insert set to true.
                                                     if not e and known_insert['inserted']:
+                                                        # Set HTTP code and log.
+                                                        admin.log_and_set_http_code(0, 44, req_method, 'updating segment totals', full_uri)
                                                         # Update version segment global values.
                                                         dao.update_segment_global_values(version_id, known_insert['seg_tot'], known_insert['seg_first_gps'], known_insert['seg_last_gps'], active_insert['seg_tot'], active_insert['seg_first_gps'], active_insert['seg_last_gps'], req_method, full_uri)
+                                                        # Set HTTP code and log.
+                                                        admin.log_and_set_http_code(0, 44, req_method, 'inserting process', full_uri)
                                                         # Insert process.
                                                         dao.insert_process(a, version_id, known_insert['uid'], known_insert['seg_tot'], known_insert['seg_first_gps'], known_insert['seg_last_gps'], active_insert['seg_tot'], active_insert['seg_first_gps'], active_insert['seg_last_gps'], req_method, full_uri)
+                                                        # Set HTTP code and log.
+                                                        admin.log_and_set_http_code(0, 44, req_method, 'committing transaction to database', full_uri)
                                                         # Commit the transaction to the DB.
                                                         dao.commit_transaction_to_db()
+                                                        # Set HTTP code and log.
+                                                        admin.log_and_set_http_code(0, 44, req_method, 'transaction committed', full_uri)
                                                     else:
                                                         admin.log_and_set_http_code(500, 43, req_method, None, full_uri)
                                     # Otherwise, URI too long.                
@@ -394,5 +420,7 @@ class RequestHandle():
         else:
             # Set HTTP code and log.
             r = admin.log_and_set_http_code(200, 4, req_method, None, full_uri)
+        # Set HTTP code and log.
+        admin.log_and_set_http_code(0, 44, req_method, 'request served', full_uri)
         # Return content.
         return r
