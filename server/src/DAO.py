@@ -1162,6 +1162,74 @@ class DAOHandle:
         # Return.
         return r
             
+    # Get dictionary of recent processes.
+    def get_processes_for_report(self, req_method, full_uri):
+        # Init.
+        p = {}
+        d = {}
+        # Instantiate objects.
+        admin = Admin.AdminHandle()
+        try:
+            # Set ODBC cursor.
+            cur = cnxn.cursor()
+        except pyodbc.Error, err:
+            # Set HTTP code and log.
+            admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
+        else:
+            try:
+                # Get.
+                cur.execute("""
+                            SELECT process_id,
+                                   process_full_name,
+                                   value_txt AS 'username',
+                                   dq_flag_ifo,
+                                   dq_flag_name,
+                                   dq_flag_version,
+                                   pid,
+                                   fqdn,
+                                   affected_active_data_segment_total,
+                                   affected_active_data_start,
+                                   affected_active_data_stop,
+                                   affected_known_data_segment_total,
+                                   affected_known_data_start,
+                                   affected_known_data_stop,
+                                   process_time_started,
+                                   process_time_last_used
+                            FROM tbl_processes
+                            LEFT JOIN tbl_values ON tbl_processes.user_fk = tbl_values.value_id
+                            LEFT JOIN tbl_dq_flag_versions ON tbl_processes.dq_flag_version_fk = tbl_dq_flag_versions.dq_flag_version_id
+                            LEFT JOIN tbl_dq_flags ON tbl_dq_flag_versions.dq_flag_fk = tbl_dq_flags.dq_flag_id
+                            WHERE process_time_last_used <> 0
+                            ORDER BY process_time_last_used DESC, process_time_started DESC
+                            LIMIT 50
+                            """)
+            except pyodbc.Error, err:
+                # Set HTTP code and log.
+                admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
+            else:
+                # Loop.
+                for row in cur:
+                    # Set process dictionary.
+                    p[row.process_id] = {
+                        "process_full_name" : row.process_full_name,
+                        "pid" : row.pid,
+                        "username" : row.username,
+                        "fqdn" : row.fqdn,
+                        "uri" : self.get_value_detail_from_ID(row.dq_flag_ifo, req_method, full_uri) + "/" + row.dq_flag_name + "/" + str(row.dq_flag_version),
+                        "total_active_segments" : row.affected_active_data_segment_total,
+                        "earliest_active_segment" : row.affected_active_data_start,
+                        "latest_active_segment" : row.affected_active_data_stop,
+                        "total_known_segments" : row.affected_known_data_segment_total,
+                        "earliest_known_segment" : row.affected_known_data_start,
+                        "latest_known_segment" : row.affected_known_data_stop,
+                        "process_time_started" : row.process_time_started,
+                        "process_time_last_used" : row.process_time_last_used
+                    }
+        # Include inside named dictionary.
+        d['results'] = p
+        # Return.
+        return d
+
     #############################
     # SEGMENT HANDLING METHODS #
     ###########################

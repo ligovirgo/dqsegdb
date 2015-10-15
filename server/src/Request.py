@@ -191,6 +191,14 @@ class RequestHandle():
                             if not r:
                                 # Set HTTP code and log.
                                 admin.log_and_set_http_code(200, 39, req_method, None, full_uri)
+                        # If request is looking for process information.
+                        elif request == 'process':
+                            # Get dictionary of recent processes.
+                            r = dao.get_processes_for_report(req_method, full_uri)
+                            # If dictionary not supplied.
+                            if not r:
+                                # Set HTTP code and log.
+                                admin.log_and_set_http_code(200, 27, req_method, None, full_uri)
                         # If request within acceptable range, i.e. 'active', 'known', etc., get list of all flags over period requested by args.
                         elif admin.check_request('seg', request) == False and not request == 'all':
                             # Set HTTP code and log.

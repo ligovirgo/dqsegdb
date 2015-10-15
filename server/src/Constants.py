@@ -9,7 +9,7 @@ class ConstantsHandle():
     # API version constants #
     ########################
     
-    api_version = '2.1.8'
+    api_version = '2.1.9'
 
     ##############################
     # ODBC connection constants #
