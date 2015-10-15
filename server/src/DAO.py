@@ -10,6 +10,7 @@ import gpstime
 import pyodbc
 import time
 import User
+from collections import defaultdict
 
 class DAOHandle:
     
@@ -574,7 +575,7 @@ class DAOHandle:
             try:
                 # Get.
                 cur.execute("""
-                            SELECT tbl_processes.process_id, dq_flag_version_uri, dq_flag_version_last_modifier, insertion_time, value_txt AS 'auth_user', affected_active_data_start, affected_active_data_stop, affected_active_data_segment_total, affected_known_data_start, affected_known_data_stop, affected_known_data_segment_total, pid, process_full_name, fqdn, process_time_started 
+                            SELECT tbl_processes.process_id, dq_flag_version_uri, dq_flag_version_last_modifier, insertion_time, value_txt AS 'auth_user', affected_active_data_start, affected_active_data_stop, affected_active_data_segment_total, affected_known_data_start, affected_known_data_stop, affected_known_data_segment_total, pid, process_full_name, fqdn, process_args, process_time_started 
                             FROM tbl_processes
                             LEFT JOIN tbl_dq_flag_versions ON tbl_processes.dq_flag_version_fk = tbl_dq_flag_versions.dq_flag_version_id
                             LEFT JOIN tbl_values ON tbl_processes.user_fk = tbl_values.value_id 
@@ -587,8 +588,6 @@ class DAOHandle:
             else:
                 # Loop.
                 for row in cur:
-                    # Get associated args.
-                    args = self.get_process_args(row.process_id, req_method, full_uri)
                     # Set.
                     a.append({"insertion_metadata" : {"uri" : row.dq_flag_version_uri,
                                                       "timestamp" : int(row.insertion_time),
@@ -601,7 +600,7 @@ class DAOHandle:
                                                       "insert_known_segment_total" : int(row.affected_known_data_segment_total)},
                               "process_metadata" : {"pid" : row.pid,
                                                     "name" : row.process_full_name,
-                                                    "args" : args,
+                                                    "args" : row.process_args,
                                                     "fqdn" : row.fqdn,
                                                     "uid" : row.auth_user,
                                                     "process_start_timestamp" : int(row.process_time_started)}})
@@ -955,209 +954,78 @@ class DAOHandle:
         admin = Admin.AdminHandle()
         constant = Constants.ConstantsHandle()
         user = User.UserHandle()
+        # Init.
+        inserted = defaultdict(list)
         # Loop through insert history dictionary.
         for key in data['insert_history']:
-            # Get user id if not passed.
-            if uid == 0 or uid == None:
-                try:
-                    uid = user.get_user_id(key['insertion_metadata']['auth_user'], req_method, full_uri)
-                except:
-                    pass
-            # Re-check user id and make sure version ID has been passed.
-            if not uid == 0 and not uid == None and not vid == None:
-                # If database connection established.
-                try:
-                    cur = cnxn.cursor()
-                except pyodbc.Error, err:
-                    # Set HTTP code and log.
-                    admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
-                else:
-                    # Get values.
-                    gps = gpstime.GpsSecondsFromPyUTC(time.time(), constant.gps_leap_secs)
+            # Set concatenated history.
+            history_concat = str(key['process_metadata'])
+            # If this history has not yet been inserted.
+            if not history_concat in inserted:
+                # Get user id if not passed.
+                if uid == 0 or uid == None:
                     try:
-                        # Insert process.
-                        cur.execute("""
-    	                            INSERT INTO tbl_processes
-    	                            (dq_flag_version_fk,
-                                     process_full_name,
-                                     pid,
-                                     fqdn,
-                                     user_fk,
-                                     insertion_time,
-                                     affected_known_data_segment_total,
-                                     affected_known_data_start,
-                                     affected_known_data_stop,
-                                     affected_active_data_segment_total,
-                                     affected_active_data_start,
-                                     affected_active_data_stop,
-                                     process_time_started,
-                                     process_time_last_used
-                                    )
-    	                            VALUES
-                                    (?,?,?,?,?,?,?,?,?,?,?,?,?,?);
-    	                            """, vid,
-                                         str(key['process_metadata']['name']),
-                                         int(key['process_metadata']['pid']),
-                                         str(key['process_metadata']['fqdn']),
-                                         uid,
-                                         gps,
-                                         known_seg_tot,
-                                         int(known_seg_start),
-                                         int(known_seg_stop),
-                                         active_seg_tot,
-                                         int(active_seg_start),
-                                         int(active_seg_stop),
-                                         str(key['process_metadata']['process_start_timestamp']),
-                                         str(key['process_metadata']['process_start_timestamp']))
-                    	# Extracted this portion for now:
-		    	# SELECT LAST_INSERT_ID() AS 'new_process_id';
+                        uid = user.get_user_id(key['insertion_metadata']['auth_user'], req_method, full_uri)
+                    except:
+                        pass
+                # Re-check user id and make sure version ID has been passed.
+                if not uid == 0 and not uid == None and not vid == None:
+                    # If database connection established.
+                    try:
+                        cur = cnxn.cursor()
                     except pyodbc.Error, err:
                         # Set HTTP code and log.
-                        admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
+                        admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
                     else:
-                        ## Set process ID.
-                        process_id = 0
-                        ## Loop.
-                        #for row in cur:
-                        #    # Set.
-                        #    process_id = row.new_process_id
-			# Putting back in old call to get process id:
-			process_id = self.get_new_process_id(vid, int(key['process_metadata']['pid']), uid, gps, req_method, full_uri)
-                        # If new process ID found.
-                        if not process_id == 0:
-                            # Insert process args.
-                            self.insert_process_args(process_id, key['process_metadata']['args'], req_method, full_uri)
-                    # Close ODBC cursor.
-                    cur.close()
-                    del cur
+                        # Get values.
+                        gps = gpstime.GpsSecondsFromPyUTC(time.time(), constant.gps_leap_secs)
+                        try:
+                            # Insert process.
+                            cur.execute("""
+        	                            INSERT INTO tbl_processes
+        	                            (dq_flag_version_fk,
+                                         process_full_name,
+                                         pid,
+                                         fqdn,
+                                         process_args,
+                                         user_fk,
+                                         insertion_time,
+                                         affected_known_data_segment_total,
+                                         affected_known_data_start,
+                                         affected_known_data_stop,
+                                         affected_active_data_segment_total,
+                                         affected_active_data_start,
+                                         affected_active_data_stop,
+                                         process_time_started,
+                                         process_time_last_used
+                                        )
+        	                            VALUES
+                                        (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+        	                            """, vid,
+                                             str(key['process_metadata']['name']),
+                                             int(key['process_metadata']['pid']),
+                                             str(key['process_metadata']['fqdn']),
+                                             str(key['process_metadata']['args']),
+                                             uid,
+                                             gps,
+                                             known_seg_tot,
+                                             int(known_seg_start),
+                                             int(known_seg_stop),
+                                             active_seg_tot,
+                                             int(active_seg_start),
+                                             int(active_seg_stop),
+                                             str(key['process_metadata']['process_start_timestamp']),
+                                             str(key['process_metadata']['process_start_timestamp']))
+                        except pyodbc.Error, err:
+                            # Set HTTP code and log.
+                            admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
+                        else:
+                            # Add to inserted insert history list.
+                            inserted[history_concat]
+                        # Close ODBC cursor.
+                        cur.close()
+                        del cur
 
-    # Get ID of process committed.
-    def get_new_process_id(self, vid, pid, uid, gps, req_method, full_uri):
-        # Init.
-        r = 0
-        # Instantiate objects.
-        admin = Admin.AdminHandle()
-        try:
-            # Set ODBC cursor.
-            cur = cnxn.cursor()
-        except pyodbc.Error, err:
-            # Set HTTP code and log.
-            admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
-        else:
-            try:
-                # Get.
-                cur.execute("""
-			    SELECT LAST_INSERT_ID() AS 'new_process_id';
-                            """)
-            except pyodbc.Error, err:
-                # Set HTTP code and log.
-                admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
-            else:
-                # Loop.
-                for row in cur:
-                    # Set.
-                    r = row.new_process_id
-        # Return.
-        return r
-
-    # Insert process args.
-    def insert_process_args(self, pid, args, req_method, full_uri):
-        # Instantiate objects.
-        admin = Admin.AdminHandle()
-        try:
-            # Set ODBC cursor.
-            cur = cnxn.cursor()
-        except pyodbc.Error, err:
-            # Set HTTP code and log.
-            admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
-        else:
-            # Loop through args.
-            for argv in args:
-                try:
-                    # Insert process.
-                    cur.execute("""
-                                INSERT INTO tbl_process_args
-                                (process_fk, process_argv)
-                                VALUES
-                                (?,?);
-                                """, pid, str(argv))
-                except pyodbc.Error, err:
-                    # Set HTTP code and log.
-                    admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
-            # Close ODBC cursor.
-            cur.close()
-            del cur
-
-    # Get a list of all args associated to a process.
-    def get_process_args(self, pid, req_method, full_uri):
-        # Init.
-        l = []
-        # Instantiate objects.
-        admin = Admin.AdminHandle()
-        try:
-            # Set ODBC cursor.
-            cur = cnxn.cursor()
-        except pyodbc.Error, err:
-            # Set HTTP code and log.
-            admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
-        else:
-            try:
-                # Get.
-                cur.execute("""
-                            SELECT process_argv
-                            FROM tbl_process_args
-                            WHERE process_fk=?
-                            ORDER BY process_arg_id
-                            """, pid)
-            except pyodbc.Error, err:
-                # Set HTTP code and log.
-                admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
-            else:
-                # Loop.
-                for row in cur:
-                    # Set.
-                    argv = row.process_argv
-                    # Add process to list.
-                    l.append(argv)
-        # Return.
-        return l
-
-    # Get a process ID from a version ID, pid and timestamp.
-    def get_process_id_from_vid_pid_timestamp(self, vid, pid, u, req_method, full_uri, known_seg_start):
-        # Init.
-        r = 0
-        # Instantiate objects.
-        admin = Admin.AdminHandle()
-        try:
-            # Set ODBC cursor.
-            cur = cnxn.cursor()
-        except pyodbc.Error, err:
-            # Set HTTP code and log.
-            admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
-        else:
-            try:
-                # Get.
-                cur.execute("""
-                            SELECT process_id
-                            FROM tbl_processes
-                            WHERE dq_flag_version_fk=? AND pid=? AND user_fk=? AND affected_known_data_stop=?
-    			            ORDER BY process_id DESC
-                            LIMIT 1
-                            """, vid, pid, u, known_seg_start)
-            except pyodbc.Error, err:
-                # Set HTTP code and log.
-                admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
-            else:
-                # Loop.
-                for row in cur:
-                    # Set.
-                    r = row.process_id
-            # Close ODBC cursor.
-            cur.close()
-            del cur            
-        # Return.
-        return r
-            
     # Get dictionary of recent processes.
     def get_processes_for_report(self, req_method, full_uri):
         # Init.
@@ -1183,6 +1051,7 @@ class DAOHandle:
                                    dq_flag_version,
                                    pid,
                                    fqdn,
+                                   process_args,
                                    affected_active_data_segment_total,
                                    affected_active_data_start,
                                    affected_active_data_stop,
@@ -1211,6 +1080,7 @@ class DAOHandle:
                         "pid" : row.pid,
                         "username" : row.username,
                         "fqdn" : row.fqdn,
+                        "args" : row.process_args,
                         "uri" : self.get_value_detail_from_ID(row.dq_flag_ifo, req_method, full_uri) + "/" + row.dq_flag_name + "/" + str(row.dq_flag_version),
                         "total_active_segments" : row.affected_active_data_segment_total,
                         "earliest_active_segment" : row.affected_active_data_start,
