@@ -9,7 +9,7 @@ class ConstantsHandle():
     # API version constants #
     ########################
     
-    api_version = '2.1.13'
+    api_version = '2.1.14'
 
     ##############################
     # ODBC connection constants #
@@ -51,4 +51,4 @@ class ConstantsHandle():
     # Time constants #
     #################
     
-    gps_leap_secs = 16
+    gps_leap_secs = 17

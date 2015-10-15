@@ -168,7 +168,7 @@ class DAOHandle:
             try:
                 # Get.
                 cur.execute("""
-                            SELECT MAX(process_time_last_used) AS 'tot'
+                            SELECT MAX(insertion_time) AS 'tot'
                             FROM tbl_processes """ + j  + iw)
             except pyodbc.Error, err:
                 # Set HTTP code and log.
