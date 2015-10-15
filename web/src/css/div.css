@@ -487,23 +487,15 @@ span.span_versions:hover {
 	color: #5FAFD9;
 }
 
-span.span_version_no, span.span_version_no:hover, span.span_version_no_deselected, span.span_version_no_deselected:hover {
+span.span_version_no {
 	position: relative;
 	float: left;
 	top: -2px;
-	margin: 0 0 0 5px;
-	padding: 1px;
-}
-span.span_version_no, span.span_version_no:hover, span.span_version_no_deselected:hover {
+	margin: 0 0 0 3px;
+	padding: 0 2px 1px 2px;
 	background: #FFF;
 	border: 1px solid;
-	border-radius: 15px;
-}
-span.span_version_no:hover, span.span_version_no_deselected:hover {
-	background: #CCC;
-}
-span.span_version_no_deselected {
-	top: -1px;
+	border-radius: 2px;
 }
 span.span_change_host {
 	color: #5FAFD9;

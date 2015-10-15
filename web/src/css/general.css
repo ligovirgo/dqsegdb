@@ -338,6 +338,9 @@ line
 	position: relative;
 	width: 100%;
 }
+#tbl_query_results {
+        font-size: 13px;
+}
 #tbl_flag_statistics {
 	font-size: 10px;
 }

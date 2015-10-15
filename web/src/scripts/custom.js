@@ -82,11 +82,10 @@ function deselect_version_uri(span_name, uri) {
 	r = 0;
 	// Update version div.
 	$.get("scripts/actions.php?req=deselect_version_uri&uri=" + uri, function(r) {
-		// If result retrieved
-		if(r != 0) {
-			// Re-write form.
-			$('#' + span_name).attr('class', r).fadeIn('slow');
-		}
+		// Re-write span.
+//			$('#' + span_name).attr('class', r).fadeIn('slow');
+			// Change checkbox image source.
+			$("#img_checkbox_" + span_name).attr("src", "images/checkbox" + r + ".png");
 	});
 }
 

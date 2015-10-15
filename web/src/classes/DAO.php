@@ -47,7 +47,7 @@ class DAO
 		// If connection not made.
 		if(!isset($this->pdo_rts)) {
 			// Create new PDO object.
-			$this->pdo_rts = new PDO("mysql:host=".$variable->host.";dbname=".$variable->db_rts, $variable->db_user, $variable->db_pass);
+			$this->pdo_rts = new PDO("mysql:host=".$variable->host_rts.";dbname=".$variable->db_rts, $variable->db_user, $variable->db_pass);
 		}
 	}
 	

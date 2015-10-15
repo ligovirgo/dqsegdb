@@ -15,6 +15,7 @@ class Variables {
 	public $default_rts_filter_start_page;
 	
 	public $host;
+	public $host_rts;
 	public $db;
 	public $db_rts;
 	public $db_user;
@@ -30,7 +31,7 @@ class Variables {
 
 	public function get_app_variables() {
 		// Application-related variables.
-		$this->app_version = "1.7";
+		$this->app_version = "1.8";
 		$this->max_selectable_flags = 10;
 		$this->payloads_to_display = 20;
 		$this->payloads_to_display_on_homepage = 5;
@@ -42,6 +43,7 @@ class Variables {
 	public function initVariables() {
 		// DB & server connection variables.
 		$this->host = "localhost";
+		$this->host_rts = "segments-backup.ligo.org";
 		$this->db = "dqsegdb_web";
 		$this->db_rts = "dqsegdb_regression_tests";
 		$this->db_user = "admin";

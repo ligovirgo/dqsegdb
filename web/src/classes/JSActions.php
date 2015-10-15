@@ -126,7 +126,7 @@ class JSAction {
 		// If selecting/de-selecting a version.
 		elseif($variable->req == 'deselect_version_uri') {
 			// Set selected class to re-send.
-			$this->document = 'span_version_no';
+			$this->document = '';
 			// If URI passed.
 			if(isset($_GET['uri'])) {
 				// If URI not in deselected array.
@@ -134,7 +134,7 @@ class JSAction {
 					// Add to deselected array.
 					array_push($_SESSION['uri_deselected'], $_GET['uri']);
 					// Set deselected class to re-send.
-					$this->document = 'span_version_no_deselected';
+					$this->document = '_checked';
 				}
 				// Otherwise, if in deselected array.
 				else {

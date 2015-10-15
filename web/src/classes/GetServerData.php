@@ -639,12 +639,12 @@ class GetServerData {
 						// Set span name.
 						$span_name = 'span_'.$e[2].'_'.$e[3].'_'.$v;
 						// Set class.
-						$class = NULL;
+						$img_src = NULL;
 						if(in_array($uri_v, $_SESSION['uri_deselected'])) {
-							$class = '_deselected';
+							$img_src = '_checked';
 						}
 						// Output versions.
-						$this->version_span .= "<span id=\"".$span_name."\" class=\"span_version_no".$class."\" onclick=\"deselect_version_uri('".$span_name."','".$uri_v."')\">".$v."</span>\n";
+						$this->version_span .= "<span id=\"".$span_name."\" class=\"span_version_no\">".$v."<img src=\"images/checkbox".$img_src.".png\" id=\"img_checkbox_".$span_name."\" name=\"img_checkbox_".$span_name."\" class=\"img_version_checkbox\" onclick=\"deselect_version_uri('".$span_name."','".$uri_v."')\" /></span>\n";
 					}
 				}
 			}
