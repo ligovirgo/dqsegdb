@@ -74,14 +74,19 @@ class DAOHandle:
             # Set IFO.
             j = ''
             iw = ''
+            # If looking at specific IFO.
             if not ifo == None:
                 j = ' LEFT JOIN tbl_dq_flags ON tbl_dq_flag_versions.dq_flag_fk = tbl_dq_flags.dq_flag_id '
-                iw = ' WHERE dq_flag_ifo=' + str(ifo)
+                iw = ' AND dq_flag_ifo=' + str(ifo)
+                
             try:
                 # Get.
                 cur.execute("""
                             SELECT """ + m + """(dq_flag_version_""" + ak + """_""" + el + """_segment_time) AS 'tot'
-                            FROM tbl_dq_flag_versions """ + j + iw)
+                            FROM tbl_dq_flag_versions """
+                            + j +
+                            """WHERE dq_flag_version_""" + ak + """_""" + el + """_segment_time <> 0 """
+                            + iw)
             except pyodbc.Error, err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
@@ -1415,12 +1420,12 @@ class DAOHandle:
                 cur.close()
                 del cur
         # Set in overall dictionary.
-	# Fix? for incompatible API change going to 2.1.10
-	# Also hack to fix API change that Ryan didn't handle properly in the parseKnown function in the current client release:
+        # Fix? for incompatible API change going to 2.1.10
+        # Also hack to fix API change that Ryan didn't handle properly in the parseKnown function in the current client release:
         payload_vals=payload.values()
         for i,j in enumerate(payload_vals):
             payload_vals[i]['metadata']['comment']=j['metadata']['flag_description']
-	d['results'] = payload_vals
+        d['results'] = payload_vals
         # Return.
         return d
 
