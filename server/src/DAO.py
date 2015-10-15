@@ -36,7 +36,7 @@ class DAOHandle:
         # Attempt connection.
         try:
             # Set HTTP code and log.
-            cnxn = pyodbc.connect(connection_str) # .odbc.ini in /home/gary/    FILE DATA SOURCES..: /usr/local/etc/ODBCDataSources    USER DATA SOURCES..: /root/.odbc.ini
+            cnxn = pyodbc.connect(connection_str) # .odbc.ini in /etc/    FILE DATA SOURCES..: /usr/local/etc/ODBCDataSources    USER DATA SOURCES..: /root/.odbc.ini
         except:
             conn = False
             # Set HTTP code and log.

@@ -16,7 +16,7 @@ class ConstantsHandle():
     ############################
 
     # If connecting via DSN, add DSN string ('DSN=[DSN_NAME];UID=[USER];PWD=[PASSWORD]'). Otherwise, set to None.
-    odbc_dsn = 'DSN=DQSEGDB'
+    odbc_dsn = 'DSN=DQSEGDB'    # /etc/odbc.ini
     
     # If DSN is set to None, use these constants to connect via direct string, add required variables below. Each should be set to None if not being used.
     odbc_driver = None  # ODBC Driver to be used to make connection.
