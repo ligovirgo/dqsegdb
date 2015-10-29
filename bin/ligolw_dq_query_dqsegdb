@@ -101,6 +101,7 @@ def parse_command_line():
 
     parser.add_option("-o", "--output-file",   metavar = "output_file", help = "File to which output should be written.  Defaults to stdout.")
     parser.add_option("-a", "--active-only",  action = "store_true", help = "Only report about active segments in specified window, excludes report of known times for flags.")
+    parser.add_option("-f", "--tom-formatting", action = "store_true", help = "Tom Dent requested formatting option: condensed output into single lines.")
    
     options, time = parser.parse_args()
 
@@ -339,12 +340,23 @@ if __name__ == '__main__':
             else:
                 active_results[flag_string].append(segments.segment(start_time,end_time))
     
+    if not options.tom_formatting:
+        tom=False
+    else:
+        tom=True
     print "Flags active in provided window:"
     for i in active_results:
-        print "Flag name:"
-        print i
-        print "Active segments:"
-        print active_results[i]
+        if tom==True:
+            text="Flag name: "
+            text+=i
+            text+=" ; Active: "
+            text+=str(active_results[i])
+            print text
+        else:
+            print "Flag name:"
+            print i
+            print "Active segments:"
+            print active_results[i]
 
     # Now print defined but inactive flag types:
     if not options.active_only:
@@ -358,17 +370,31 @@ if __name__ == '__main__':
             version=str(i['version'])
             flag_string=":".join([ifo,name,version])
             if flag_string not in active_results:
-                print "Flag name:"
-                print flag_string
-                print "Known times overlapping window:"
-                for j in i['known']:
-                    print j
-                    start_time=j[0]
-                    end_time=j[1]
-                    if flag_string not in known_results:
-                        known_results[flag_string]=segments.segmentlist([segments.segment(start_time,end_time)])
-                    else:
-                        known_results[flag_string].append(segments.segment(start_time,end_time))
+                if tom==True:
+                    text="Flag name: "
+                    text+=flag_string
+                    text+=" ; Known Times overlapping query: "
+                    for j in i['known']:
+                        text+=" "+str(j)+" "
+                        start_time=j[0]
+                        end_time=j[1]
+                        if flag_string not in known_results:
+                            known_results[flag_string]=segments.segmentlist([segments.segment(start_time,end_time)])
+                        else:
+                            known_results[flag_string].append(segments.segment(start_time,end_time))
+                    print text
+                else:
+                    print "Flag name:"
+                    print flag_string
+                    print "Known times overlapping window:"
+                    for j in i['known']:
+                        print j
+                        start_time=j[0]
+                        end_time=j[1]
+                        if flag_string not in known_results:
+                            known_results[flag_string]=segments.segmentlist([segments.segment(start_time,end_time)])
+                        else:
+                            known_results[flag_string].append(segments.segment(start_time,end_time))
 
     if options.output_file:
         # Build json output file:
