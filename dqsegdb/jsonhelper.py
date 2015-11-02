@@ -290,13 +290,15 @@ def generated_vdb_ascii(json_str,filepath):
         requested_span=segments.segmentlist([segments.segment(query_start,query_stop)])
     else:
         requested_span=segments.segmentlist([segments.segment(0,9999999999)])
-    active_segments_string=',1 \n'.join([str(i) for i in active_segments])+",1 \n"
+    active_segments_string=',1 \n'.join([str(i[0])+","+str(i[1]) for i in active_segments])+",1 \n"
     unknown_segments=requested_span-known_segments
-    unknown_segments_string=',-1 \n'.join([str(i) for i in unknown_segments])+",-1 \n"
+    unknown_segments_string=',-1 \n'.join([str(i[0])+","+str(i[1]) for i in unknown_segments])+",-1 \n"
     known_not_active_segments=known_segments-active_segments
-    known_not_active_segments_string=',0 \n'.join([str(i) for i in known_not_active_segments])+",0 \n"
+    known_not_active_segments_string=',0 \n'.join([str(i[0])+","+str(i[1]) for i in known_not_active_segments])+",0 \n"
     output_fileh=open(filepath,'w+')
-    output_fileh.writelines(str(res_dict['query_information']))
+    query_info_string=json.dumps(res_dict['query_information'], indent=1)
+    output_fileh.writelines(query_info_string)
+    output_fileh.write('\n')
     output_fileh.writelines(active_segments_string)
     output_fileh.writelines(unknown_segments_string)
     output_fileh.writelines(known_not_active_segments_string)
