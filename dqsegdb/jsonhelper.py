@@ -272,6 +272,30 @@ def convert_json_list_to_segmentlist(jsonlist):
      segment_list=segments.segmentlist([segments.segment(x[0],x[1]) for x in jsonlist])
      return segment_list
 
+################################################################################
+#
+#  Conversions from JSON to user requested formats
+#
+################################################################################
+
+def generated_vdb_ascii(json_str,filepath):
+    res_dict=json.loads(json_str)
+    active_list=res_dict['active']
+    active_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in active_list])
+    known_list=res_dict['known']
+    known_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in known_list])
+    query_start=res_dict['query_information']['start']
+    query_stop=res_dict['query_information']['end']
+    if query_start!=0 and query_stop!=0:
+        requested_span=segments.segmentlist([segments.segment(query_start,query_stop)])
+    else:
+        requested_span=segments.segmentlist([segments.segment(0,9999999999)])
+    unknown_segments=requested_span-known_segments
+    known_not_active_segments=known_segments-active_segments
+    known_not_active_segments_string='\n'.join([str(i) for i in known_not_active_segments])
+    output_fileh=open(filepath,'w+')
+    output_fileh.write(
+
 
 ################################################################################
 #
