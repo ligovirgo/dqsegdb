@@ -305,6 +305,17 @@ def generated_vdb_ascii(json_str,filepath):
     output_fileh.close()
     return filepath
 
+def generated_ascii(json_str,filepath):
+    res_dict=json.loads(json_str)
+    active_list=res_dict['active']
+    active_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in active_list])
+    active_segments_string='\n'.join([str(i[0])+","+str(i[1]) for i in active_segments])
+    output_fileh=open(filepath,'w+')
+    output_fileh.writelines(active_segments_string)
+    output_fileh.close()
+    return filepath
+
+
 ################################################################################
 #
 #  Parse basic list results json objects:
