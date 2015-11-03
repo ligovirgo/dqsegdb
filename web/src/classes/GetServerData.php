@@ -99,7 +99,7 @@ class GetServerData {
 				// Set.
 				$i = 0;
 				// Open table.
-				$r .= $structure->tabStr."<table cellpadding=\"0\" cellspacing=\"1\" border=\"0\" id=\"tbl_query_results\">\n";
+				$r .= $structure->tabStr."<table cellpadding=\"0\" cellspacing=\"1\" border=\"0\" id=\"tbl_dataset_info\">\n";
 				// Headings.
 				$r .= $structure->tabStr."	<tr>\n";
 				$r .= $structure->tabStr."		<td class=\"query_results_hdr\" colspan=\"2\">".$title."</td>\n";

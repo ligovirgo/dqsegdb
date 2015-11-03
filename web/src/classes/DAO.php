@@ -476,12 +476,14 @@ class DAO
 		$uri_ad = 'asc';
 		$size_ad = 'asc';
 		$user_ad = 'asc';
+		$format_ad = 'asc';
 		$date_ar = NULL;
 		$data_ar = NULL;
 		$uri_ar = NULL;
 		$size_ar = NULL;
+		$format_ar = NULL;
 		$user_ar = NULL;
-	 	if(isset($_GET['date_ad']) || isset($_GET['data_ad']) || isset($_GET['uri_ad']) || isset($_GET['size_ad']) || isset($_GET['user_ad'])) {
+	 	if(isset($_GET['date_ad']) || isset($_GET['data_ad']) || isset($_GET['uri_ad']) || isset($_GET['size_ad']) || isset($_GET['format_ad']) || isset($_GET['user_ad'])) {
 			if(isset($_GET['date_ad'])) {
 				// Set ORDER BY SQL.
 			 	$o = 'file_created '.strtoupper($_GET['date_ad']);
@@ -517,6 +519,15 @@ class DAO
 		 			$size_ad = 'desc';
 		 		}
 			 	$size_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['size_ad']).".png\" alt=\"Sorting ".strtolower($_GET['size_ad'])."ending\" title=\"Sorting ".strtolower($_GET['size_ad'])."ending\" />";
+	 		}
+	 		if(isset($_GET['format_ad'])) {
+		 		// Set ORDER BY SQL.
+		 		$o = 'formats.file_format '.strtoupper($_GET['format_ad']);
+		 		// Set output.
+		 		if($_GET['format_ad'] == 'asc') {
+		 			$user_ad = 'desc';
+		 		}
+			 	$format_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['format_ad']).".png\" alt=\"Sorting ".strtolower($_GET['format_ad'])."ending\" title=\"Sorting ".strtolower($_GET['format_ad'])."ending\" />";
 	 		}
 	 		if(isset($_GET['user_ad'])) {
 		 		// Set ORDER BY SQL.
@@ -606,15 +617,19 @@ class DAO
 		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&data_ad=".$data_ad."\">Data</a>".$data_ar."</td>\n";
 		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&uri_ad=".$uri_ad."\">URI used</a>".$uri_ar."</td>\n";
 		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&size_ad=".$size_ad."\">File size</a>".$size_ar."</td>\n";
+		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&format_ad=".$format_ad."\">File format</a>".$format_ar."</td>\n";
 		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&user_ad=".$user_ad."\">User</a>".$user_ar."</td>\n";
 		$r .= $structure->tabStr."	</tr>\n";
 		// Build prepared statement.
-		if(($stmt = $this->pdo->prepare("SELECT tbl_file_metadata.*, tbl_values.*, DATE_FORMAT(file_created, '%Y-%m-%d %H:%i') AS 'file_created_fmt', users.username
+		if(($stmt = $this->pdo->prepare("SELECT tbl_file_metadata.*, tbl_values.*, DATE_FORMAT(file_created, '%Y-%m-%d %H:%i') AS 'file_created_fmt', users.username, formats.file_format
 										 FROM tbl_file_metadata
 										 LEFT join tbl_values ON tbl_file_metadata.host_fk = tbl_values.value_id
 										 LEFT join (
 										 SELECT value_id AS user_id, value_txt AS username FROM tbl_values
 										 WHERE value_group_fk=3) AS users ON tbl_file_metadata.user_fk = users.user_id
+										 LEFT join (
+										 SELECT value_id AS file_format_id, value_txt AS file_format FROM tbl_values
+										 WHERE value_group_fk=4) AS formats ON tbl_file_metadata.file_format_fk = formats.file_format_id
 										 ".$w_sql."
 										 ORDER BY ".$o.$limit_str))) {
 			// Execute.
@@ -626,7 +641,9 @@ class DAO
  				$stmt->bindColumn('value_add_info', $data);
  				$stmt->bindColumn('file_created_fmt', $file_created_fmt);
 				$stmt->bindColumn('user_fk', $user_fk);
- 				// Loop.
+				$stmt->bindColumn('file_format_fk', $file_format_fk);
+				$stmt->bindColumn('file_format', $file_format);
+				// Loop.
 				while($stmt->fetch()) {
 					// Set bg.
 					$i++;
@@ -654,6 +671,7 @@ class DAO
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$data."</td>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\"><a href=\"".$variable->download_dir.$file_name."\" target=\"_blank\">".str_replace(", ", "<br />\n", $file_uri_used)."</a></td>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$file_size." ".$suffix."B</td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$file_format."</td>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$username."</td>\n";
 					$r .= $structure->tabStr."	</tr>\n";
 				}
@@ -784,7 +802,7 @@ class DAO
 			$limit_str = " LIMIT ".$limit_s.",".$limit;
 		}
 		// Open table.
-		$r .= $structure->tabStr."<table cellpadding=\"0\" cellspacing=\"1\" border=\"0\" id=\"tbl_query_results\">\n";
+		$r .= $structure->tabStr."<table cellpadding=\"0\" cellspacing=\"1\" border=\"0\" id=\"tbl_test_results\">\n";
 		// Headings.
 		$r .= $structure->tabStr."	<tr>\n";
 		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&dataset_ad=".$dataset_ad."\">Dataset</a>".$dataset_ar."</td>\n";

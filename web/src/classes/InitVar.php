@@ -31,7 +31,7 @@ class Variables {
 
 	public function get_app_variables() {
 		// Application-related variables.
-		$this->app_version = "1.8";
+		$this->app_version = "1.9";
 		$this->max_selectable_flags = 10;
 		$this->payloads_to_display = 20;
 		$this->payloads_to_display_on_homepage = 5;

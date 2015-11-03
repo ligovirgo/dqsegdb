@@ -334,12 +334,10 @@ line
 /*******************
 ** Query results **
 *****************/
-#tbl_query_results, #tbl_flag_statistics {
+#tbl_query_results, #tbl_flag_statistics, #tbl_dataset_info, #tbl_test_results {
 	position: relative;
 	width: 100%;
-}
-#tbl_query_results {
-        font-size: 13px;
+    font-size: 12px;
 }
 #tbl_flag_statistics {
 	font-size: 10px;

@@ -3,6 +3,8 @@
 /dist
 /dqsegdb.egg-info
 /dqsegdb/version.py
+server/src/.project
+web/src/.project
 .DS_Store
 *.pyc
 *.so
