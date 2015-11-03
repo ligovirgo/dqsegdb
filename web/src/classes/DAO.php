@@ -351,7 +351,7 @@ class DAO
 										 FROM tbl_values
 										 WHERE value_group_fk=:g AND value_add_int=:i"))) {
 			// Execute.
-			if($stmt->execute(array(':s' => $s, ':i' => $i))) {
+			if($stmt->execute(array(':g' => $g, ':i' => $i))) {
 				// Bind by column name.
 				$stmt->bindColumn('value_id', $value_id);
 				$stmt->bindColumn('value_txt', $value_txt);
