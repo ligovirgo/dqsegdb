@@ -4,6 +4,7 @@
 /dqsegdb.egg-info
 /dqsegdb/version.py
 server/src/.project
+server/src/.pydevproject
 web/src/.project
 .DS_Store
 *.pyc

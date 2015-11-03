@@ -525,7 +525,7 @@ class DAO
 		 		$o = 'formats.file_format '.strtoupper($_GET['format_ad']);
 		 		// Set output.
 		 		if($_GET['format_ad'] == 'asc') {
-		 			$user_ad = 'desc';
+		 			$format_ad = 'desc';
 		 		}
 			 	$format_ar = "<img class=\"img_sort_arrow\" src=\"images/arrow_".strtolower($_GET['format_ad']).".png\" alt=\"Sorting ".strtolower($_GET['format_ad'])."ending\" title=\"Sorting ".strtolower($_GET['format_ad'])."ending\" />";
 	 		}
