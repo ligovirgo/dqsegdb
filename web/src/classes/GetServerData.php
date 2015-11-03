@@ -419,11 +419,15 @@ class GetServerData {
                 // Pulling list of file formats available from value group 4 from database:
                 $format_inputs="";
                 $format_array = $dao->get_value_array(4);
-                echo $_SESSION['default_output_format'];
+                $_SESSION['default_output_format'];
                 // Looping format array to create format_inputs
                 foreach($format_array as $format_id => $format) {
+                    $check = NULL;
+                    if($format_id==$_SESSION['default_output_format']) {
+                        $check = " checked";
+                    }
                     // add to format_inputs
-                    $format_inputs .= "<input type=\"radio\" name=\"format_id\" id=\"format_id\" class=\"radio_format\" value=\"" . $format_id . "\">" . $format;
+                    $format_inputs .= "<input type=\"radio\" name=\"format_id\" id=\"format_id\" class=\"radio_format\" value=\"" . $format_id . "\"" .$check. ">" . $format;
                 }
 
 		$this->query_form .= $structure->get_form_structure('Output Format', $format_inputs, NULL);
