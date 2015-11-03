@@ -415,6 +415,17 @@ class GetServerData {
 		// Add remaining fields, starting with GPS.
 		$gps_inputs = "Start: <input id=\"gps_start_time\" class=\"inp_med\" value=\"".$_SESSION['default_gps_start']."\" /> End: <input id=\"gps_stop_time\" class=\"inp_med\" value=\"".$_SESSION['default_gps_stop']."\" />";
 		$this->query_form .= $structure->get_form_structure('GPS Times', $gps_inputs, NULL);
+                // Setting up file format selection 
+                // Pulling list of file formats available from value group 4 from database:
+                $format_inputs="";
+                $format_array = $dao->get_value_array(4);
+                // Looping format array to create format_inputs
+                foreach($format_array as $format_id => $format) {
+                    // add to format_inputs
+                    $format_inputs .= "<input type=\"radio\" name=\"format_id\" id=\"format_id\" value=\"" . $format_id . "\">" . $format;
+                }
+
+		$this->query_form .= $structure->get_form_structure('Output Format', $format_inputs, NULL);
 		// Set form submit button and retrieving segments message.
 		$button = $structure->get_button('submit_segment_form', 'Retrieve segments', 'frm_query_server', NULL, NULL, 'retrieve_segments()', $tabs, NULL);
 		// Open div.
