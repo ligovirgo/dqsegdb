@@ -201,3 +201,9 @@ function update_payloads(c) {
 		}
 	});
 }
+
+function set_format(format_id) {
+        // Set session.
+        $.get("scripts/actions.php?req=set_format&f=" + format_id, function() {
+        });
+}

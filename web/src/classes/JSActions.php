@@ -206,7 +206,11 @@ class JSAction {
 		elseif($variable->req == 'set_filter_start_page_no') {
 			$_SESSION['filter_start_page'] = $_GET['p'];
 		}
-		// Output response.
+                // Setting session memory for format choice
+                elseif($variable->req == 'set_format') {
+			$_SESSION['default_output_format'] = $_GET['f'];
+		}
+                // Output response.
 		echo $this->document;
 	}
 

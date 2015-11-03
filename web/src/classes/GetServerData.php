@@ -427,9 +427,8 @@ class GetServerData {
                         $check = " checked";
                     }
                     // add to format_inputs
-                    $format_inputs .= "<input type=\"radio\" name=\"format_id\" id=\"format_id\" class=\"radio_format\" value=\"" . $format_id . "\"" .$check. ">" . $format;
+                    $format_inputs .= "<input type=\"radio\" name=\"format_id\" id=\"format_id\" class=\"radio_format\" onclick=\"set_format(".$format_id.")\" value=\"" . $format_id . "\"" .$check. ">" . $format;
                 }
-
 		$this->query_form .= $structure->get_form_structure('Output Format', $format_inputs, NULL);
 		// Set form submit button and retrieving segments message.
 		$button = $structure->get_button('submit_segment_form', 'Retrieve segments', 'frm_query_server', NULL, NULL, 'retrieve_segments()', $tabs, NULL);
