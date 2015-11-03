@@ -340,6 +340,32 @@ class DAO
 		return $r;
 	}
 	
+	// Get value group specific additional integer.
+	public function get_specific_value_by_group_and_add_int($g, $i) {
+		// Init.
+		$a = array();
+		// Create PDO object
+		$this->dbConnect();
+		// Build prepared statement.
+		if(($stmt = $this->pdo->prepare("SELECT value_id, value_txt
+										 FROM tbl_values
+										 WHERE value_group_fk=:g AND value_add_int=:i"))) {
+			// Execute.
+			if($stmt->execute(array(':s' => $s, ':i' => $i))) {
+				// Bind by column name.
+				$stmt->bindColumn('value_id', $value_id);
+				$stmt->bindColumn('value_txt', $value_txt);
+				// Loop.
+				while($stmt->fetch()) {
+					// Build.
+					$a[$value_id] = $value_txt;
+				}
+			}
+		}
+		// Return.
+		return $a;
+	}
+
 	// Get full host name from ID.
 	public function get_full_host_name_from_id($i) {
 		// Init.
