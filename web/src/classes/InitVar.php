@@ -2,6 +2,8 @@
 
 // Set error reporting.
 ini_set("display_errors","1");
+require_once "DAO.php";
+
 
 // Initialise variables.
 class Variables {
@@ -74,7 +76,10 @@ class Variables {
 	}
 
 	// Initialise sessions.
-	public function initialise_sessions() {
+        public function initialise_sessions() {
+                $dao = new DAO();
+                // Get default format key from db
+                $format_array = $dao->get_specific_value_by_group_and_add_int(4,1);
 		// Get app variables.
 		$this->get_app_variables();
 		// Set sessions.
@@ -83,6 +88,9 @@ class Variables {
 		}
 		if(!isset($_SESSION['default_gps_stop'])) {
 			$_SESSION['default_gps_stop'] = '';
+		}
+		if(!isset($_SESSION['default_output_format'])) {
+			$_SESSION['default_output_format'] = key($format_array);
 		}
 		if(!isset($_SESSION['changing_current_host'])) {
 			$_SESSION['changing_current_host'] = FALSE;

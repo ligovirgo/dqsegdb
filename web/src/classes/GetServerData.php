@@ -419,6 +419,7 @@ class GetServerData {
                 // Pulling list of file formats available from value group 4 from database:
                 $format_inputs="";
                 $format_array = $dao->get_value_array(4);
+                echo $_SESSION['default_output_format'];
                 // Looping format array to create format_inputs
                 foreach($format_array as $format_id => $format) {
                     // add to format_inputs
