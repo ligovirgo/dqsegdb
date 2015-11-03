@@ -61,8 +61,10 @@ class JSAction {
 				$f = time().'.json';
 				// If put to file successful.
 				if(file_put_contents($variable->doc_root.$variable->download_dir.$f, $data)) {
+	                // Get default format key from db
+	                $format_array = $dao->get_specific_value_by_group_and_add_int(4,1);
 					// Insert file metadata to database.
-					$dao->insert_file_metadata($f);
+					$dao->insert_file_metadata($f, reset($format_array));
 					// Set return.
 					$this->document = $variable->download_dir.$f;
 				}
@@ -153,13 +155,17 @@ class JSAction {
 			$data = $serverdata->retrieve_segments($_GET['s'], $_GET['e']);
 			// If JSON passed.
 			if(!empty($data)) {
-				// Set filename.
-				$f = time().'.json';
+				// Get UNIX timestamp.
+				$unix_ts = time();
+				// Set filename, adding file format extension.
+				$f = $unix_ts.'.json';
 				// If put to file successful.
 				if(file_put_contents($variable->doc_root.$variable->download_dir.$f, $data)) {
 					// Insert file metadata to database.
-					$dao->insert_file_metadata($f);
+					$dao->insert_file_metadata($f, $_GET['format']);
 				}
+				// Set file to open automatically.
+				$this->document = $variable->download_dir.$unix_ts.'.'.$_GET['format'];
 			}
 		}
 		// If re-populating recent query results div.
@@ -210,7 +216,7 @@ class JSAction {
                 elseif($variable->req == 'set_format') {
 			$_SESSION['default_output_format'] = $_GET['f'];
 		}
-                // Output response.
+        // Output response.
 		echo $this->document;
 	}
 

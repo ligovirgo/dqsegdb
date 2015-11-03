@@ -27,6 +27,7 @@ class Variables {
 	
 	public $doc_root;
 	public $download_dir;
+	public $python_utilities_dir;
 	
 	public $req;
 	public $c;
@@ -56,6 +57,7 @@ class Variables {
 	public function get_file_related_variables() {
 		$this->doc_root = '/usr/share/dqsegdb_web/';
 		$this->download_dir = 'downloads/';
+		$this->python_utilities_dir = 'python_utilities/';
 	}
 	
 	// Get request.

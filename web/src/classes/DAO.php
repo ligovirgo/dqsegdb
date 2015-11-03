@@ -283,7 +283,31 @@ class DAO
 		return $a;
 	}
 	
-
+	// Get value by ID.
+	public function get_value_by_id($i) {
+		// Init.
+		$r = NULL;
+		// Create PDO object
+		$this->dbConnect();
+		// Build prepared statement.
+		if(($stmt = $this->pdo->prepare("SELECT value_txt
+										 FROM tbl_values
+										 WHERE value_id=:i"))) {
+			// Execute.
+			if($stmt->execute(array(':i' => $i))) {
+				// Bind by column name.
+				$stmt->bindColumn('value_txt', $value_txt);
+				// Loop.
+				while($stmt->fetch()) {
+					// Set.
+					$r = $value_txt;
+				}
+			}
+		}
+		// Return.
+		return $r;
+	}
+	
 	// Get value add info by string.
 	public function get_value_add_info($s) {
 		// Init.
@@ -430,7 +454,7 @@ class DAO
 	/////////////////
 	
 	// Insert file metadata to database.
-	public function insert_file_metadata($f) {
+	public function insert_file_metadata($f, $format) {
 		// Init.
 		$r = FALSE;
 		$fu = NULL;
@@ -445,6 +469,10 @@ class DAO
 			$uid = $this->get_valid_user_id();
 			// If valid UID is returned.
 			if($uid != 0) {
+				// Explode filename backwards.
+				$exp = explode('.', $f);
+				// Get file format ID.
+				$format_id = $this->get_value_id($exp[1]);
 				// Set args.
 				$args = $serverdata->get_uri_args($_SESSION['default_gps_start'], $_SESSION['default_gps_stop']);
 				// Get filesize.
@@ -457,16 +485,25 @@ class DAO
 				// Remove first two characters from URI string.
 				$fu = substr($fu, 2);
 				// Get host-related ID.
-				$host_id = $this->get_value_id($_SESSION['default_host']);
+				$host_id = $this->get_value_id($_SESSION['default_host']);				
 				// Create PDO object
 				$this->dbConnect();
 				// Build prepared statement.
 				if(($stmt = $this->pdo->prepare("INSERT INTO tbl_file_metadata
-							 					 (file_name, file_size, file_uri_used, user_fk, host_fk)
+							 					 (file_name, file_size, file_uri_used, file_format_fk, user_fk, host_fk)
 								 				 VALUES
-												 (:f, :fs, :fu, :uid, :h)"))) {
+												 (:f, :fs, :fu, :format_id, :uid, :h)"))) {
 					// Execute.
-					if($stmt->execute(array(':f' => $f, ':fs' => $fs, ':fu' => $fu, ':uid' => $uid, ':h' => $host_id))) {
+					if($stmt->execute(array(':f' => $f, ':fs' => $fs, ':fu' => $fu, ':format_id' => $format_id, ':uid' => $uid, ':h' => $host_id))) {
+						// If the file is not JSON.
+						if($format != 'json') {
+							// Get UNIX timestamp.
+							$out_file = $exp[0].".".$format;
+							// Convert file to different format, too.
+							shell_exec($variable->doc_root.$variable->python_utilities_dir.'convert_formats.py '.$variable->doc_root.$variable->download_dir.$f." -o ".$variable->doc_root.$variable->download_dir.$out_file." -t ".$format);
+							// Insert out-file metadata.
+							$this->insert_file_metadata($out_file, 'json');
+						}
 						// Set.
 						$r = TRUE;
 					}

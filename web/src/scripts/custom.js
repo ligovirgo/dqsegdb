@@ -112,15 +112,18 @@ function retrieve_segments() {
 	// Get GPS start and stop times.
 	s = $("#gps_start_time").val();
 	e = $("#gps_stop_time").val();
+	// Get file format ID.
+	format = $('input[name=format]:checked', '#frm_query_server').val();
 	// Hide button and show message.
 	$("#divForsubmit_segment_form").fadeOut('fast');
 	$("#img_retrieval_msg").fadeIn('fast');
 	$("#img_retrieval_msg").css("visibility", "visible");
 	// Update version div.
-	$.get("scripts/actions.php?req=retrieve_segments&s=" + s + "&e=" + e, function(r) {
+	$.get("scripts/actions.php?req=retrieve_segments&s=" + s + "&e=" + e + "&format=" + format, function(r) {
 		// If result retrieved
 		if(r != 0) {
-			alert(r);
+			// Re-direct.
+			window.open(r, '_self');
 		}
 		// Show button and hide message.
 //		$("#divForsubmit_segment_form").css("visibility", "visible");
@@ -202,6 +205,7 @@ function update_payloads(c) {
 	});
 }
 
+// Set file format PHP session.
 function set_format(format_id) {
         // Set session.
         $.get("scripts/actions.php?req=set_format&f=" + format_id, function() {
