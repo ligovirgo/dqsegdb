@@ -422,7 +422,7 @@ class GetServerData {
                 // Looping format array to create format_inputs
                 foreach($format_array as $format_id => $format) {
                     // add to format_inputs
-                    $format_inputs .= "<input type=\"radio\" name=\"format_id\" id=\"format_id\" value=\"" . $format_id . "\">" . $format;
+                    $format_inputs .= "<input type=\"radio\" name=\"format_id\" id=\"format_id\" class=\"radio_format\" value=\"" . $format_id . "\">" . $format;
                 }
 
 		$this->query_form .= $structure->get_form_structure('Output Format', $format_inputs, NULL);

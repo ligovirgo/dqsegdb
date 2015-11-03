@@ -332,6 +332,15 @@ line
 }
 
 /*******************
+** Radio Button
+*****************/
+.radio_format
+{
+        position: relative;
+        top: 3px;
+}
+
+/*******************
 ** Query results **
 *****************/
 #tbl_query_results, #tbl_flag_statistics, #tbl_dataset_info, #tbl_test_results {
