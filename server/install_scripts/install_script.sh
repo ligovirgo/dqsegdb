@@ -8,6 +8,8 @@ yum -y install httpd
 # Install Apache WSGI module.
 yum -y install mod_wsgi
 
+yum -y install mod_ssl
+
 # Start Apache server.
 chkconfig httpd on
 /etc/init.d/httpd start

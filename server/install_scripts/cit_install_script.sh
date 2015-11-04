@@ -31,6 +31,8 @@ chkconfig mysqld on
 # Install PHP (for web interface).
 yum -y install php php-mysql
 
+yum -y install mod_ssl
+
 # Install pyodbc library for Python. N.B. This also installs unixODBC as a
 # dependency.
 yum -y install pyodbc
@@ -104,7 +106,7 @@ yum -y install m2crypto
 # Setup ODBC Data Source Name (DSN)
 echo "[DQSEGDB]
 DRIVER=MySQL
-DATABASE=dqsegdb
+DATABASE=dqsegdb-backup
 USER=dqsegdb_user
 PASSWORD=Q6a6jS6L63RtqnDm" >> /etc/odbc.ini
 
@@ -118,6 +120,10 @@ mv /etc/phpMyAdmin/config.inc.php /etc/phpMyAdmin/config.inc.php.bck.$(date +%y%
 rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/phpMyAdmin/config.inc.php .
 
 # Fix default httpd/conf dir
+mv /etc/httpd/conf /etc/httpd/conf.bck.$(date +%y%m%d)
+cd /etc/httpd
+rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/httpd/conf .
+
 mv /etc/init.d/httpd /etc/init.d/httpd.bck.$(date +%y%m%d)
 cd /etc/init.d/
 rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/init.d/httpd .
