@@ -6,6 +6,7 @@
 
 // Get libraries.
 require_once('DAO.php');
+require_once('Files.php');
 require_once('GetServerData.php');
 require_once('GetStructure.php');
 require_once('InitVar.php');
@@ -25,12 +26,17 @@ class JSAction {
 	private function getReqResponse() {
 		// Instantiate.
 		$dao = new DAO();
+		$file = new Files();
 		$serverdata = new GetServerData();
 		$structure = new GetStructure();
 		$variable = new Variables();
 		// Get admin type.
 		$variable->getReq();
-			// Get query server form.
+		// Get app variables.
+		$variable->get_app_variables();
+		// Get file-related variables.
+		$variable->get_file_related_variables();
+		// Get query server form.
 		if($variable->req == 'update_div_query_server') {
 			// If IFO passed.
 			if(isset($_GET['ifo'])) {
@@ -46,8 +52,6 @@ class JSAction {
 		}
 		// Build an individual JSON payload.
 		elseif($variable->req == 'build_individual_json_payload') {
-			// Get file-related variables.
-			$variable->get_file_related_variables();
 			// Reset arrays.
 			unset($_SESSION['uri_deselected']);
 			$_SESSION['uri_deselected'] = array();
@@ -57,23 +61,21 @@ class JSAction {
 			$data = $serverdata->retrieve_segments(NULL, NULL);
 			// If JSON passed.
 			if(!empty($data)) {
+				// Set format.
+				$format = 'json';
 				// Set filename.
-				$f = time().'.json';
-				// If put to file successful.
-				if(file_put_contents($variable->doc_root.$variable->download_dir.$f, $data)) {
-	                // Get default format key from db
-	                $format_array = $dao->get_specific_value_by_group_and_add_int(4,1);
+				$in_file = time().'.'.$format;
+				// Make JSON file.
+				if($file->make_json_file($in_file, $data)) {
 					// Insert file metadata to database.
-					$dao->insert_file_metadata($f, reset($format_array));
+	                $dao->insert_file_metadata($in_file, $format);
 					// Set return.
-					$this->document = $variable->download_dir.$f;
+					$this->document = $variable->download_dir.$in_file;
 				}
 			}
 		}
 		// Filter JSON payload list.
 		elseif($variable->req == 'filter_json_payloads') {
-			// Get app variables.
-			$variable->get_app_variables();
 			// Set user filter.
 			if(isset($_GET['u'])) {
 				$_SESSION['filter_user'] = $_GET['u'];
@@ -149,23 +151,23 @@ class JSAction {
 		}
 		// If retrieving segments.
 		elseif($variable->req == 'retrieve_segments') {
-			// Get file-related variables.
-			$variable->get_file_related_variables();
 			// Get segment JSON.
 			$data = $serverdata->retrieve_segments($_GET['s'], $_GET['e']);
 			// If JSON passed.
 			if(!empty($data)) {
 				// Get UNIX timestamp.
 				$unix_ts = time();
-				// Set filename, adding file format extension.
-				$f = $unix_ts.'.json';
-				// If put to file successful.
-				if(file_put_contents($variable->doc_root.$variable->download_dir.$f, $data)) {
-					// Insert file metadata to database.
-					$dao->insert_file_metadata($f, $_GET['format']);
+				// Set in-file filename.
+				$in_file = $unix_ts.'.json';
+				// Make JSON file.
+				if($file->make_json_file($in_file, $data)) {
+					// Set out-file filename.
+					$out_file = $unix_ts.'.'.$_GET['format'];
+					// Make non-JSON file.
+					$file->make_non_json_file($in_file, $out_file, $data, $_GET['format']);
+					// Set file to open automatically.
+					$this->document = $variable->download_dir.$unix_ts.'.'.$_GET['format'];
 				}
-				// Set file to open automatically.
-				$this->document = $variable->download_dir.$unix_ts.'.'.$_GET['format'];
 			}
 		}
 		// If re-populating recent query results div.

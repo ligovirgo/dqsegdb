@@ -495,15 +495,6 @@ class DAO
 												 (:f, :fs, :fu, :format_id, :uid, :h)"))) {
 					// Execute.
 					if($stmt->execute(array(':f' => $f, ':fs' => $fs, ':fu' => $fu, ':format_id' => $format_id, ':uid' => $uid, ':h' => $host_id))) {
-						// If the file is not JSON.
-						if($format != 'json') {
-							// Get UNIX timestamp.
-							$out_file = $exp[0].".".$format;
-							// Convert file to different format, too.
-							shell_exec($variable->doc_root.$variable->python_utilities_dir.'convert_formats.py '.$variable->doc_root.$variable->download_dir.$f." -o ".$variable->doc_root.$variable->download_dir.$out_file." -t ".$format);
-							// Insert out-file metadata.
-							$this->insert_file_metadata($out_file, 'json');
-						}
 						// Set.
 						$r = TRUE;
 					}
