@@ -51,6 +51,35 @@ class DAO
 		}
 	}
 	
+	///////////////////
+	// HOST-RELATED //
+	/////////////////
+	
+	// Get default host.
+	public function get_default_host() {
+		// Init.
+		$r = '';
+		// Create PDO object
+		$this->dbConnect();
+		// Build prepared statement.
+		if(($stmt = $this->pdo->prepare("SELECT value_txt
+										 FROM tbl_values
+										 WHERE value_group_fk=2 AND value_second_add_int=1"))) {
+			// Execute.
+			if($stmt->execute()) {
+				// Bind by column name.
+				$stmt->bindColumn('value_txt', $value_txt);
+				// Loop.
+				while($stmt->fetch()) {
+					// Check again.
+					$r = $value_txt;
+				}
+			}
+		}
+		// Return.
+		return $r;
+	}
+	
 	////////////////////////
 	// STRUCTURE-RELATED //
 	//////////////////////

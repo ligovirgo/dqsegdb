@@ -1,7 +1,7 @@
 <?php
 
 // Get libraries.
-require_once('GetServerData.php');
+require_once('DAO.php');
 require_once('GetStructure.php');
 require_once('InitVar.php');
 
@@ -14,8 +14,8 @@ class BuildPage
 	public function __construct()
 	{
 		// Instantiate.
+		$dao = new DAO();
 		$variable = new Variables();
-		$serverdata = new GetServerData();
 		// Set content call ID.
 		$variable->getContentCallID();
 		// If on homepage.
@@ -23,7 +23,7 @@ class BuildPage
 			// If the default host has not been set.
 			if(!isset($_SESSION['default_host']) || empty($_SESSION['default_host'])) {
 				// Set default host.
-				$_SESSION['default_host'] = $serverdata->get_quickest_host();
+				$_SESSION['default_host'] = $dao->get_default_host();
 			}
 		}
 		// Instantiate.

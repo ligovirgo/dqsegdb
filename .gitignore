@@ -3,6 +3,7 @@
 /dist
 /dqsegdb.egg-info
 /dqsegdb/version.py
+server/db/db_utils/component_interface_data_integrity_test_suite/src/.project
 server/src/.project
 server/src/.pydevproject
 web/src/.buildpath
