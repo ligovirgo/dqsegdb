@@ -2,9 +2,9 @@
 # Set server version number.
 #export SERVER_VERSION='2.1.9'
 
-rsync -avP segments.ligo.org:.bashrc .
-rsync -avP segments.ligo.org:.pythonrc .
-rsync -avP segments.ligo.org:.vimrc .
+rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:.bashrc .
+rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:.pythonrc .
+rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:.vimrc .
 
 yum -y install git
 yum -y install ecp-cookie-init
@@ -59,13 +59,12 @@ mkdir src
 cd src
 
 # Add server files.
+cd ~/
 git clone https://github.com/ligovirgo/dqsegdb.git
 #curl http://10.20.5.14/repos/segdb/dqsegdb/$SERVER_VERSION/src.tar > src.tar
 #mv src.tar /opt/dqsegdb/python_server/src/
 cd /opt/dqsegdb/python_server/src/
 cp ~/dqsegdb/server/src/* .
-cd /opt/dqsegdb/python_server/src
-#tar -xvf src.tar 
 
 # Change dir.
 cd /root
@@ -80,12 +79,12 @@ echo "Alias /dqsegdb_web /usr/share/dqsegdb_web" >> /etc/httpd/conf.d/dqsegdb_we
 #curl http://10.20.5.14/repos/segdb/dqsegdb/dqsegdb5_example.conf > dqsegdb.conf
 #/bin/cp dqsegdb.conf /etc/httpd/conf.d/
 
-cd ~
-rsync -avP sugar.phy.syr.edu:/home/rpfisher/dqsegdb5_backups_Jul272015 .
+#cd ~
+#rsync -avP sugar.phy.syr.edu:/home/rpfisher/dqsegdb5_backups_Jul272015 .
 
 cd /etc/httpd/
 mv conf.d conf.d.bck.$(date +%y%m%d)
-rsync -avP segments-backup.ligo.org:/etc/httpd/conf.d .
+rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/httpd/conf.d .
 
 int_addr=`ifconfig eth0 |sed -n 's/.*inet addr:\([0-9\.]*\).*/\1/p'`
 
@@ -100,7 +99,7 @@ sed -i "s/131\.215\.113\.158/${ext_addr}/g" /etc/httpd/conf.d/dqsegdb.conf
 sed -i "s/10\.14\.0\.105/${int_addr}/g" /etc/httpd/conf.d/dqsegdb.conf
 
 # Install M2Crypto library.
-yum -y install M2Crypto
+yum -y install m2crypto
 
 # Setup ODBC Data Source Name (DSN)
 echo "[DQSEGDB]
@@ -110,18 +109,18 @@ USER=dqsegdb_user
 PASSWORD=Q6a6jS6L63RtqnDm" >> /etc/odbc.ini
 
 # Install repo for phpMyAdmin.
-yum install http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+yum -y install http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 
 # Install phpMyAdmin
 yum -y install phpmyadmin
-cd ~/dqsegdb5_backups_Jul272015/
+cd /etc/phpMyAmin
 mv /etc/phpMyAdmin/config.inc.php /etc/phpMyAdmin/config.inc.php.bck.$(date +%y%m%d)
-cp config.inc.php /etc/phpMyAdmin/
+rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/phpMyAdmin/config.inc.php .
 
 # Fix default httpd/conf dir
 mv /etc/init.d/httpd /etc/init.d/httpd.bck.$(date +%y%m%d)
 cd /etc/init.d/
-rsync -avP segments.ligo.org:/etc/init.d/httpd .
+rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/init.d/httpd .
 
 # Import data and create main database.
 #curl http://10.20.5.14/repos/segdb/dqsegdb/dqsegdb.sql > dqsegdb.sql
@@ -140,7 +139,7 @@ mysql -e "GRANT SELECT, INSERT, UPDATE ON dqsegdb.* TO 'dqsegdb_user'@'localhost
 mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'admin'@'localhost'"
 
 # Try to import a backup of primary database
-rsync -avP segments-backup.ligo.org:bin ~/
+rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:bin ~/
 cd ~/bin
 /bin/bash populate_from_backup.sh
 
