@@ -13,6 +13,8 @@ class Variables {
 	public $payloads_to_display;
 	public $payloads_to_display_on_homepage;
 	public $rts_to_display;
+	public $payloads_page_counter_display_diff;
+	public $rts_page_counter_display_diff;
 	public $default_filter_start_page;
 	public $default_rts_filter_start_page;
 	
@@ -39,6 +41,8 @@ class Variables {
 		$this->payloads_to_display = 20;
 		$this->payloads_to_display_on_homepage = 5;
 		$this->rts_to_display = 30;
+		$this->payloads_page_counter_display_diff = 5;
+		$this->rts_payloads_page_counter_display_diff = 5;
 		$this->default_filter_start_page = 1;
 		$this->default_rts_filter_start_page = 1;
 	}

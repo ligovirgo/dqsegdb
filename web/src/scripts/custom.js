@@ -131,14 +131,14 @@ function retrieve_segments() {
 		$("#img_retrieval_msg").fadeOut('fast');
 		$("#img_retrieval_msg").css("visibility", "hidden");
 		// Re-build the Recent Query Results list.
-		rebuild_recent_query_results_list();
+		rebuild_recent_query_results_list(1);
 	});
 }
 
 // Re-build the Recent Query Results list.
-function rebuild_recent_query_results_list() {
+function rebuild_recent_query_results_list(home) {
 	// Update version div.
-	$.get("scripts/actions.php?req=get_recent_query_results", function(r) {
+	$.get("scripts/actions.php?req=get_recent_query_results&home=" + home, function(r) {
 		// If results retrieved.
 		if(r != 0) {
 			$('#div_payload_filter_form').html(r);
@@ -146,12 +146,12 @@ function rebuild_recent_query_results_list() {
 	});
 }
 
-// Set the HWDB filter start page number.
+// Set the filter start page number.
 function set_filter_start_page_no(p) {
 	// Set mode.
 	$.get("scripts/actions.php?req=set_filter_start_page_no&p=" + p, function() {
 		// Re-build the Recent Query Results list.
-		rebuild_recent_query_results_list();
+		rebuild_recent_query_results_list(0);
 	});
 }
 

@@ -676,6 +676,11 @@ class DAO
 			$limit_s = $s-1;
 			// Output totals.
 			$r .= $structure->tabStr."<p>Displaying <strong>".$s."</strong> to <strong>".$e."</strong> of <strong>".$tot_output."</strong> payloads</p>\n";
+			// Output Start link.
+			if($_SESSION['filter_start_page'] > ($variable->payloads_page_counter_display_diff+1)) {
+				// Set Start link.
+				$r .= $structure->tabStr."<p id=\"filter_page_no_start\" class=\"filter_page_no\" onclick=\"set_filter_start_page_no(1)\">START</p>\n";
+			}
 			// Set pages.
 			for($i=1; $i<=$t; $i++) {
 				// Set formatted page.
@@ -684,8 +689,22 @@ class DAO
 				if($i == $_SESSION['filter_start_page']) {
 					$i_fmt = "<strong>".$i."</strong>";
 				}
-				// Add pages to output.
-				$r .= $structure->tabStr."<p id=\"filter_page_no_start\" class=\"filter_page_no\" onclick=\"set_filter_start_page_no(".$i.")\">".$i_fmt."</p>\n";
+				// Display those pages within n either way of the existing page number.
+				if(($_SESSION['filter_start_page'] > $variable->payloads_page_counter_display_diff
+					&& $i >= ($_SESSION['filter_start_page']-$variable->payloads_page_counter_display_diff)
+					&& $i <= ($_SESSION['filter_start_page']+$variable->payloads_page_counter_display_diff))
+				|| ($_SESSION['filter_start_page'] <= $variable->payloads_page_counter_display_diff
+					&& $i <= ($variable->payloads_page_counter_display_diff*2))
+				|| ($_SESSION['filter_start_page'] >= $t-$variable->payloads_page_counter_display_diff
+					&& $i >= $t-($variable->payloads_page_counter_display_diff*2))) {
+					// Add pages to output.
+					$r .= $structure->tabStr."<p id=\"filter_page_no_start\" class=\"filter_page_no\" onclick=\"set_filter_start_page_no(".$i.")\">".$i_fmt."</p>\n";
+				}
+			}
+			// Output End link.
+			if($_SESSION['filter_start_page'] < ($i-$variable->payloads_page_counter_display_diff-1)) {
+				// Set End link.
+				$r .= $structure->tabStr."<p id=\"filter_page_no_start\" class=\"filter_page_no\" onclick=\"set_filter_start_page_no(".$t.")\">END</p>\n";
 			}
 		}
 		// Set limit.

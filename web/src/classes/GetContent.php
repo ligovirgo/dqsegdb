@@ -525,6 +525,8 @@ class GetContent {
 		$s .= "		<option value=\"0\"".$sel."></option>\n";
 		// Get user array.
 		$a = $dao->get_value_array(3);
+		// Sort the array.
+		sort($a);
 		// If user array has been returned.
 		foreach($a as $user_id => $username) {
 			// Set selected.

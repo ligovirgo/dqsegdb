@@ -174,8 +174,15 @@ class JSAction {
 		elseif($variable->req == 'get_recent_query_results') {
 			// Get application variables.
 			$variable->get_app_variables();
+			// Set default limit.
+			$limit = $variable->payloads_to_display;
+			// If on homepage.
+			if($_GET["home"]) {
+				// Set limit.
+				$limit = $variable->payloads_to_display_on_homepage;
+			}
 			// Get recent results.
-			$this->document = $dao->get_recent_query_results($variable->payloads_to_display_on_homepage, TRUE, 3);
+			$this->document = $dao->get_recent_query_results($limit, $_GET['home'], 3);
 		}
 		// If providing option to change host.
 		elseif($variable->req == 'get_current_host_box') {
@@ -214,8 +221,8 @@ class JSAction {
 		elseif($variable->req == 'set_filter_start_page_no') {
 			$_SESSION['filter_start_page'] = $_GET['p'];
 		}
-                // Setting session memory for format choice
-                elseif($variable->req == 'set_format') {
+        // Setting session memory for format choice
+        elseif($variable->req == 'set_format') {
 			$_SESSION['default_output_format'] = $_GET['f'];
 		}
         // Output response.
