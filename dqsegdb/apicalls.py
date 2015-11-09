@@ -711,14 +711,17 @@ def setupSegment_md(filename,xmlparser,lwtparser,debug):
         segment_md.table.keys()
     return segment_md
 
-def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=True,debug=True,threads=1,testing_options={}):
+def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=False,debug=True,threads=1,testing_options={}):
     """ 
     Inserts multiple dqxml files of data into the DQSEGDB.
+
+    Input:
     - filenames is a list of string filenames for  DQXML files.
-    - hackDec11 is used to turn off good features that the server doesn't
-    yet support.
+    - hackDec11 is deprecated (always should be false): This was used to differentiate function against different server APIs before we used numbering an responses to make decisions. 
+    - testing_options is a dictionary including (optionally):offset(int),synchronize(time in 'HH:MM' format (string))
+    
+    Output:
     returns True if it completes sucessfully
-    - options is a dictionary including (optionally):offset(int),synchronize(time in 'HH:MM' format (string))
     """
     logger.info("Beginning call to InsertMultipleDQXMLFileThreaded.  This message last updated April 14 2015, Ciao da Italia!")
     from threading import Thread
