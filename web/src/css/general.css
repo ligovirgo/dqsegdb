@@ -375,3 +375,14 @@ line
 	color: #406793;
 	text-align: left;
 }
+
+/**********
+** code **
+********/
+p.code {
+	font-family: "Courier New", Courier, monospace;
+	text-align: left;
+	padding: 10px;
+	border: 1px solid #7DA7DC;
+	background: #ECF2F9;
+}
