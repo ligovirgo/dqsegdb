@@ -165,8 +165,8 @@ class JSAction {
 					$out_file = $unix_ts.'.'.$_GET['format'];
 					// Make non-JSON file.
 					$file->make_non_json_file($in_file, $out_file, $data, $_GET['format']);
-					// Set file to open automatically.
-					$this->document = $variable->download_dir.$unix_ts.'.'.$_GET['format'];
+					// Set file to open automatically, replacing underscre with point, so as to enable JSON data to to be formatted in browser.
+					$this->document = $variable->download_dir.$unix_ts.'.'.str_replace('_', '.', $_GET['format']);
 				}
 			}
 		}
