@@ -120,14 +120,14 @@ def parse_command_line():
 
 if __name__ == "__main__":
     args = parse_command_line()
-    if args.type != 'vdb' and args.type != 'ascii' and args.type != 'coalesced':
-        raise InputError('Please provide type of vdb or ascii or coalesced')
+    if args.type != 'vdb' and args.type != 'ascii' and args.type != 'coalesced_json':
+        raise InputError('Please provide type of vdb or ascii or coalesced_json')
     json_dict=open_json_file(args.jsonfile)
     if args.type == 'vdb':
         res_file=generated_vdb_ascii(json_dict,args.output)
     elif args.type == 'ascii':
         res_file=generated_ascii(json_dict,args.output)
-    elif args.type == 'coalesced':
+    elif args.type == 'coalesced_json':
         res_file=generated_json(json_dict,args.output)
     print "Output file %s created" % res_file
 
