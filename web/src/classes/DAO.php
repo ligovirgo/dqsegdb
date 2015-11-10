@@ -504,8 +504,12 @@ class DAO
 				$format_id = $this->get_value_id($exp[1]);
 				// Set args.
 				$args = $serverdata->get_uri_args($_SESSION['default_gps_start'], $_SESSION['default_gps_stop']);
-				// Get filesize.
-				$fs = filesize($variable->doc_root.$variable->download_dir.$f);
+                                // Get filesize.
+                                //if(!preg_match("/coalesced_json/",$f){
+				//    $fs = filesize($variable->doc_root.$variable->download_dir.$f);
+                                //} else {
+                                $fs = filesize($variable->doc_root.$variable->download_dir.str_replace("_",".",$f));
+                                //}
 				// Loop through URI used in file creation and add to history.
 				foreach($_SESSION['uri_deselected'] as $i => $uri) {
 					// Build string.

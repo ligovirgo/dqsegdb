@@ -73,7 +73,10 @@ def generated_json(json_dict,filepath):
     known_segments.coalesce()
     known_json=convert_json_list_to_segmentlist(known_segments)
     res_dict['known']=known_json
-
+    #print filepath
+    filepath=".".join(["_".join(filepath.split("_")[0:-1]),filepath.split("_")[-1:][0]])
+    #filepath='.'.join(filepath.split('_')[)
+    #print filepath
     output_fileh=open(filepath,'w+') 
     #output_fileh.writelines(active_segments_string) 
     json_output_string=json.dumps(res_dict)
