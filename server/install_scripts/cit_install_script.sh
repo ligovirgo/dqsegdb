@@ -149,6 +149,20 @@ rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:bin ~/
 cd ~/bin
 /bin/bash populate_from_backup.sh
 
+# move certs to appopriate locations, as referenced by /etc/httpd/conf.d/dqsegdb
+cp /etc/pki/tls/certs/localhost.crt /etc/pki/tls/certs/localhost.crt.old.$(date +%y%m%d)
+cp /etc/pki/tls/private/localhost.key /etc/pki/tls/private/localhost.key.bck.$(date +%y%m%d)
+# NOTE:  NEXT TWO LINES ASSUME KEY/CERT PAIR ARE IN LOCATION /ETC/GRID-SECURITY!
+cp /etc/grid-security/*.ligo.org.pem /etc/pki/tls/certs/localhost.crt 
+cp /etc/grid-security/*.ligo.org.key /etc/pki/tls/private/localhost.key
+
+# Get all cert identifier packages:
+yum -y install cilogon-ca-certs
+yum -y install osg-ca-certs
+yum -y install ligo-ca-certs
+
 # Start Apache server.
 chkconfig httpd on
 /etc/init.d/httpd restart
+
+
