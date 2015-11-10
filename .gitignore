@@ -4,10 +4,14 @@
 /dqsegdb.egg-info
 /dqsegdb/version.py
 server/db/db_utils/component_interface_data_integrity_test_suite/src/.project
+server/log_file_analysis_tool/src/.buildpath
+server/log_file_analysis_tool/src/.project
+server/log_file_analysis_tool/src/output/
 server/src/.project
 server/src/.pydevproject
 web/src/.buildpath
 web/src/.project
+web/src/.pydevproject
 .DS_Store
 *.pyc
 *.so

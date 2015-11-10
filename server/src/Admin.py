@@ -364,7 +364,7 @@ class AdminHandle:
         # Instantiate.
         dao = DAO.DAOHandle();
         # Set resource array.
-        d = {"results" : ['/report/flags', '/report/coverage', '/report/known', '/report/active', '/report/all', '/report/db']}
+        d = {"results" : ['/report/flags', '/report/coverage', '/report/known', '/report/active', '/report/all', '/report/db', '/report/process']}
         # Get IFO array.
         ifos = dao.get_value_list(1, req_method, full_uri)
         # Loop IFO array.

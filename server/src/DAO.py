@@ -580,7 +580,7 @@ class DAOHandle:
             try:
                 # Get.
                 cur.execute("""
-                            SELECT tbl_processes.process_id, dq_flag_version_uri, dq_flag_version_last_modifier, insertion_time, value_txt AS 'auth_user', affected_active_data_start, affected_active_data_stop, affected_active_data_segment_total, affected_known_data_start, affected_known_data_stop, affected_known_data_segment_total, pid, process_full_name, fqdn, process_args, process_time_started 
+                            SELECT tbl_processes.process_id, process_comment, dq_flag_version_last_modifier, insertion_time, value_txt AS 'auth_user', affected_active_data_start, affected_active_data_stop, affected_active_data_segment_total, affected_known_data_start, affected_known_data_stop, affected_known_data_segment_total, pid, process_full_name, fqdn, process_args, process_time_started 
                             FROM tbl_processes
                             LEFT JOIN tbl_dq_flag_versions ON tbl_processes.dq_flag_version_fk = tbl_dq_flag_versions.dq_flag_version_id
                             LEFT JOIN tbl_values ON tbl_processes.user_fk = tbl_values.value_id 
@@ -594,7 +594,7 @@ class DAOHandle:
                 # Loop.
                 for row in cur:
                     # Set.
-                    a.append({"insertion_metadata" : {"uri" : row.dq_flag_version_uri,
+                    a.append({"insertion_metadata" : {"comment" : row.process_comment,
                                                       "timestamp" : int(row.insertion_time),
                                                       "auth_user" : self.get_value_detail_from_ID(row.dq_flag_version_last_modifier, req_method, full_uri),
                                                       "insert_active_data_start" : int(row.affected_active_data_start),
