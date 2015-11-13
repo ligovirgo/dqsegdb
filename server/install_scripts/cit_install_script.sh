@@ -58,7 +58,6 @@ chmod 777 logs
 #mkdir cache
 #chmod 777 cache
 mkdir src
-cd src
 
 # Add server files.
 cd ~/
@@ -74,8 +73,6 @@ cd /root
 # Add WSGI script alias to Apache configuration file.
 echo "WSGIScriptAlias / /opt/dqsegdb/python_server/src/application.py" >> /etc/httpd/conf.d/wsgi.conf
 
-# Add Web Interface configuration.
-echo "Alias /dqsegdb_web /usr/share/dqsegdb_web" >> /etc/httpd/conf.d/dqsegdb_web.conf
 
 # Configure application Apache:
 #curl http://10.20.5.14/repos/segdb/dqsegdb/dqsegdb5_example.conf > dqsegdb.conf
@@ -103,6 +100,7 @@ sed -i "s/10\.14\.0\.105/${int_addr}/g" /etc/httpd/conf.d/dqsegdb.conf
 # Install M2Crypto library.
 yum -y install m2crypto
 
+### Note:  this assumes your db name will be dqsegdb-backup for this server!!
 # Setup ODBC Data Source Name (DSN)
 echo "[DQSEGDB]
 DRIVER=MySQL
@@ -165,4 +163,8 @@ yum -y install ligo-ca-certs
 chkconfig httpd on
 /etc/init.d/httpd restart
 
+#### Optional:
+
+# Add Web Interface configuration.
+echo "Alias /dqsegdb_web /usr/share/dqsegdb_web" >> /etc/httpd/conf.d/dqsegdb_web.conf
 
