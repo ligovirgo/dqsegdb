@@ -17,6 +17,10 @@ class Variables {
 	public $rts_page_counter_display_diff;
 	public $default_filter_start_page;
 	public $default_rts_filter_start_page;
+	public $default_backup_filter_start_page;
+	public $backups_to_display;
+	public $backups_to_display_on_homepage;
+	public $backups_page_counter_display_diff;
 	
 	public $host;
 	public $host_rts;
@@ -38,13 +42,17 @@ class Variables {
 		// Application-related variables.
 		$this->app_version = "1.9";
 		$this->max_selectable_flags = 10;
+		$this->default_filter_start_page = 1;
 		$this->payloads_to_display = 20;
 		$this->payloads_to_display_on_homepage = 5;
-		$this->rts_to_display = 30;
 		$this->payloads_page_counter_display_diff = 5;
-		$this->rts_payloads_page_counter_display_diff = 5;
-		$this->default_filter_start_page = 1;
+		$this->rts_to_display = 30;
 		$this->default_rts_filter_start_page = 1;
+		$this->rts_payloads_page_counter_display_diff = 5;
+		$this->default_backup_filter_start_page = 1;
+		$this->backups_to_display = 30;
+		$this->backups_to_display_on_homepage = 5;
+		$this->backups_page_counter_display_diff = 5;
 	}
 	
 	public function initVariables() {
@@ -82,10 +90,10 @@ class Variables {
 	}
 
 	// Initialise sessions.
-        public function initialise_sessions() {
-                $dao = new DAO();
-                // Get default format key from db
-                $format_array = $dao->get_specific_value_by_group_and_add_int(4,1);
+    public function initialise_sessions() {
+       	$dao = new DAO();
+        // Get default format key from db
+        $format_array = $dao->get_specific_value_by_group_and_add_int(4,1);
 		// Get app variables.
 		$this->get_app_variables();
 		// Set sessions.
@@ -115,6 +123,9 @@ class Variables {
 		}
 		if(!isset($_SESSION['rts_filter_start_page'])) {
 			$_SESSION['rts_filter_start_page'] = $this->default_rts_filter_start_page;
+		}
+    	if(!isset($_SESSION['backup_filter_start_page'])) {
+			$_SESSION['backup_filter_start_page'] = $this->default_backup_filter_start_page;
 		}
 		if(!isset($_SESSION['uri_deselected'])) {
 			$_SESSION['uri_deselected'] = array();

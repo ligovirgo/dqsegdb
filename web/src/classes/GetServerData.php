@@ -16,40 +16,43 @@ class GetServerData {
 	public function get_current_server_status($content_id) {
 		// Init.
 		$this->server_status = NULL;
-		$g = NULL;
-		// Instantiate.
-		$dao = new DAO();
-		// Get host array.
-		$host_array = $dao->get_value_array(2);
-		// Loop host array.
-		foreach($host_array as $key=> $host) {
-			// If currently in use.
-			if($dao->get_value_add_int($host)) {
-				// Get additional text available for this host.
-				$add_info = $dao->get_value_add_info($host);
-				// Set host name.
-				$host_name = $this->set_host_name($host, $add_info);
-				// Set start time.
-				$start_time = microtime(TRUE);
-				$g = @file_get_contents($host.'/dq');
-				// Get file contents.
-				if(!empty($g)) {
+		// If in the right area.
+		if($content_id == 30) {
+			$g = NULL;
+			// Instantiate.
+			$dao = new DAO();
+			// Get host array.
+			$host_array = $dao->get_value_array(2);
+			// Loop host array.
+			foreach($host_array as $key=> $host) {
+				// If currently in use.
+				if($dao->get_value_add_int($host)) {
+					// Get additional text available for this host.
+					$add_info = $dao->get_value_add_info($host);
+					// Set host name.
+					$host_name = $this->set_host_name($host, $add_info);
+					// Set start time.
+					$start_time = microtime(TRUE);
+					$g = @file_get_contents($host.'/dq');
 					// Get file contents.
-					$a = json_decode($g, true);
-					// Set stop time.
-					$stop_time = microtime(TRUE);
-					// Set elapsed time.
-					$elapsed_time = round($stop_time-$start_time, 5);
-					// If returned contents are array.
-					if(is_array($a)) {
-						// Include with p tag.
-						$this->server_status .= '<p><img src="images/green_arrow.png" alt="" title="" id="green_arrow_virgo" class="green_arrow" />'.$host_name.' - instance responding in '.$elapsed_time.' seconds</p>';
+					if(!empty($g)) {
+						// Get file contents.
+						$a = json_decode($g, true);
+						// Set stop time.
+						$stop_time = microtime(TRUE);
+						// Set elapsed time.
+						$elapsed_time = round($stop_time-$start_time, 5);
+						// If returned contents are array.
+						if(is_array($a)) {
+							// Include with p tag.
+							$this->server_status .= '<p><img src="images/green_arrow.png" alt="" title="" id="green_arrow_virgo" class="green_arrow" />'.$host_name.' - instance responding in '.$elapsed_time.' seconds</p>';
+						}
 					}
-				}
-				// Otherwise.
-				else {
-					// Include with p tag.
-					$this->server_status .= '<p><img src="images/green_faded_arrow.png" alt="" title="" id="green_arrow_virgo" class="green_arrow" />'.$host_name.' - instance currently unavailable</p>';
+					// Otherwise.
+					else {
+						// Include with p tag.
+						$this->server_status .= '<p><img src="images/green_faded_arrow.png" alt="" title="" id="green_arrow_virgo" class="green_arrow" />'.$host_name.' - instance currently unavailable</p>';
+					}
 				}
 			}
 		}
@@ -415,21 +418,24 @@ class GetServerData {
 		// Add remaining fields, starting with GPS.
 		$gps_inputs = "Start: <input id=\"gps_start_time\" class=\"inp_med\" value=\"".$_SESSION['default_gps_start']."\" /> End: <input id=\"gps_stop_time\" class=\"inp_med\" value=\"".$_SESSION['default_gps_stop']."\" />";
 		$this->query_form .= $structure->get_form_structure('GPS Times', $gps_inputs, NULL);
-                // Setting up file format selection 
-                // Pulling list of file formats available from value group 4 from database:
-                $format_inputs="";
-                $format_array = $dao->get_value_array(4);
-                $_SESSION['default_output_format'];
-                // Looping format array to create format_inputs
-                foreach($format_array as $format_id => $format) {
-                    $check = NULL;
-                    if($format_id==$_SESSION['default_output_format']) {
-                        $check = " checked";
-                    }
-                    // add to format_inputs
-                    $format_inputs .= "<input type=\"radio\" name=\"format\" id=\"format\" class=\"radio_format\" onclick=\"set_format(".$format_id.")\" value=\"" . $format . "\"" .$check. ">" . $format;
-                }
-		$this->query_form .= $structure->get_form_structure('Output Format', $format_inputs, NULL);
+        // Setting up file format selection 
+        // Pulling list of file formats available from value group 4 from database:
+        $format_inputs="";
+        $format_array = $dao->get_value_array(4);
+        $_SESSION['default_output_format'];
+        // Looping format array to create format_inputs
+        foreach($format_array as $format_id => $format) {
+        	$check = NULL;
+        	if($format_id==$_SESSION['default_output_format']) {
+        		$check = " checked";
+        	}
+        	// add to format_inputs
+        	$format_inputs .= "<input type=\"radio\" name=\"format\" id=\"format\" class=\"radio_format\" onclick=\"set_format(".$format_id.")\" value=\"" . $format . "\"" .$check. ">" . $format;
+        }
+        // Set help text.
+		$alt_output_format = "<span id=\"span_dq_output_format_options\" class=\"span_frm_info\">- All formats - except 'JSON' - return coalesced segments.</span>";
+		// Get output format form structure.
+        $this->query_form .= $structure->get_form_structure('Output Format', $format_inputs, $alt_output_format);
 		// Set form submit button and retrieving segments message.
 		$button = $structure->get_button('submit_segment_form', 'Retrieve segments', 'frm_query_server', NULL, NULL, 'retrieve_segments()', $tabs, NULL);
 		// Open div.

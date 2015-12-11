@@ -726,6 +726,13 @@ class DAO
 		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&format_ad=".$format_ad."\">File format</a>".$format_ar."</td>\n";
 		$r .= $structure->tabStr."		<td class=\"query_results_hdr\"><a href=\"?c=".$variable->c."&user_ad=".$user_ad."\">User</a>".$user_ar."</td>\n";
 		$r .= $structure->tabStr."	</tr>\n";
+		// Set URI class.
+		$uri_class = NULL;
+		// If on the homepage.
+		if($home) {
+			// Reset URI class.
+			$uri_class = " class=\"a_small\"";
+		}
 		// Build prepared statement.
 		if(($stmt = $this->pdo->prepare("SELECT tbl_file_metadata.*, tbl_values.*, DATE_FORMAT(file_created, '%Y-%m-%d %H:%i') AS 'file_created_fmt', users.username, formats.file_format
 										 FROM tbl_file_metadata
@@ -771,11 +778,13 @@ class DAO
 					$file_size = round($file_size, 1);
 					// Get username.
 					$username = str_replace('@', '<br />@', $this->get_username($user_fk));
+					// Re-set file format, removing underscore.
+					$file_format = str_replace('_', ' ', $file_format);
 					// Set.
 					$r .= $structure->tabStr."	<tr>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$file_created_fmt."</td>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$data."</td>\n";
-					$r .= $structure->tabStr."		<td class=\"query_results".$c."\"><a href=\"".$variable->download_dir.$file_name."\" target=\"_blank\">".str_replace(", ", "<br />\n", $file_uri_used)."</a></td>\n";
+					$r .= $structure->tabStr."		<td class=\"query_results".$c."\"><a href=\"".$variable->download_dir.$file_name."\" target=\"_blank\"".$uri_class.">".str_replace(", ", "<br />\n", $file_uri_used)."</a></td>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$file_size." ".$suffix."B</td>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$file_format."</td>\n";
 					$r .= $structure->tabStr."		<td class=\"query_results".$c."\">".$username."</td>\n";
@@ -797,6 +806,7 @@ class DAO
 	public function get_recent_regression_test_runs($limit, $home, $tabs) {
 		// Init.
 		$r = NULL;
+		$i = 0;
 		$limit_s = 0;
 		$limit_str = NULL;
 		$tot_output = 0;
@@ -936,6 +946,13 @@ class DAO
 					// Set.
 					$c = NULL;
 					$img = NULL;
+					// Set bg.
+					$i++;
+					$c = NULL;
+					if($i == 2) {
+						$c = "_hl";
+						$i = 0;
+					}
 					// If failures were thrown up.
 					if($test_run_failures > 0) {
 						// Set different style call.
@@ -1106,8 +1123,9 @@ class DAO
 		$r .= $structure->tabStr."</table>\n";
 		// Return.
 		return $r;
-	}	
+	}
 	
+
 	/////////////////////////////
 	// USER-RELATED FUNCTIONS //
 	///////////////////////////	
@@ -1215,6 +1233,74 @@ class DAO
 		return $r;
 	}
 	
+	///////////////////////////////
+	// BACKUP-RELATED FUNCTIONS //
+	/////////////////////////////
+	
+	// Get total number of backups available.
+	public function get_backup_total() {
+		// Init.
+		$r = 0;
+		// Create PDO object
+		$this->db_rts_connect();
+		// Build prepared statement.
+		if(($stmt = $this->pdo_rts->prepare("SELECT COUNT(backup_id) AS 'tot'
+										 	 FROM tbl_backups "))) {
+			// Execute.
+			if($stmt->execute()) {
+				// Bind by column name.
+				$stmt->bindColumn('tot', $tot);
+				// Loop.
+				while($stmt->fetch()) {
+					// Set.
+					$r = $tot;
+				}
+			}
+		}
+		// Return.
+		return $r;
+	}
+	
+	// Get backup array.
+	public function get_backup_array($o, $limit_str) {
+		// Init.
+		$a = array();
+		// Create PDO object
+		$this->db_rts_connect();
+		// Build prepared statement.
+		if(($stmt = $this->pdo_rts->prepare("SELECT *, TIMEDIFF(export_time_stop, export_time_start) AS 'export_duration', TIMEDIFF(import_time_stop, import_time_start) AS 'import_duration', ADDTIME(TIMEDIFF(export_time_stop, export_time_start), TIMEDIFF(import_time_stop, import_time_start)) AS 'total_duration'
+										 	 FROM tbl_backups
+										 	 ORDER BY ".$o.$limit_str))) {
+			// Execute.
+			if($stmt->execute()) {
+				// Bind by column name.
+				$stmt->bindColumn('backup_id', $backup_id);
+				$stmt->bindColumn('backup_date', $backup_date);
+				$stmt->bindColumn('export_time_start', $export_time_start);
+				$stmt->bindColumn('export_time_stop', $export_time_stop);
+				$stmt->bindColumn('export_duration', $export_duration);
+				$stmt->bindColumn('import_time_start', $import_time_start);
+				$stmt->bindColumn('import_time_stop', $import_time_stop);
+				$stmt->bindColumn('import_duration', $import_duration);
+				$stmt->bindColumn('total_duration', $total_duration);
+				// Loop.
+				while($stmt->fetch()) {
+					// Set.
+					$a[$backup_id] = array('backup_date' => $backup_date,
+										   'export_time_start' => $export_time_start,
+										   'export_time_stop' => $export_time_stop,
+										   'export_duration' => $export_duration,
+										   'import_time_start' => $import_time_start,
+										   'import_time_stop' => $import_time_stop,
+										   'import_duration' => $import_duration,
+										   'total_duration' => $total_duration);
+				}
+			}
+		}
+		// Return.
+		return $a;
+	}
+
 }
 
 ?>

@@ -104,6 +104,12 @@ a.footer_link:link:hover, a.footer_link:visited:hover
 	color: #CCC;
 }
 
+/*****************
+** Other links **
+***************/
+a.a_small {
+	font-size: 9px;
+}
 /***********
 ** input **
 *********/
@@ -343,7 +349,7 @@ line
 /*******************
 ** Query results **
 *****************/
-#tbl_query_results, #tbl_flag_statistics, #tbl_dataset_info, #tbl_test_results {
+#tbl_query_results, #tbl_flag_statistics, #tbl_dataset_info, #tbl_test_results, #tbl_backup_results {
 	position: relative;
 	width: 100%;
     font-size: 12px;
