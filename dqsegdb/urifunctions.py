@@ -18,6 +18,10 @@ import httplib
 import urlparse
 import urllib2
 import socket
+import M2Crypto
+import calendar
+import time
+import os
 
 #
 # =============================================================================
@@ -419,6 +423,57 @@ Could not find a valid proxy credential.
 LIGO users, please run 'ligo-proxy-init' and try again.
 Others, please run 'grid-proxy-init' and try again.
 """
-
     print >>sys.stderr, msg
 
+def validateProxy(path):
+    """
+    Test that the proxy certificate is RFC 3820
+    compliant and that it is valid for at least
+    the next 15 minutes.
+    """
+
+    # load the proxy from path
+    try:
+        proxy = M2Crypto.X509.load_cert(path)
+    except Exception, e:
+        msg = "Unable to load proxy from path %s : %s" % (path, e)
+        print >>sys.stderr, msg
+        sys.exit(1)
+
+    # make sure the proxy is RFC 3820 compliant
+    # or is an end-entity X.509 certificate
+    try:
+        proxy.get_ext("proxyCertInfo")
+    except LookupError:
+        # it is not an RFC 3820 proxy so check
+        # if it is an old globus legacy proxy
+        subject = proxy.get_subject().as_text()
+        if re.search(r'.+CN=proxy$', subject):
+            # it is so print warning and exit
+            RFCproxyUsage()
+            sys.exit(1)
+
+    # attempt to make sure the proxy is still good for more than 15 minutes
+    try:
+        expireASN1 = proxy.get_not_after().__str__()
+        expireGMT  = time.strptime(expireASN1, "%b %d %H:%M:%S %Y %Z")
+        expireUTC  = calendar.timegm(expireGMT)
+        now = int(time.time())
+        secondsLeft = expireUTC - now
+    except Exception, e:
+        # problem getting or parsing time so just let the client
+        # continue and pass the issue along to the server
+        secondsLeft = 3600
+
+    if secondsLeft <= 0:
+        msg = """\
+Your proxy certificate is expired.
+
+Please generate a new proxy certificate and
+try again.
+"""
+        print >>sys.stderr, msg
+        sys.exit(1)
+
+    # return True to indicate validated proxy
+    return True
