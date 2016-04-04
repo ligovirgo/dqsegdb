@@ -407,9 +407,11 @@ class DAOHandle:
         return e
     
     # Get flag ID.
-    def get_flag_id(self,ifo_id,flag, req_method, full_uri):
+    def get_flag_id(self, ifo_id, flag, req_method, full_uri):
         # Init.
         res = None
+        # Escape the flag wildcards characters.
+        flag = flag.replace('_', '\_')
         # Instantiate objects.
         admin = Admin.AdminHandle()
         try:
