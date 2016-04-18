@@ -7,14 +7,14 @@
 Summary: Client library for DQSegDB
 Name: %{name}
 Version: %{version}
-Release: %{release}
+Release: %{release}%{?dist}
 Source0: %{name}-%{unmangled_version}.tar.gz
 License: GPLv3
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 Requires: python, python-pyRXP, glue >= 1.47
-BuildRequires: python-setuptools, git
+BuildRequires: python-setuptools, git2u
 BuildArch: noarch
 Vendor: Ryan Fisher <ryan.fisher@ligo.org>
 
@@ -33,7 +33,7 @@ python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUIL
 rm -rf $RPM_BUILD_ROOT/dqsegdb.egg-info
 rm -rf $RPM_BUILD_ROOT/etc/dqsegdb-user-env.sh
 rm -rf $RPM_BUILD_ROOT/etc/dqsegdb-user-env.csh
-rm -rf $RPM_BUILD_ROOT/dqsegdb-1.2.2-py2.6.egg-info
+rm -rf $RPM_BUILD_ROOT/dqsegdb-${version}-py*.egg-info
 
 %clean
 rm -rf $RPM_BUILD_ROOT
