@@ -7,9 +7,11 @@ Please see documentation at:
 
 https://ldas-jobs.ligo.caltech.edu/~rfisher/dqsegdb_doc/
 
-Currently must be used from CIT (ex: ldas-pcdev1.ligo.caltech.edu) or sugar (ex: sugar.phy.syr.edu) head nodes.
+The DQSEGDB package should be installed and available for use on all LIGO Tier 1 and 2 clusters.  
 
-To use the new client tools, run the following commands:
+Within this project, the bdist directory includes complete (including dependencies) distributible python executables, built with PyInstaller.
+
+To use the new client tools as a user, run the following commands:
 
 ```
 # Clone the repository:
