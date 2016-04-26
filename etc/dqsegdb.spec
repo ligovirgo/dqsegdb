@@ -14,7 +14,7 @@ Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 Requires: python, python-pyRXP, glue >= 1.47
-BuildRequires: python-setuptools, git2u
+BuildRequires: python-setuptools, git
 BuildArch: noarch
 Vendor: Ryan Fisher <ryan.fisher@ligo.org>
 
