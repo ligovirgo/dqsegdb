@@ -400,7 +400,8 @@ if __name__ == '__main__':
         # Build json output file:
         out_dict={}
         out_dict['Active Results']=active_results
-        out_dict['Known but Inactive Results']=known_results
+        if not active_only:
+            out_dict['Known but Inactive Results']=known_results
         json_string_out=json.dumps(out_dict)
         fh=open(options.output_file,'w')
         fh.write(json_string_out)
