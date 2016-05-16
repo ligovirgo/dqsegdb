@@ -37,6 +37,18 @@ class DQSegDBInstall(Install):
     shenv = os.path.join('etc', '%s-user-env.sh' % PACKAGENAME)
     cshenv = os.path.join('etc', '%s-user-env.csh' % PACKAGENAME)
 
+    def finalize_options(self):
+        Install.finalize_options(self)
+        try:
+            etc = zip(*self.distribution.data_files)[0].index('etc')
+        except TypeError:
+            self.distribution.data_files = [('etc', [])]
+            etc = 0
+        except (ValueError, IndexError):
+            self.distribution.data_files.append(('etc', []))
+            etc = 0
+        self.data_files = self.distribution.data_files[etc][1]
+
     def _get_install_paths(self):
         """Internal utility to get install and library paths for install.
         """
@@ -66,6 +78,7 @@ class DQSegDBInstall(Install):
             print('export PATH', file=env)
             print('PYTHONPATH=%s:${PYTHONPATH}' % (pythonpath), file=env)
             print('export PYTHONPATH', file=env)
+        self.data_files.append(fp)
 
     def write_env_csh(self, fp=cshenv):
         """Write the shell environment script for DQSegDB.
@@ -80,6 +93,7 @@ class DQSegDBInstall(Install):
             print('setenv PATH %s:${PATH}' % (installpath), file=env)
             print('setenv PYTHONPATH %s:${PYTHONPATH}' % (pythonpath),
                   file=env)
+        self.data_files.append(fp)
 
     def run(self):
         self.write_env_sh()
@@ -119,7 +133,6 @@ setup(name=PACKAGENAME,
       packages=packagenames,
       ext_modules=[],
       scripts=scripts,
-      data_files=[('etc', [DQSegDBInstall.shenv, DQSegDBInstall.cshenv])],
       install_requires=['pyRXP', 'lscsoft-glue>=1.55.0', 'pyOpenSSL'],
       provides=[PACKAGENAME],
       author=AUTHOR,
