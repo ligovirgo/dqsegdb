@@ -58,6 +58,7 @@ class DAOHandle:
         res = 0
         # Instantiate objects.
         admin = Admin.AdminHandle()
+        constant = Constants.ConstantsHandle()
         # Set ODBC cursor.
         try:
             cur = cnxn.cursor()
@@ -95,8 +96,14 @@ class DAOHandle:
                 for row in cur:
                     # If tot exists.
                     if not row.tot == None:
-                        # Set.
-                        res = int(row.tot)
+                        # If using sub-second segments.
+                        if constant.use_sub_second_segments:
+                            # Set.
+                            res = float(row.tot)
+                        # Otherwise, integers.
+                        else:
+                            # Set.
+                            res = int(row.tot)
                 # Close ODBC cursor.
                 cur.close()
                 del cur
@@ -573,6 +580,7 @@ class DAOHandle:
         a = []
         # Instantiate objects.
         admin = Admin.AdminHandle()
+        constant = Constants.ConstantsHandle()
         try:
             cur = cnxn.cursor()
         except pyodbc.Error, err:
@@ -595,15 +603,29 @@ class DAOHandle:
             else:
                 # Loop.
                 for row in cur:
+                    # If using sub-second segments.
+                    if constant.use_sub_second_segments:
+                        # Set.
+                        affected_active_data_start = float(row.affected_active_data_start)
+                        affected_active_data_stop = float(row.affected_active_data_stop)
+                        affected_known_data_start = float(row.affected_known_data_start)
+                        affected_known_data_stop = float(row.affected_known_data_stop)
+                    # Otherwise, integers.
+                    else:
+                        # Set.
+                        affected_active_data_start = int(row.affected_active_data_start)
+                        affected_active_data_stop = int(row.affected_active_data_stop)
+                        affected_known_data_start = int(row.affected_known_data_start)
+                        affected_known_data_stop = int(row.affected_known_data_stop)
                     # Set.
                     a.append({"insertion_metadata" : {"comment" : row.process_comment,
                                                       "timestamp" : int(row.insertion_time),
                                                       "auth_user" : self.get_value_detail_from_ID(row.dq_flag_version_last_modifier, req_method, full_uri),
-                                                      "insert_active_data_start" : int(row.affected_active_data_start),
-                                                      "insert_active_data_stop" : int(row.affected_active_data_stop),
+                                                      "insert_active_data_start" : affected_active_data_start,
+                                                      "insert_active_data_stop" : affected_active_data_stop,
                                                       "insert_active_segment_total" : int(row.affected_active_data_segment_total),
-                                                      "insert_known_data_start" : int(row.affected_known_data_start),
-                                                      "insert_known_data_stop" : int(row.affected_known_data_stop),
+                                                      "insert_known_data_start" : affected_known_data_start,
+                                                      "insert_known_data_stop" : affected_known_data_stop,
                                                       "insert_known_segment_total" : int(row.affected_known_data_segment_total)},
                               "process_metadata" : {"pid" : row.pid,
                                                     "name" : row.process_full_name,
@@ -718,6 +740,7 @@ class DAOHandle:
         d = {}
         # Instantiate objects.
         admin = Admin.AdminHandle()
+        constant = Constants.ConstantsHandle()
         try:
             # Set ODBC cursor.
             cur = cnxn.cursor()
@@ -742,20 +765,29 @@ class DAOHandle:
                 for row in cur:
                     # Set call URI.
                     call_uri = '/dq/' + row.value_txt + '/' + row.dq_flag_name + '/' + str(row.dq_flag_version)
-                    # Set segment info.
-                    active_earliest = row.dq_flag_version_active_earliest_segment_time
-                    active_latest = row.dq_flag_version_active_latest_segment_time
-                    known_earliest = row.dq_flag_version_known_earliest_segment_time
-                    known_latest = row.dq_flag_version_known_latest_segment_time
+                    # If using sub-second segments.
+                    if constant.use_sub_second_segments:
+                        # Set segment info.
+                        active_earliest = float(row.dq_flag_version_active_earliest_segment_time)
+                        active_latest = float(row.dq_flag_version_active_latest_segment_time)
+                        known_earliest = float(row.dq_flag_version_known_earliest_segment_time)
+                        known_latest = float(row.dq_flag_version_known_latest_segment_time)
+                    # Otherwise, integers.
+                    else:
+                        # Set segment info.
+                        active_earliest = int(row.dq_flag_version_active_earliest_segment_time)
+                        active_latest = int(row.dq_flag_version_active_latest_segment_time)
+                        known_earliest = int(row.dq_flag_version_known_earliest_segment_time)
+                        known_latest = int(row.dq_flag_version_known_latest_segment_time)
                     # Build dictionary.
                     f.update({
                             call_uri : {
                                             'total_active_segments' : row.dq_flag_version_active_segment_total,
-                                            'earliest_active_segment' : int(0 if active_earliest is None else active_earliest),
-                                            'latest_active_segment' : int(0 if active_latest is None else active_latest),
+                                            'earliest_active_segment' : 0 if active_earliest is None else active_earliest,
+                                            'latest_active_segment' : 0 if active_latest is None else active_latest,
                                             'total_known_segments' : row.dq_flag_version_known_segment_total,
-                                            'earliest_known_segment' : int(0 if known_earliest is None else known_earliest),
-                                            'latest_known_segment' : int(0 if known_latest is None else known_latest)
+                                            'earliest_known_segment' : 0 if known_earliest is None else known_earliest,
+                                            'latest_known_segment' : 0 if known_latest is None else known_latest
                                         }
                          })
         # Include inside named dictionary.
@@ -987,6 +1019,20 @@ class DAOHandle:
                         # Get values.
                         gps = gpstime.GpsSecondsFromPyUTC(time.time(), constant.gps_leap_secs)
                         try:
+                            # If using sub-second segments.
+                            if constant.use_sub_second_segments:
+                                # Set.
+                                known_seg_start = float(known_seg_start)
+                                known_seg_stop = float(known_seg_stop)
+                                active_seg_start = float(active_seg_start)
+                                active_seg_stop = float(active_seg_stop)
+                            # Otherwise, integers.
+                            else:
+                                # Set.
+                                known_seg_start = int(known_seg_start)
+                                known_seg_stop = int(known_seg_stop)
+                                active_seg_start = int(active_seg_start)
+                                active_seg_stop = int(active_seg_stop)
                             # Insert process.
                             cur.execute("""
         	                            INSERT INTO tbl_processes
@@ -1016,11 +1062,11 @@ class DAOHandle:
                                              uid,
                                              gps,
                                              known_seg_tot,
-                                             int(known_seg_start),
-                                             int(known_seg_stop),
+                                             known_seg_start,
+                                             known_seg_stop,
                                              active_seg_tot,
-                                             int(active_seg_start),
-                                             int(active_seg_stop),
+                                             active_seg_start,
+                                             active_seg_stop,
                                              str(key['process_metadata']['process_start_timestamp']),
                                              str(key['process_metadata']['process_start_timestamp']))
                         except pyodbc.Error, err:
@@ -1222,13 +1268,27 @@ class DAOHandle:
                     active_start = admin.set_var_if_higher_lower('l', active_start, row.active_earliest) 
                     active_stop = admin.set_var_if_higher_lower('h', active_stop, row.active_latest)
                     active_tot = active_tot + row.active_tot
+                    # If using sub-second segments.
+                    if constant.use_sub_second_segments:
+                        # Set,
+                        known_start = float(known_start)
+                        known_stop = float(known_stop)
+                        active_start = float(active_start)
+                        active_stop = float(active_stop)
+                    # Otherwise, integers.
+                    else:
+                        # Set,
+                        known_start = int(known_start)
+                        known_stop = int(known_stop)
+                        active_start = int(active_start)
+                        active_stop = int(active_stop)
                 try:
                     # Update segment global values.
                     cur.execute("""
                                 UPDATE tbl_dq_flag_versions
                                 SET dq_flag_version_known_segment_total=?, dq_flag_version_known_earliest_segment_time=?, dq_flag_version_known_latest_segment_time=?, dq_flag_version_active_segment_total=?, dq_flag_version_active_earliest_segment_time=?, dq_flag_version_active_latest_segment_time=?, dq_flag_version_date_last_modified=?
                                 WHERE dq_flag_version_id=?
-                                """, known_tot, int(known_start), int(known_stop), active_tot, int(active_start), int(active_stop), gps, vid)
+                                """, known_tot, known_start, known_stop, active_tot, active_start, active_stop, gps, vid)
                 except pyodbc.Error, err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
@@ -1275,6 +1335,7 @@ class DAOHandle:
         w = ''
         # Instantiate objects.
         admin = Admin.AdminHandle()
+        constant = Constants.ConstantsHandle()
         # Set WHERE SQL.
         if t1 and not t2:
             w = ' segment_stop_time >= ' + t1
@@ -1314,9 +1375,16 @@ class DAOHandle:
                                 ORDER BY segment_start_time""")
                     # Loop.
                     for row in cur:
-                        # Set.
-                        t1 = int(row.segment_start_time)
-                        t2 = int(row.segment_stop_time)
+                        # If using sub-second segments.
+                        if constant.use_sub_second_segments:
+                            # Set.
+                            t1 = float(row.segment_start_time)
+                            t2 = float(row.segment_stop_time)
+                        # Otherwise, integers.
+                        else:
+                            # Set.
+                            t1 = int(row.segment_start_time)
+                            t2 = int(row.segment_stop_time)
                         # Append segments to list.
                         l.append([t1,t2])
                 except pyodbc.Error, err:
@@ -1341,6 +1409,7 @@ class DAOHandle:
         i = 0
         # Instantiate objects.
         admin = Admin.AdminHandle()
+        constant = Constants.ConstantsHandle()
         # Initialise ODBC cursor.
         try:
             cur = cnxn.cursor()
@@ -1406,14 +1475,29 @@ class DAOHandle:
                                     # Not every flag will have active segments
                                     payload[i]['active']=active_data_dictionary[i]
                         if request == 'all':
-                            t1 = int(row.segment_start_time)
-                            t2 = int(row.segment_stop_time)
+                            # If using sub-second segments.
+                            if constant.use_sub_second_segments:
+                                # Set.
+                                t1 = float(row.segment_start_time)
+                                t2 = float(row.segment_stop_time)
+                            # Otherwise, integers.
+                            else:
+                                # Set.
+                                t1 = int(row.segment_start_time)
+                                t2 = int(row.segment_stop_time)
                             payload[i]['known'].append([t1,t2])
                         # If user is not requesting just the metadata.
                         elif not 'metadata' in request_array:
-                            # Set segment start/stop times.
-                            t1 = int(row.segment_start_time)
-                            t2 = int(row.segment_stop_time)
+                            # If using sub-second segments.
+                            if constant.use_sub_second_segments:
+                                # Set.
+                                t1 = float(row.segment_start_time)
+                                t2 = float(row.segment_stop_time)
+                            # Otherwise, integers.
+                            else:
+                                # Set.
+                                t1 = int(row.segment_start_time)
+                                t2 = int(row.segment_stop_time)
                             # Append segments to list.
                             payload[i][request].append([t1,t2])
                         # Set previous version FK for use in next loop. 
@@ -1439,6 +1523,7 @@ class DAOHandle:
         """
         # Instantiate objects.
         admin = Admin.AdminHandle()
+        constant = Constants.ConstantsHandle()
         # Initialise ODBC cursor.
         try:
             cur = cnxn.cursor()
@@ -1467,8 +1552,15 @@ class DAOHandle:
                     i = row.dq_flag_version_fk
                     if i not in output.keys():
                         output[i] = []
-                    t1 = int(row.segment_start_time)
-                    t2 = int(row.segment_stop_time)
+                    # If using sub-second segments.
+                    if constant.use_sub_second_segments:
+                        # Set.
+                        t1 = float(row.segment_start_time)
+                        t2 = float(row.segment_stop_time)
+                    # Otherwise, integers.
+                    else:
+                        t1 = int(row.segment_start_time)
+                        t2 = int(row.segment_stop_time)
                     # Append segments to list.  
                     output[i].append([t1,t2])
             # Close ODBC cursor.

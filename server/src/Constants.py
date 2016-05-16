@@ -47,6 +47,14 @@ class ConstantsHandle():
     grid_map_get_file = '/etc/grid-security/grid-mapfile'  # Grid Map file used in authentication.
     grid_map_put_patch_file = '/etc/grid-security/grid-mapfile-insert'  # Grid Map file used in authorisation.
 
+    #################################
+    # Sub-second segment constants #
+    ###############################
+    
+    use_sub_second_segments = True
+    
+    segment_requests = ["active", "known"]  # Types of requests available in segment retrieval.
+
     ###################
     # Time constants #
     #################
