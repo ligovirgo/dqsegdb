@@ -45,6 +45,7 @@ from optparse import OptionParser
 import sys
 import warnings
 import os
+import math
 import operator
 import pwd
 import glob
@@ -634,7 +635,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
     segmentdb_utils.add_to_segment_summary(doc, process_id, seg_def_id, [[gps_start_time, gps_end_time]])
 
     # and store the segments
-    segmentdb_utils.add_to_segment(doc, process_id, seg_def_id, found_segments)
+    add_to_segment_ns(doc, process_id, seg_def_id, found_segments)
     if debug:
         print "Result name:"
         print result_name
@@ -693,9 +694,39 @@ def setup_files(dir_name, gps_start_time, gps_end_time):
         
     return temp_db, connection
     
+def add_to_segment_ns(xmldoc, proc_id, seg_def_id, sgmtlist):
+    try:
+        segtable = table.get_table(xmldoc, lsctables.SegmentTable.tableName)
+    except:
+        segtable = lsctables.New(lsctables.SegmentTable, columns = ["process_id", "segment_def_id", "segment_id", "start_time", "start_time_ns", "end_time", "end_time_ns"])
+        xmldoc.childNodes[0].appendChild(segtable)
+
+    for seg in sgmtlist:
+        segment                = lsctables.Segment()
+        segment.process_id     = proc_id
+        segment.segment_def_id = seg_def_id
+        segment.segment_id     = segtable.get_next_id()
+        seconds,nanoseconds=output_microseconds(seg[0])
+        segment.start_time     = seconds
+        segment.start_time_ns  = nanoseconds
+        seconds,nanoseconds=output_microseconds(seg[1])
+        segment.end_time       = seconds
+        segment.end_time_ns    = nanoseconds
+
+        segtable.append(segment)
 
 
-
+def output_microseconds(input_time):
+    # Says it outputs nanoseconds, but really is only good to microsecond precision!!!
+    if isinstance(input_time, float): 
+        ns, seconds = math.modf(input_time) 
+        seconds = int(input_time) 
+        nanoseconds = ns * 1e9
+        nanoseconds=round((nanoseconds/1e+3))*1e3
+    else:
+        seconds=int(input_time)
+        nanoseconds=0
+    return seconds, nanoseconds
 #
 # =============================================================================
 #
