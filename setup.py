@@ -17,48 +17,20 @@ LONG_DESCRIPTION = ''
 AUTHOR = 'Ryan Fisher'
 AUTHOR_EMAIL = 'ryan.fisher@ligo.org'
 LICENSE = 'GPLv3'
-#rel_version="0.9"
-rel_version="1.4.2"
-release=True
+
+# -- versioning ---------------------------------------------------------------
+
+import versioneer
+__version__ = versioneer.get_version()
+cmdclass = versioneer.get_cmdclass()
 
 
-# ------------------------------------------------------------------------------
-# VCS info
+# -- custom install with etc scripts ------------------------------------------
 
-version_py = os.path.join(PACKAGENAME, 'version.py')
-
-
-def write_vcs_info(target):
-    """Generate target file with versioning information from git VCS
-    """
-    log.info("generating %s" % target)
-    import vcs
-    gitstatus = vcs.GitStatus()
-    gitstatus.run(target, PACKAGENAME, AUTHOR, AUTHOR_EMAIL)
+Install = cmdclass.pop('install', install.install)
 
 
-# ------------------------------------------------------------------------------
-# custom commands
-
-class DQSegDBBuildPy(build_py.build_py):
-    def run(self):
-        try:
-            write_vcs_info(version_py)
-        except subprocess.CalledProcessError:
-            # failed to generate version.py because git call did'nt work
-            if os.path.exists(version_py):
-                log.info("cannot determine git status, using existing %s"
-                         % version_py)
-        build_py.build_py.run(self)
-
-
-class DQSegDBSDist(sdist.sdist):
-    def run(self):
-        write_vcs_info(version_py)
-        sdist.sdist.run(self)
-
-
-class DQSegDBInstall(install.install):
+class DQSegDBInstall(Install):
     """Extension of setuptools install to write source script for
     users.
     """
@@ -112,7 +84,7 @@ class DQSegDBInstall(install.install):
     def run(self):
         self.write_env_sh()
         self.write_env_csh()
-        install.install.run(self)
+        Install.run(self)
         if not self.root:
             print("\n--------------------------------------------------")
             print("DQSegDB has been installed.")
@@ -122,21 +94,12 @@ class DQSegDBInstall(install.install):
             print("Otherwise, you can run:\n")
             print("source %s" % os.path.join(self.install_base, self.shenv))
             print("--------------------------------------------------")
-    run.__doc__ = install.install.__doc__
+    run.__doc__ = Install.__doc__
+
+cmdclass['install'] = DQSegDBInstall
 
 
-# ------------------------------------------------------------------------------
-# run setup
-
-# get version metadata
-try:
-    from dqsegdb import version
-except ImportError:
-    VERSION = None
-    RELEASE = False
-else:
-    VERSION = version.version
-    RELEASE = version.version != version.git_id and 'dev' not in VERSION
+# -- setup ---------------------------------------------------------------------
 
 # Use the find_packages tool to locate all packages and modules
 packagenames = find_packages()
@@ -147,17 +110,10 @@ if os.path.isdir('bin'):
 else:
     scripts = []
 
-if release:
-    VERSION=rel_version
-
 
 setup(name=PACKAGENAME,
-      cmdclass={
-          'install': DQSegDBInstall,
-          'build_py': DQSegDBBuildPy,
-          'sdist': DQSegDBSDist,
-          },
-      version=VERSION,
+      cmdclass=cmdclass,
+      version=__version__,
       description=DESCRIPTION,
       url="http://www.lsc-group.phys.uwm.edu/daswg/",
       packages=packagenames,
