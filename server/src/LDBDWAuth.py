@@ -168,13 +168,13 @@ class GridmapAuthorization:
                                 chainCerts = [ M2Crypto.X509.load_cert_string(environ['SSL_CLIENT_CERT_CHAIN_%d' % i]) for i in range(certChainLength) ]
                                 # walk the chain and find the first end entity certificate
                                 #print "Walking the cert chain now..."
-                                for c in chainCerts:
+                                for chain in chainCerts:
                                     # Get subject.
-                                    s = c.get_subject().__str__()
+                                    s = chain.get_subject().__str__()
                                     #print "Chain cert subject is %s" % s
                                     # If a proxy.
                                     try:
-                                        c.get_ext("proxyCertInfo")
+                                        chain.get_ext("proxyCertInfo")
                                         #print"Chain cert %s is a proxy" % s
                                     # If not a proxy.
                                     except LookupError:
