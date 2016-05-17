@@ -1164,6 +1164,7 @@ class DAOHandle:
         inserted = False
         # Instantiate objects.
         admin = Admin.AdminHandle()
+        constant = Constants.ConstantsHandle()
         user = User.UserHandle()
         # Check whether the requested segment type is in the data dictionary.
         if not request in data:
@@ -1191,7 +1192,16 @@ class DAOHandle:
                     # Get segments into SQL for insert.
                     sql = ''
                     for k, v in data[request]:
-                        sql = sql + ',(' + str(version_id) + ',' + str(k) + ',' + str(v) + ')'
+                        # If using sub-second segments.
+                        if constant.use_sub_second_segments:
+                            # Set,
+                            k_sql = '%.5f'%k
+                            v_sql = '%.5f'%v
+                        # Otherwise, integers.
+                        else:
+                            k_sql = str(k)
+                            v_sql = str(v)                            
+                        sql = sql + ',(' + str(version_id) + ',' + k_sql + ',' + v_sql + ')'
                         # Set segment global values.
                         seg_tot += 1
                         seg_first_gps = admin.set_var_if_higher_lower('l', k, seg_first_gps) 
