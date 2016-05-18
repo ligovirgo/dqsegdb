@@ -464,7 +464,7 @@ def parseKnown(jsonResult):
         for j in i['known']:
             start=j[0]
             stop=j[1]
-            row=(str(ifo),str(flag),int(version),str(comment),int(start),int(stop),str(summary_comment))
+            row=(str(ifo),str(flag),int(version),str(comment),float(start),float(stop),str(summary_comment))
             rows.append(row)
 
 

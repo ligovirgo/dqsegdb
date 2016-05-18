@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
+import math
 import os
 import operator
 import tempfile
@@ -481,4 +482,75 @@ def setup_files(dir_name, gps_start_time, gps_end_time):
     segmentdb_utils.ensure_segment_table(connection)
         
     return temp_db, connection
-    
+   
+def add_to_segment_ns(xmldoc, proc_id, seg_def_id, sgmtlist):
+    try:
+        segtable = table.get_table(xmldoc, lsctables.SegmentTable.tableName)
+    except:
+        segtable = lsctables.New(lsctables.SegmentTable, columns = ["process_id", "segment_def_id", "segment_id", "start_time", "start_time_ns", "end_time", "end_time_ns"])
+        xmldoc.childNodes[0].appendChild(segtable)
+
+    for seg in sgmtlist:
+        segment                = lsctables.Segment()
+        segment.process_id     = proc_id
+        segment.segment_def_id = seg_def_id
+        segment.segment_id     = segtable.get_next_id()
+        seconds,nanoseconds=output_microseconds(seg[0])
+        segment.start_time     = seconds
+        segment.start_time_ns  = nanoseconds
+        seconds,nanoseconds=output_microseconds(seg[1])
+        segment.end_time       = seconds
+        segment.end_time_ns    = nanoseconds
+
+        segtable.append(segment)
+
+def add_to_segment_summary_ns(xmldoc, proc_id, seg_def_id, sgmtlist, comment=''):
+    try:
+        seg_sum_table = table.get_table(xmldoc, lsctables.SegmentSumTable.tableName)
+    except:
+        seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = ["process_id", "segment_def_id", "segment_sum_id", "start_time", "start_time_ns", "end_time", "end_time_ns", "comment"])
+        xmldoc.childNodes[0].appendChild(seg_sum_table)
+
+    for seg in sgmtlist:
+        segment_sum                = lsctables.SegmentSum()
+        segment_sum.process_id     = proc_id
+        segment_sum.segment_def_id = seg_def_id
+        segment_sum.segment_sum_id = seg_sum_table.get_next_id()
+        seconds,nanoseconds=output_microseconds(seg[0])
+        segment_sum.start_time     = seconds
+        segment_sum.start_time_ns  = nanoseconds
+        seconds,nanoseconds=output_microseconds(seg[1])
+        segment_sum.end_time       = seconds
+        segment_sum.end_time_ns    = nanoseconds
+        #segment_sum.start_time     = seg[0]
+        #segment_sum.start_time_ns  = 0
+        #segment_sum.end_time       = seg[1]
+        #segment_sum.end_time_ns    = 0
+        segment_sum.comment        = comment
+
+        seg_sum_table.append(segment_sum)
+
+def add_segment_info_ns(doc, proc_id, segdefs, segments, segment_summaries):
+
+    for i in range(len(segdefs)):
+        ifo, name, version, start_time, end_time, start_pad, end_pad = segdefs[i]
+
+        seg_def_id = segmentdb_utils.add_to_segment_definer(doc, proc_id, ifo, name, version)
+
+        add_to_segment_summary_ns(doc, proc_id, seg_def_id, segment_summaries[i])
+
+        if segments:
+            add_to_segment_ns(doc, proc_id, seg_def_id, segments[i])
+
+
+def output_microseconds(input_time):
+    # Says it outputs nanoseconds, but really is only good to microsecond precision!!!
+    if isinstance(input_time, float):
+        ns, seconds = math.modf(input_time)
+        seconds = int(input_time)
+        nanoseconds = ns * 1e9
+        nanoseconds=round((nanoseconds/1e+3))*1e3
+    else:
+        seconds=int(input_time)
+        nanoseconds=0
+    return seconds, nanoseconds
