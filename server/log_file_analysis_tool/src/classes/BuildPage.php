@@ -1,7 +1,7 @@
 <?php
 
 // Get libraries.
-require_once('GetStructure.php');
+require_once('LogFileAnalyser.php');
 
 // Page builder class.
 class BuildPage {
@@ -10,13 +10,9 @@ class BuildPage {
  
 	public function __construct() {
 		// Instantiate.
-		$structure = new GetStructure();
-		// Get header.
-		$structure->get_body();
-		// Build document.
-		$this->document .= $structure->bdy;
-		// Output.
-		echo $this->document;
+		$logfile = new LogFileAnalyser();
+		// Get log file analysis.
+		$logfile->get_log_file_analysis();
 	}
 }
 
