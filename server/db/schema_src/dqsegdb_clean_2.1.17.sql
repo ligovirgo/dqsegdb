@@ -3,12 +3,18 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: May 19, 2016 at 02:04 AM
+-- Generation Time: May 16, 2016 at 12:20 AM
 -- Server version: 5.1.73
 -- PHP Version: 5.3.3
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
 
 --
 -- Database: `dqsegdb`
@@ -25,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `tbl_dq_flags` (
   `dq_flag_name` text NOT NULL COMMENT 'Text string descriptive flag name.',
   `dq_flag_ifo` int(11) NOT NULL DEFAULT '0' COMMENT 'Related interferometer. Foreign Key linked to tbl_values.',
   `dq_flag_assoc_versions` text NOT NULL COMMENT 'Comma-delimited list of versions associated to this Flag.',
-  `dq_flag_active_means_ifo_badness` tinyint(1) DEFAULT '1' COMMENT '1 if the flag being active means the IFO is in a ‘bad’ state. NULL if unknown or not applicable.',
+  `dq_flag_active_means_ifo_badness` tinyint(1) DEFAULT NULL COMMENT '1 if the flag being active means the IFO is in a ‘bad’ state. NULL if unknown or not applicable.',
   `dq_flag_creator` int(11) DEFAULT NULL COMMENT 'User that created flag. Foreign Key linked to tbl_values.',
   `dq_flag_date_created` double NOT NULL COMMENT 'GPS time of flag creation.',
   PRIMARY KEY (`dq_flag_id`),
@@ -91,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `tbl_processes` (
   PRIMARY KEY (`process_id`),
   KEY `dq_flag_version_fk` (`dq_flag_version_fk`),
   KEY `user_fk` (`user_fk`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=23583694 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=23368508 ;
 
 -- --------------------------------------------------------
 
@@ -181,3 +187,30 @@ ALTER TABLE `tbl_segment_summary`
 ALTER TABLE `tbl_values`
   ADD CONSTRAINT `tbl_values_ibfk_1` FOREIGN KEY (`value_group_fk`) REFERENCES `tbl_value_groups` (`value_group_id`);
 
+--
+-- Data for dumped tables
+--
+
+--
+-- Dumping data for table `tbl_value_groups`
+--
+
+INSERT INTO `tbl_value_groups` (`value_group_id`, `value_group`) VALUES
+(1, 'IFO'),
+(2, 'User'),
+(3, 'Data format');
+
+--
+-- Dumping data for table `tbl_values`
+--
+
+INSERT INTO `tbl_values` (`value_id`, `value_group_fk`, `value_txt`) VALUES
+(1, 1, 'V1'),
+(2, 1, 'H1'),
+(3, 1, 'L1'),
+(4, 3, 'ASCII'),
+(5, 3, 'LIGOLW XML');
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
