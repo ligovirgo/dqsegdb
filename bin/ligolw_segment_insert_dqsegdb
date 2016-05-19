@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ###################################################################
+import socket
 import os
 import socket
 import atexit
@@ -31,7 +32,8 @@ import exceptions
 import binascii
 from optparse import OptionParser
 from dqsegdb import apicalls
-
+from dqsegdb import jsonhelper 
+import json
 
 try:
   import pyRXP
@@ -101,6 +103,7 @@ def parse_command_line():
   parser.add_option("-c", "--comment", action = "store", metavar = "COMMENT", default = None,  help = "Set the segment_summary:comment to COMMENT. This should explaining WHY these segments were inserted (e.g. \"Created from hveto results\")")
   parser.add_option("-S", "--summary-file", action = "store", metavar = "FILE", default = None, help = "Read the segment_summary rows from FILE. This should be a file containing the gps start and end times that the flag was defined (i.e. the union of on and off)")
   parser.add_option("-G", "--segment-file", action = "store", metavar = "FILE", default = None,  help = "Read the segment rows from FILE. This should containin the gps start and end times when the flag was active")
+  parser.add_option("-B", "--active-indicates-ifo-goodness", action = "store_true", default = False,  help = "Sets the variable in the database to indicate that the flag is active when something is good in the ifo state. Default is False, so flags normally indicate something is wrong.")
   
   
   return parser.parse_args()
@@ -140,7 +143,12 @@ if options.debug:
     debug=True
 else:
     debug=False
-
+if options.active_indicates_ifo_goodness:
+  use_xml=False
+  active_indicates_ifo_goodness=True
+else:
+  use_xml=True
+  active_indicates_ifo_goodness=False # default
   
 if len(errmsg) and not options.ping:
   print >> sys.stderr, errmsg
@@ -362,85 +370,252 @@ if debug:
 #                            Process INSERT or APPEND
 #######################################################################################
 if options.insert or options.append:
-  # For the new DQSEGDB, the creator_db is gone and the seg_def_id is determined server side from the ifo,name,version tuple.  Thus, inserts and appends appear identical to the server, and only the checks done above need to differentiate them.
-  #--------------------------------------------------------------------------#
-  # create segment_definer table
-  seg_def_table = lsctables.New(lsctables.SegmentDefTable,columns = [
-                'segment_def_id', 'process_id','ifos','name', 'version','comment'])
-  doc.childNodes[0].appendChild(seg_def_table)
-  segment_definer = lsctables.SegmentDef()
+  if use_xml:
+    # For the new DQSEGDB, the creator_db is gone and the seg_def_id is determined server side from the ifo,name,version tuple.  Thus, inserts and appends appear identical to the server, and only the checks done above need to differentiate them.
+    #--------------------------------------------------------------------------#
+    # create segment_definer table
+    seg_def_table = lsctables.New(lsctables.SegmentDefTable,columns = [
+                  'segment_def_id', 'process_id','ifos','name', 'version','comment'])
+    doc.childNodes[0].appendChild(seg_def_table)
+    segment_definer = lsctables.SegmentDef()
 
-  seg_def_id = seg_def_table.get_next_id()
-  segment_definer.segment_def_id = seg_def_id
-  segment_definer.process_id = process_id
-  segment_definer.ifos = options.ifos
-  segment_definer.name = options.name
-  segment_definer.version = int(options.version)
-  segment_definer.comment = options.explain
-  seg_def_table.append(segment_definer)
+    seg_def_id = seg_def_table.get_next_id()
+    segment_definer.segment_def_id = seg_def_id
+    segment_definer.process_id = process_id
+    segment_definer.ifos = options.ifos
+    segment_definer.name = options.name
+    segment_definer.version = int(options.version)
+    segment_definer.comment = options.explain
+    seg_def_table.append(segment_definer)
 
-  #---------------- create local segment table ------------#
-  segment_table = lsctables.New(lsctables.SegmentTable, columns = [
-                  'segment_id','process_id','segment_def_id','start_time','end_time'])
-  doc.childNodes[0].appendChild(segment_table)
+    #---------------- create local segment table ------------#
+    segment_table = lsctables.New(lsctables.SegmentTable, columns = [
+                    'segment_id','process_id','segment_def_id','start_time','end_time'])
+    doc.childNodes[0].appendChild(segment_table)
 
-  for this_seg in active_segments:
-    segment = lsctables.Segment()
-    seg_id = segment_table.get_next_id()
+    for this_seg in active_segments:
+      segment = lsctables.Segment()
+      seg_id = segment_table.get_next_id()
 
-    segment.segment_id = seg_id
-    segment.process_id = process_id
-    segment.segment_def_id = seg_def_id
-    segment.start_time = int(this_seg[0])
-    segment.end_time = int(this_seg[1])
+      segment.segment_id = seg_id
+      segment.process_id = process_id
+      segment.segment_def_id = seg_def_id
+      segment.start_time = int(this_seg[0])
+      segment.end_time = int(this_seg[1])
 
-    segment_table.append(segment)
+      segment_table.append(segment)
 
-  
-  #-------------- create local segment_summary table ------------#
-  seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = [
-                  'segment_sum_id', 'process_id', 'segment_def_id', 'start_time', 'end_time', 'comment'])
-  doc.childNodes[0].appendChild(seg_sum_table)
+    
+    #-------------- create local segment_summary table ------------#
+    seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = [
+                    'segment_sum_id', 'process_id', 'segment_def_id', 'start_time', 'end_time', 'comment'])
+    doc.childNodes[0].appendChild(seg_sum_table)
 
-  for this_sum in intervals:
-     segment_summary = lsctables.SegmentSum()
-     seg_sum_id = seg_sum_table.get_next_id()
-     
-     segment_summary.segment_sum_id = seg_sum_id
-     segment_summary.process_id = process_id
-     segment_summary.segment_def_id = seg_def_id
-     segment_summary.start_time = this_sum[0]
-     segment_summary.end_time = this_sum[1]
-     segment_summary.comment = options.comment
+    for this_sum in intervals:
+       segment_summary = lsctables.SegmentSum()
+       seg_sum_id = seg_sum_table.get_next_id()
+       
+       segment_summary.segment_sum_id = seg_sum_id
+       segment_summary.process_id = process_id
+       segment_summary.segment_def_id = seg_def_id
+       segment_summary.start_time = this_sum[0]
+       segment_summary.end_time = this_sum[1]
+       segment_summary.comment = options.comment
  
-     seg_sum_table.append(segment_summary)
+       seg_sum_table.append(segment_summary)
 
-  fake_file = StringIO.StringIO()
-  doc.write(fake_file)
+    fake_file = StringIO.StringIO()
+    doc.write(fake_file)
 
-  if options.output:
-    if debug:
-      print "Writing out to file and then exiting."
-    fp = open(options.output,"w")
-    fp.write(fake_file.getvalue())
-    fp.close()
-  else:
-    if debug:
-      print "Writing to temporary file, then calling callInsertMultipleDQXMLThreaded"
+    if options.output:
+      if debug:
+        print "Writing out to file and then exiting."
+      fp = open(options.output,"w")
+      fp.write(fake_file.getvalue())
+      fp.close()
+    else:
+      if debug:
+        print "Writing to temporary file, then calling callInsertMultipleDQXMLThreaded"
+      filepath='/tmp/ligolw_segment_insert_'+str(time.time())+'.xml'
+      if not debug:
+        atexit.register(del_file,filepath) # 
+      fp = open(filepath,'w')
+      fp.write(fake_file.getvalue())
+      fp.close()
+      publishAndExit(filepath,debug)
+      #result=callInsertMultipleDQXMLThreaded(filepath)
+      #if not result:
+      #    raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
+      #else:
+      #    # We're done here
+      #    if debug:
+      #      print "Insert worked!"
+      #    sys.exit()
+  else: # Direct to JSON
+    ## Result JSON should look like this:
+    ''' 
+    {
+       "name":"DCH-RYAN_TEST_MAY192016",
+       "insert_history":[
+          {
+             "process_metadata":{
+                "process_start_timestamp":1147688345,
+                "uid":"rfisher",
+                "args":[
+                   "--comment",
+                   "active_means_ifo_badness_test",
+                   "--insert",
+                   "None",
+                   "--ignore-append-check",
+                   "0",
+                   "--name",
+                   "DCH-RYAN_TEST_MAY192016",
+                   "--segment-file",
+                   "test_segments.txt",
+                   "--explain",
+                   "active_means_ifo_badness_test",
+                   "--summary-file",
+                   "test_summaries.txt",
+                   "--version",
+                   "2",
+                   "--append",
+                   "0",
+                   "--debug",
+                   "None",
+                   "--segment-url",
+                   "https://segments-dev.ligo.org",
+                   "--ignore-future",
+                   "0",
+                   "--ifos",
+                   "L1"
+                ],
+                "pid":1072128,
+                "fqdn":"ldas-pcdev1",
+                "name":"/home/rfisher/DQSEGDB_Mar12/dqsegdb/bin/ligolw_segment_insert_dqsegdb"
+             },
+             "insertion_metadata":{
+                "comment":"/dq/L1/DCH-RYAN_TEST_MAY192016/2",
+                "insert_data_stop":971610010,
+                "insert_data_start":971610000,
+                "auth_user":"rfisher",
+                "timestamp":1147688345
+             }
+          }
+       ],
+       "active":[
+          [
+             971610000,
+             971610010
+          ]
+       ],
+       "version":2,
+       "known":[
+          [
+             971610000,
+             971610010
+          ]
+       ],
+       "ifo":"L1",
+       "metadata":{
+          "flag_description":"active_means_ifo_badness_test",
+          "further_info_url":"active_means_ifo_badness_test",
+          "deactivated":false,
+          "active_indicates_ifo_badness":null,
+          "flag_version_comment":"ligolw_segment_insert_dqsegdb client insert or append"
+       }
+    }
+    '''
+    # Ok, first need to build the dictionary object:
+    # flag_versions[(ifo,name,version)] = InsertFlagVersion(ifo,name,version)
+    
+    # new_seg_summary = segments.segmentlist([segments.segment(start_time,end_time)])
+    # flag_versions[(ifo,name,version)].appendKnown(new_seg_summary)
+    
+    # flag_versions[(ifo,name,version)].flag_description=str(flag_versions_numbered[i]['comment'])
+    # flag_versions[(ifo,name,version)].provenance_url=seg_sum_comment
+    # flag_versions[i].flag_version_comment=process_dict[pid]['process_comment']
+    
+    # insert_history_dict = {}
+    # process_name=i['process_metadata']['name']
+    # process_pid=i['process_metadata']['pid']
+    # process_uid=i['process_metadata']['uid']
+    # insert_history_dict['process_metadata'] = process_dict[pid]['process_metadata']
+    # insert_history_dict['insertion_metadata'] = {}
+    # insert_history_dict['insertion_metadata']['insert_data_stop'] = stop
+    # insert_history_dict['insertion_metadata']['insert_data_start'] = start
+    # insert_history_dict['insertion_metadata']['timestamp'] = _UTCToGPS(time.gmtime()) 
+    # insert_history_dict['insertion_metadata']['auth_user']=process.get_username()
+    # insert_history_dict['insertion_metadata']['comment'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])
+    # flag_versions[i].insert_history.append(insert_history_dict)
+
+    # new_seg = segments.segmentlist([segments.segment(start_time,end_time)])
+    # flag_versions[(ifo,name,version)].appendActive(new_seg)
+    # flag_versions[i].coalesceInsertHistory()
+    
+    # for i in flag_versions.values():
+    #   i.buildFlagDictFromInsertVersion()
+    #   url=i.buildURL(server)
+    #   print json.dumps(i.flagDict)
+    #   patchWithFailCases(i,url,debug,logger,testing_options)
+
+    from dqsegdb.jsonhelper import InsertFlagVersion
+    flag_version=InsertFlagVersion(options.ifos,options.name,int(options.version))
+    # args might be something like options.__dict__
+    for this_sum in intervals:
+        start_time=this_sum[0]
+        end_time=this_sum[1]
+        new_seg_summary = segments.segmentlist([segments.segment(start_time,end_time)])
+        flag_version.appendKnown(new_seg_summary)
+    for this_seg in active_segments:
+        ### Fix!!! Make sure these work with ints and floats!
+        start_time=this_seg[0]
+        end_time=this_seg[1]
+        new_seg = segments.segmentlist([segments.segment(start_time,end_time)])
+        flag_version.appendActive(new_seg)
+    flag_version.flag_description=options.explain
+    flag_version.provenance_url=options.comment
+    flag_version.active_indicates_ifo_badness=(not active_indicates_ifo_goodness)
+    flag_version.flag_version_comment = 'ligolw_segment_insert_dqsegdb client insert or append'
+    insert_history_dict={}
+    process_dict={}
+    process_dict[PROGRAM_PID] = {}
+    process_dict[PROGRAM_PID]['process_metadata']={}
+    process_dict[PROGRAM_PID]['process_metadata']['name'] = PROGRAM_NAME
+    process_dict[PROGRAM_PID]['process_metadata']['pid'] = PROGRAM_PID
+    process_dict[PROGRAM_PID]['process_metadata']['uid'] = USER_NAME 
+    arglist=[]
+    for i in process.process_params_from_dict(options.__dict__):
+        arglist.append(i[0])
+        if i[2]:
+            arglist.append(i[2])
+        else:
+            arglist.append("None")
+    process_dict[PROGRAM_PID]['process_metadata']['args'] = arglist  #[i[0],i[2] for i in process.process_params_from_dict(options.__dict__)
+    process_dict[PROGRAM_PID]['process_metadata']['fqdn'] = socket.gethostname() 
+    process_dict[PROGRAM_PID]['process_metadata']['process_start_timestamp'] = current_time
+    insert_history_dict['process_metadata'] = process_dict[PROGRAM_PID]['process_metadata']
+    insert_history_dict['insertion_metadata'] = {}
+    insert_history_dict['insertion_metadata']['insert_data_start'] = min(min(intervals))
+    insert_history_dict['insertion_metadata']['insert_data_stop'] = max(max(intervals))
+    insert_history_dict['insertion_metadata']['timestamp'] = current_time #_UTCToGPS(time.gmtime()) 
+    insert_history_dict['insertion_metadata']['auth_user']= USER_NAME #process.get_username()
+    insert_history_dict['insertion_metadata']['comment'] = '/dq/'+'/'.join([str(options.ifos),str(options.name),str(options.version)])
+    flag_version.insert_history.append(insert_history_dict)
+    flag_version.coalesceInsertHistory()
+    flag_version.buildFlagDictFromInsertVersion()
+    url=flag_version.buildURL(options.segment_url)
+    logger = logging.getLogger('ligolw_publish_dqxml_dqsegdb')
     filepath='/tmp/ligolw_segment_insert_'+str(time.time())+'.xml'
-    if not debug:
-      atexit.register(del_file,filepath) # 
-    fp = open(filepath,'w')
-    fp.write(fake_file.getvalue())
-    fp.close()
-    publishAndExit(filepath,debug)
-    #result=callInsertMultipleDQXMLThreaded(filepath)
-    #if not result:
-    #    raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
-    #else:
-    #    # We're done here
-    #    if debug:
-    #      print "Insert worked!"
-    #    sys.exit()
-
-
+    log_file=filepath.split('.xml')[0]+'.log'
+    handler = logging.handlers.RotatingFileHandler(log_file, 'a', 1024**3, 3)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(eval("logging." + "DEBUG"))
+    #manual_debug=True
+    manual_debug=False
+    if manual_debug:
+        import pdb
+        pdb.set_trace()
+    #print json.dumps(flag_version.flagDict)
+    apicalls.patchWithFailCases(flag_version,url,debug,logger)
