@@ -211,7 +211,7 @@ class InsertFlagVersion(PatchFlagVersion):
         self.flag_description=""
         self.provenance_url=""
         self.deactivated=False
-        self.active_indicates_ifo_badness=None
+        self.active_indicates_ifo_badness=True
     def buildFlagDictFromInsertVersion(self):
         ### Fix!!! I think I should make this a function that takes the self.x arguments
         ### as inputs and returns a modified flagDict object, so I can use it other
@@ -235,7 +235,7 @@ class InsertFlagVersionOld(PatchFlagVersion):
         self.flag_comment=""
         self.provenance_url=""
         self.deactivated=False
-        self.active_indicates_ifo_badness=None
+        self.active_indicates_ifo_badness=True
     def buildFlagDictFromInsertVersion(self):
         ### Fix!!! I think I should make this a function that takes the self.x arguments
         ### as inputs and returns a modified flagDict object, so I can use it other

@@ -172,7 +172,7 @@ def dtd_uri_callback(uri):
     return uri
 
 def publishAndExit(filepath,debug=False):
-  result=callInsertMultipleDQXMLThreaded(filepath)
+  result=callInsertMultipleDQXMLThreaded(filepath,debug)
   if not result:
     raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
   else:
@@ -183,7 +183,7 @@ def publishAndExit(filepath,debug=False):
 def del_file(name):
   os.remove(name)
 
-def callInsertMultipleDQXMLThreaded(filepath):
+def callInsertMultipleDQXMLThreaded(filepath,debug):
   logger = logging.getLogger('ligolw_publish_dqxml_dqsegdb')
   log_file=filepath.split('.xml')[0]+'.log'
   handler = logging.handlers.RotatingFileHandler(log_file, 'a', 1024**3, 3)
@@ -192,7 +192,7 @@ def callInsertMultipleDQXMLThreaded(filepath):
   logger.addHandler(handler)
   logger.setLevel(eval("logging." + "DEBUG"))
   infiles=[filepath]
-  result=apicalls.InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=False,threads=1)
+  result=apicalls.InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=debug,threads=1)
   return result
 
 
