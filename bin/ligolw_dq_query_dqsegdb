@@ -102,6 +102,7 @@ def parse_command_line():
     parser.add_option("-o", "--output-file",   metavar = "output_file", help = "File to which output should be written.  Defaults to stdout.")
     parser.add_option("-a", "--active-only",  action = "store_true", help = "Only report about active segments in specified window, excludes report of known times for flags.")
     parser.add_option("-f", "--tom-formatting", action = "store_true", help = "Tom Dent requested formatting option: condensed output into single lines.")
+    parser.add_option("-b", "--seperate-good-from-bad", action = "store_true", help = "Seperates flags marked by the database as being active when the ifo is in a bad state from those that are active when the ifo is in a good state.")
    
     options, time = parser.parse_args()
 
@@ -327,6 +328,12 @@ if __name__ == '__main__':
     result,query_url=apicalls.reportActive(protocol,server,True,False,time_seg[0],time_seg[1])
     dict=json.loads(result)
     active_results={}
+    active_results_not_bad={}
+    #manual_debug=True
+    manual_debug=False
+    if manual_debug:
+        import pdb
+        pdb.set_trace()
     for i in dict['results']:
         ifo=i['ifo']
         name=i['name']
@@ -337,26 +344,61 @@ if __name__ == '__main__':
             end_time=active_segment[1]
             if flag_string not in active_results:
                 active_results[flag_string]=segments.segmentlist([segments.segment(start_time,end_time)])
+                if i['metadata']['active_indicates_ifo_badness']!=True:
+                    active_results_not_bad[flag_string]=segments.segmentlist([segments.segment(start_time,end_time)])
             else:
                 active_results[flag_string].append(segments.segment(start_time,end_time))
+                if i['metadata']['active_indicates_ifo_badness']!=True:
+                    active_results_not_bad[flag_string].append(segments.segmentlist([segments.segment(start_time,end_time)]))
     
     if not options.tom_formatting:
         tom=False
     else:
         tom=True
-    print "Flags active in provided window:"
-    for i in active_results:
-        if tom==True:
-            text="Flag name: "
-            text+=i
-            text+=" ; Active: "
-            text+=str(active_results[i])
-            print text
-        else:
-            print "Flag name:"
-            print i
-            print "Active segments:"
-            print active_results[i]
+    if not options.seperate_good_from_bad:
+        print "Flags active in provided window:"
+        for i in active_results:
+            if tom==True:
+                text="Flag name: "
+                text+=i
+                text+=" ; Active: "
+                text+=str(active_results[i])
+                print text
+            else:
+                print "Flag name:"
+                print i
+                print "Active segments:"
+                print active_results[i]
+    else:
+        active_results_bad={}
+        print "Flags active in provided window that indicate bad ifo state:"
+        for i in active_results:
+            if i not in active_results_not_bad:
+                if tom==True:
+                    text="Flag name: "
+                    text+=i
+                    text+=" ; Active: "
+                    text+=str(active_results[i])
+                    print text
+                else:
+                    print "Flag name:"
+                    print i
+                    print "Active segments:"
+                    print active_results[i]
+        print "Flags active in provided window that indicate good ifo state:"
+        for i in active_results:
+            if i in active_results_not_bad:
+                if tom==True:
+                    text="Flag name: "
+                    text+=i
+                    text+=" ; Active: "
+                    text+=str(active_results[i])
+                    print text
+                else:
+                    print "Flag name:"
+                    print i
+                    print "Active segments:"
+                    print active_results[i]
 
     # Now print defined but inactive flag types:
     if not options.active_only:
@@ -395,6 +437,28 @@ if __name__ == '__main__':
                             known_results[flag_string]=segments.segmentlist([segments.segment(start_time,end_time)])
                         else:
                             known_results[flag_string].append(segments.segment(start_time,end_time))
+        if options.seperate_good_from_bad:
+            print "Flags marked as active means ifo operating well, that are defined but inactive in this period.  These should be considered as possible vetoes!"
+            for i in known_dict['results']:
+                ifo=i['ifo'] 
+                name=i['name'] 
+                version=str(i['version']) 
+                flag_string=":".join([ifo,name,version]) 
+                if flag_string not in active_results:
+                    if i['metadata']['active_indicates_ifo_badness']!=True:
+                        if tom==True:
+                            text="Flag name: "
+                            text+=flag_string
+                            text+=" ; Known Times overlapping query with no active times: "
+                            for j in i['known']:
+                                text+=" "+str(j)+" "
+                            print text
+                        else:
+                            print "Flag name:"
+                            print flag_string
+                            print "Known times overlapping window with no active times:"
+                            for j in i['known']:
+                                print j
 
     if options.output_file:
         # Build json output file:
