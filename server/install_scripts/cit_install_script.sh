@@ -104,7 +104,7 @@ yum -y install m2crypto
 # Setup ODBC Data Source Name (DSN)
 echo "[DQSEGDB]
 DRIVER=MySQL
-DATABASE=dqsegdb-backup
+DATABASE=segments-backup
 USER=dqsegdb_user
 PASSWORD=Q6a6jS6L63RtqnDm" >> /etc/odbc.ini
 
