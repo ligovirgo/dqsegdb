@@ -22,6 +22,7 @@ import M2Crypto
 import calendar
 import time
 import os
+import re
 
 #
 # =============================================================================
