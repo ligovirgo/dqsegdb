@@ -1,7 +1,7 @@
 %define name dqsegdb
-%define version 1.3.1
-%define unmangled_version 1.3.1
-%define unmangled_version 1.3.1
+%define version 1.3.2
+%define unmangled_version 1.3.2
+%define unmangled_version 1.3.2
 %define release 1
 
 Summary: Client library for DQSegDB
