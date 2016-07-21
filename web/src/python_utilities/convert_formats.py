@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import json
+import shutil
 from glue import segments
 
 ########### ########### ########### ###########
@@ -10,7 +11,27 @@ from glue import segments
 ########### ########### ########### ###########
 
 def open_json_file(json_filepath):
-    return json.load(open(json_filepath))
+    try:
+        return [json.load(open(json_filepath))]
+    except ValueError:
+        start_json_block_index=0
+        result_array=[]
+        data=open(json_filepath,'r').readlines()
+        count=0
+        index=0
+        clean_data=data[0].strip()
+        for i in clean_data:
+            if i=="{":
+                count=count+1
+            elif i=="}":
+                count=count-1
+            if count==0:
+                #print "Made it through first payload at index: %d" % index
+                #print clean_data[start_json_block_index:index+1]
+                result_array.append(json.loads(clean_data[start_json_block_index:index+1]))
+                start_json_block_index=index+1
+            index+=1
+        return result_array
 
 ################################################################################
 #
@@ -38,7 +59,7 @@ def generated_vdb_ascii(json_dict,filepath):
     unknown_segments_string=',-1 \n'.join([str(i[0])+","+str(i[1]) for i in unknown_segments])+",-1 \n"    
     known_not_active_segments=known_segments-active_segments
     known_not_active_segments_string=',0 \n'.join([str(i[0])+","+str(i[1]) for i in known_not_active_segments])+",0 \n"
-    output_fileh=open(filepath,'w+')
+    output_fileh=open(filepath,'a')
     query_info_string=json.dumps(res_dict['query_information'], indent=1)
     output_fileh.writelines(query_info_string)
     output_fileh.write('\n')
@@ -55,7 +76,7 @@ def generated_ascii(json_dict,filepath):
     active_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in active_list])    
     active_segments_string='\n'.join([str(i[0])+","+str(i[1]) for i in active_segments])
     active_segments.coalesce()
-    output_fileh=open(filepath,'w+')    
+    output_fileh=open(filepath,'a')    
     output_fileh.writelines(active_segments_string)
     output_fileh.close()
     return filepath
@@ -74,14 +95,19 @@ def generated_json(json_dict,filepath):
     known_json=convert_json_list_to_segmentlist(known_segments)
     res_dict['known']=known_json
     #print filepath
-    filepath=".".join(["_".join(filepath.split("_")[0:-1]),filepath.split("_")[-1:][0]])
+    ### Document why we need the next line!:
+    ### It is because the file name would be <number>.coalesced_json and we want it to be <number>.coalesced.json instead.  This breaks with normal file names given to command line though
+    #filepath=".".join(["_".join(filepath.split("_")[0:-1]),filepath.split("_")[-1:][0]])
     #filepath='.'.join(filepath.split('_')[)
     #print filepath
-    output_fileh=open(filepath,'w+') 
+    output_fileh=open(filepath,'a') 
     #output_fileh.writelines(active_segments_string) 
     json_output_string=json.dumps(res_dict)
+    #print "Coalesced json string type"
+    #print type(json_output_string)
     output_fileh.writelines(json_output_string)
     output_fileh.close()
+    return filepath
 
 
 
@@ -123,16 +149,61 @@ def parse_command_line():
 
 if __name__ == "__main__":
     args = parse_command_line()
+    #print args.output
     if args.type != 'vdb' and args.type != 'ascii' and args.type != 'coalesced_json':
         raise InputError('Please provide type of vdb or ascii or coalesced_json')
-    json_dict=open_json_file(args.jsonfile)
+    json_dict_array=open_json_file(args.jsonfile)
     if args.type == 'vdb':
-        res_file=generated_vdb_ascii(json_dict,args.output)
+        if len(json_dict_array)==1:
+            json_dict=json_dict_array[0]
+            res_file=generated_vdb_ascii(json_dict,args.output)
+        else:
+            for json_dict in json_dict_array:
+                version=json_dict['version']
+                fileh=open(args.output,'a')
+                if fileh.tell()==0:
+                    fileh.writelines('Multiple Versions Requested, Version = %d Results: \n' % int(version))
+                else:
+                    fileh.writelines('\nMultiple Versions Requested, Version = %d Results: \n' % int(version))
+                fileh.close()
+                res_file=generated_vdb_ascii(json_dict,args.output)
     elif args.type == 'ascii':
-        res_file=generated_ascii(json_dict,args.output)
+        #res_file=generated_ascii(json_dict,args.output)
+        if len(json_dict_array)==1:
+            json_dict=json_dict_array[0]
+            res_file=generated_ascii(json_dict,args.output)
+        else:
+            for json_dict in json_dict_array:
+                version=json_dict['version']
+                fileh=open(args.output,'a')
+                if fileh.tell()==0:
+                    fileh.writelines('Multiple Versions Requested, Version = %d Results: \n' % int(version))
+                else:
+                    fileh.writelines('\nMultiple Versions Requested, Version = %d Results: \n' % int(version))
+                fileh.close()
+                res_file=generated_ascii(json_dict,args.output)
+
     elif args.type == 'coalesced_json':
-        res_file=generated_json(json_dict,args.output)
+        #res_file=generated_json(json_dict,args.output)
+        if len(json_dict_array)==1:
+            json_dict=json_dict_array[0]
+            res_file=generated_json(json_dict,args.output)
+        else:
+            for number,json_dict in enumerate(json_dict_array):
+                version=json_dict['version']
+                fileh=open(args.output,'a')
+                if fileh.tell()==0:
+                    fileh.writelines('Multiple Versions Requested, Version = %d Results: \n' % int(version))
+                else:
+                    fileh.writelines('\nMultiple Versions Requested, Version = %d Results: \n' % int(version))
+                fileh.close()
+                #res_file=generated_json(json_dict,args.output)
+                if number==0:
+                    res_file=generated_json(json_dict,args.output)
+                else:
+                    res_file=generated_json(json_dict,res_file)
+        filepath=args.output
+        final_filepath=".".join(["_".join(filepath.split("_")[0:-1]),filepath.split("_")[-1:][0]])
+        shutil.copy(res_file, final_filepath)
+
     print "Output file %s created" % res_file
-
-    
-
