@@ -152,7 +152,7 @@ class JSAction {
 		// If retrieving segments.
 		elseif($variable->req == 'retrieve_segments') {
 			// Get segment JSON.
-			$data = $serverdata->retrieve_segments($_GET['s'], $_GET['e']);
+			$data = $serverdata->retrieve_segments($_GET['s'], $_GET['e'], $_GET['history']);
 			// If JSON passed.
 			if(!empty($data)) {
 				// Get UNIX timestamp.
@@ -221,10 +221,13 @@ class JSAction {
 		elseif($variable->req == 'set_filter_start_page_no') {
 			$_SESSION['filter_start_page'] = $_GET['p'];
 		}
-        // Setting session memory for format choice
-        elseif($variable->req == 'set_format') {
-			$_SESSION['default_output_format'] = $_GET['f'];
-		}
+                // Setting session memory for format choice
+                elseif($variable->req == 'set_format') {
+        			$_SESSION['default_output_format'] = $_GET['f'];
+                }
+                elseif($variable->req == 'set_history') {
+        			$_SESSION['default_output_history'] = $_GET['h'];
+                }
         // Output response.
 		echo $this->document;
 	}

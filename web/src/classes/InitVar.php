@@ -104,7 +104,14 @@ class Variables {
 			$_SESSION['default_gps_stop'] = '';
 		}
 		if(!isset($_SESSION['default_output_format'])) {
-			$_SESSION['default_output_format'] = key($format_array);
+                    $_SESSION['default_output_format'] = key($format_array);
+                    #echo "format_array key from InitVar: ";
+                    #print_r(key($format_array));
+		}
+		if(!isset($_SESSION['default_output_history'])) {
+		    $_SESSION['default_output_history'] = 0;
+                    #echo "history_array key from InitVar: ";
+                    #print_r(0);
 		}
 		if(!isset($_SESSION['changing_current_host'])) {
 			$_SESSION['changing_current_host'] = FALSE;

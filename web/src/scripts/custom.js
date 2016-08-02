@@ -114,12 +114,19 @@ function retrieve_segments() {
 	e = $("#gps_stop_time").val();
 	// Get file format ID.
 	format = $('input[name=format]:checked', '#frm_query_server').val();
+        //alert(format);
+	// Get insert history opton.
+        // Note, the following line doesn't work because for some reason, you get a history object instead of the value, unlike for the format before.  It seems to have something to do with having two sets of radio buttons in one form, OR I'm missing something subtler...
+        //history = $('input[name=history]:checked', '#frm_query_server').val();
+        // This next line works, so long as you keep using $history instead of history afterwards... maybe I don't understand how jQuery pointers work?
+        $history = $('input[name=history]:checked').val();
+        //#alert($history);
 	// Hide button and show message.
 	$("#divForsubmit_segment_form").fadeOut('fast');
 	$("#img_retrieval_msg").fadeIn('fast');
 	$("#img_retrieval_msg").css("visibility", "visible");
 	// Update version div.
-	$.get("scripts/actions.php?req=retrieve_segments&s=" + s + "&e=" + e + "&format=" + format, function(r) {
+	$.get("scripts/actions.php?req=retrieve_segments&s=" + s + "&e=" + e + "&format=" + format + "&history=" + $history, function(r) {
 		// If result retrieved
 		if(r != 0) {
 			// Re-direct.
@@ -209,5 +216,11 @@ function update_payloads(c) {
 function set_format(format_id) {
         // Set session.
         $.get("scripts/actions.php?req=set_format&f=" + format_id, function() {
+        });
+}
+// Set insert history toggle for PHP session.
+function set_history(history_id) {
+        // Set session.
+        $.get("scripts/actions.php?req=set_history&h=" + history_id, function() {
         });
 }

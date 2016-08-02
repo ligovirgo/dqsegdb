@@ -418,24 +418,82 @@ class GetServerData {
 		// Add remaining fields, starting with GPS.
 		$gps_inputs = "Start: <input id=\"gps_start_time\" class=\"inp_med\" value=\"".$_SESSION['default_gps_start']."\" /> End: <input id=\"gps_stop_time\" class=\"inp_med\" value=\"".$_SESSION['default_gps_stop']."\" />";
 		$this->query_form .= $structure->get_form_structure('GPS Times', $gps_inputs, NULL);
-        // Setting up file format selection 
-        // Pulling list of file formats available from value group 4 from database:
-        $format_inputs="";
-        $format_array = $dao->get_value_array(4);
-        $_SESSION['default_output_format'];
-        // Looping format array to create format_inputs
-        foreach($format_array as $format_id => $format) {
-        	$check = NULL;
-        	if($format_id==$_SESSION['default_output_format']) {
-        		$check = " checked";
-        	}
-        	// add to format_inputs
-        	$format_inputs .= "<input type=\"radio\" name=\"format\" id=\"format\" class=\"radio_format\" onclick=\"set_format(".$format_id.")\" value=\"" . $format . "\"" .$check. ">" . $format;
-        }
-        // Set help text.
+                //////////// New code below this line
+                //echo "Format:";
+                //print_r($format_array);
+                //var_dump($format_array);
+                //// Setting up insert history selection 
+                $history_inputs="";
+                #$history_array = $dao->get_value_array(4);
+                #$_SESSION['default_output_history'];
+                // Looping history array to create history_inputsA
+                $history_array=array(0 => "off", 1 => "on");
+                //echo "History:";
+                //print_r($history_array);
+                //var_dump($history_array);
+                //foreach($history_array as $history_id => $history) {
+                foreach($history_array as $history_id => $history) {
+                	$check = NULL;
+                	if($history_id==$_SESSION['default_output_history']) {
+                		$check = " checked";
+                	}
+                	// add to history_inputs
+                        $history_inputs .= "<input type=\"radio\" name=\"history\" id=\"history\" class=\"radio_format\" onclick=\"set_history(".$history_id.")\" value=\"" . $history . "\"" .$check. ">" . $history;
+                        //echo "printing histories in for loop in getServerData";
+                        //var_dump($history);
+                }
+                // Set help text.
+		$alt_output_history = "<span id=\"span_dq_output_history_options\" class=\"span_frm_info\">- Sets whether or not to include insert_history with results.</span>";
+		// Get output history form structure.
+                $this->query_form .= $structure->get_form_structure('Include History', $history_inputs, $alt_output_history);
+                //////////// New code above this line
+                // Setting up file format selection 
+                // Pulling list of file formats available from value group 4 from database:
+                $format_inputs="";
+                $format_array = $dao->get_value_array(4);
+                #$_SESSION['default_output_format'];
+                // Looping format array to create format_inputs
+                foreach($format_array as $format_id => $format) {
+                	$check = NULL;
+                	if($format_id==$_SESSION['default_output_format']) {
+                		$check = " checked";
+                	}
+                	// add to format_inputs
+                	$format_inputs .= "<input type=\"radio\" name=\"format\" id=\"format\" class=\"radio_format\" onclick=\"set_format(".$format_id.")\" value=\"" . $format . "\"" .$check. ">" . $format;
+                }
+                // Set help text.
 		$alt_output_format = "<span id=\"span_dq_output_format_options\" class=\"span_frm_info\">- All formats - except 'JSON' - return coalesced segments.</span>";
 		// Get output format form structure.
-        $this->query_form .= $structure->get_form_structure('Output Format', $format_inputs, $alt_output_format);
+                $this->query_form .= $structure->get_form_structure('Output Format', $format_inputs, $alt_output_format);
+                ////////////// New code below this line
+                //echo "Format:";
+                //print_r($format_array);
+                //var_dump($format_array);
+                ////// Setting up insert history selection 
+                //$history_inputs="";
+                //#$history_array = $dao->get_value_array(4);
+                //#$_SESSION['default_output_history'];
+                //// Looping history array to create history_inputsA
+                //$history_array=array(0 => "off", 1 => "on");
+                //echo "History:";
+                //print_r($history_array);
+                //var_dump($history_array);
+                ////foreach($history_array as $history_id => $history) {
+                //foreach($history_array as $history_id => $history) {
+                //	$check = NULL;
+                //	if($history_id==$_SESSION['default_output_history']) {
+                //		$check = " checked";
+                //	}
+                //	// add to history_inputs
+                //        $history_inputs .= "<input type=\"radio\" name=\"history\" id=\"history\" class=\"radio_format\" onclick=\"set_history(".$history_id.")\" value=\"" . $history . "\"" .$check. ">" . $history;
+                //        echo "printing histories in for loop in getServerData";
+                //        var_dump($history);
+                //}
+                //// Set help text.
+		//$alt_output_history = "<span id=\"span_dq_output_history_options\" class=\"span_frm_info\">- Sets whether or not to include insert_history with results.</span>";
+		//// Get output history form structure.
+                //$this->query_form .= $structure->get_form_structure('Include History', $history_inputs, $alt_output_history);
+                ////////////// New code above this line
 		// Set form submit button and retrieving segments message.
 		$button = $structure->get_button('submit_segment_form', 'Retrieve segments', 'frm_query_server', NULL, NULL, 'retrieve_segments()', $tabs, NULL);
 		// Open div.
@@ -716,10 +774,17 @@ class GetServerData {
 	////////////////////
 	
 	// Retrieve segments.
-	public function retrieve_segments($s, $e) {
+	public function retrieve_segments($s, $e, $history) {
 		// Init.
 		$r = NULL;
-		$args = $this->get_uri_args($s, $e);
+                $args = $this->get_uri_args($s, $e);
+                #echo "History in retrieve segments function: ";
+                #echo $history;
+                #print_r($history);
+                #var_dump($history);
+                if($history == 'off') {
+                    $args=$args.'&include=metadata,active,known';
+                }
 		// Loop through each flag.
 		foreach($_SESSION['uri_deselected'] as $i => $uri) {
 			// Get resultant array.
