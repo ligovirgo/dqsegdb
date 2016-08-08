@@ -20,20 +20,16 @@ import tempfile
 
 import glue.segments
 
-from glue.ligolw import ligolw
 from glue.ligolw import table
 from glue.ligolw import lsctables
-from glue.ligolw import utils
+from glue.ligolw import types as ligolwtypes
 
-from glue.ligolw.utils import ligolw_add
-from glue.ligolw.utils import process
-from glue.segmentdb import query_engine
 from glue.segmentdb import segmentdb_utils
 
 from glue.ligolw.utils import ligolw_sqlite
 from glue.ligolw import dbtables
 from glue import segments
-import json
+
 from dqsegdb import jsonhelper
 
 
