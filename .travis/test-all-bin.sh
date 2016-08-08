@@ -7,7 +7,7 @@
 for EXE in bin/*_dqsegdb; do
     # get file-name as PATH executable
     EXENAME=`basename ${EXE}`
-    EXEPATH=`which ${EXE}`
+    EXEPATH=`which ${EXENAME}`
     # execute --help with coverage
     echo "Testing $EXENAME --help..."
     coverage run --append --source=dqsegdb ${EXEPATH} --help 1>/dev/null;
