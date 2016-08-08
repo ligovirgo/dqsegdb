@@ -68,7 +68,7 @@ def getDataHttplib(url):
     data1=r1.read()
     return data1
 
-def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
+def getDataUrllib2(url,timeout=900,logger=None,print_warnings=True):
     socket.setdefaulttimeout(timeout)
     """
     Takes a url such as:
@@ -93,7 +93,7 @@ def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
     except urllib2.HTTPError,e:
         #print "Warnings setting FIX:"
         #print warnings
-        if warnings:
+        if print_warnings:
             handleHTTPError("GET",url,e)
         else:
             handleHTTPError("QUIET",url,e)
