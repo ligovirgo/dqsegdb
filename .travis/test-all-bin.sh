@@ -9,6 +9,6 @@ for EXE in bin/*_dqsegdb; do
     EXENAME=`basename ${EXE}`
     EXEPATH=`which ${EXENAME}`
     # execute --help with coverage
-    echo "Testing $EXENAME --help..."
+    echo "Testing $EXEPATH --help..."
     coverage run --append --source=dqsegdb ${EXEPATH} --help 1>/dev/null;
 done
