@@ -26,8 +26,8 @@ before_install:
   - pip install coveralls
 
 install:
-  # install this package
-  - pip install .
+  # install this package (need editable for coverage)
+  - pip install --editable .
 
 script:
   # test --help for all executables
