@@ -16,3 +16,4 @@ web/src/.pydevproject
 *.pyc
 *.so
 *.swp
+/.coverage
