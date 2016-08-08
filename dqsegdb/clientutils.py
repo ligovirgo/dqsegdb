@@ -24,6 +24,7 @@ from glue.ligolw import ligolw
 from glue.ligolw import table
 from glue.ligolw import lsctables
 from glue.ligolw import utils
+from glue.ligolw import types as ligolwtypes
 
 from glue.ligolw.utils import ligolw_add
 from glue.ligolw.utils import process
