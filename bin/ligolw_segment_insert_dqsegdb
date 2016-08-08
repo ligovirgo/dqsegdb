@@ -36,9 +36,12 @@ from dqsegdb import jsonhelper
 import json
 
 try:
-  import pyRXP
-except ImportError, e:
-  print >> sys.stderr, """
+  import pyRXPU as pyRXP
+except ImportError:
+  try:
+    import pyRXP
+  except ImportError, e:
+    print >> sys.stderr, """
 Error: unable to import the pyRXP module.
 
 You must have pyRXP installed and in your PYTHONPATH to run %s.
