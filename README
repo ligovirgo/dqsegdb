@@ -1,6 +1,9 @@
 DQSEGDB
 =======
 
+[![Build Status](https://travis-ci.org/ligovirgo/dqsegdb.svg?branch=master)](https://travis-ci.org/ligovirgo/dqsegdb)
+[![Coverage Status](https://coveralls.io/repos/github/ligovirgo/dqsegdb/badge.svg?branch=master)](https://coveralls.io/github/ligovirgo/dqsegdb?branch=master)
+
 DQSEGDB client library and functions
 
 Please see documentation at: 
