@@ -1,0 +1,43 @@
+language: python
+
+addons:
+  apt:
+    packages:
+      - swig  # needed by m2crypto
+
+matrix:
+  # test multiple versions of python
+  include:
+    - python: 2.6
+    - python: 2.7
+    - python: 3.5
+  # allow python 3.5 build to fail silently
+  allow_failures:
+    - python: 3.5
+  # declare build result after all required tests pass
+  fast_finish: true
+
+before_install:
+  # upgrade pip
+  - pip install --quiet --upgrade pip
+  # install requirements
+  - pip install -r requirements.txt
+  # install test-only requirements
+  - pip install coveralls
+
+install:
+  # install this package (need editable for coverage)
+  - pip install --editable .
+
+script:
+  # test --help for all executables
+  - . .travis/test-all-bin.sh
+
+after_success:
+  # submit coverage to coveralls.io
+  - coverage report
+  - coveralls
+
+cache:
+  apt: true
+  pip: true
