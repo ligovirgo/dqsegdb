@@ -7,7 +7,7 @@ dqsegdb
 
 DQSEGDB client library and functions
 
-Please see documentation at: 
+Please see documentation at (last updated Aug 9 2016): 
 
 https://ldas-jobs.ligo.caltech.edu/~rfisher/dqsegdb_doc/
 
