@@ -188,7 +188,7 @@ elif site=='SYR' and S6:
     elif interferometer=="H" or interferometer=="L":
         input_directory="/frames/dmt/L${inf}O/triggers/DQ_Segments"
 else:
-    print "ER5 DQXML not at SYR for all times"
+    print("ER5 DQXML not at SYR for all times")
     raise ValueError
 
 
@@ -243,8 +243,8 @@ script_fh.write(script_text)
 script_fh.close()
 
 if mode=="single":
-    print "Run the following command:"
-    print " ".join([executable_name,interferometer,str(start_time),str(end_time)])
+    print("Run the following command:")
+    print(" ".join([executable_name,interferometer,str(start_time),str(end_time)]))
     sys.exit()
 
 ## Generate sub file and dag file

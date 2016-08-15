@@ -157,20 +157,20 @@ class PatchFlagVersion(FlagVersion):
         first=True
         debug=False
         if debug:
-            print "Printing insert history"
-            print self.insert_history
-            print "length:"
-            print len(self.insert_history)
+            print("Printing insert history")
+            print(self.insert_history)
+            print("length:")
+            print(len(self.insert_history))
 
         for i in self.insert_history:
             if debug:
-                print "self.insert_history element:"
-                print i
+                print("self.insert_history element:")
+                print(i)
             if first:
                 final_history.append(i)
                 first = False
                 if debug:
-                    print "first!"
+                    print("first!")
             else:
                 process_name=i['process_metadata']['name']
                 process_pid=i['process_metadata']['pid']
@@ -178,25 +178,25 @@ class PatchFlagVersion(FlagVersion):
                 matched=False
                 for j in final_history:
                     if debug:
-                        print "printing i"
-                        print i
-                        print "printing j for comparison"
-                        print j
+                        print("printing i")
+                        print(i)
+                        print("printing j for comparison")
+                        print(j)
                     if process_name==j['process_metadata']['name'] and process_pid==j['process_metadata']['pid'] and process_uid==j['process_metadata']['uid']:  # FIX!!! Should we sort these by time order and then match end time of file_history element to start_time of insert_history element?
                         j['insertion_metadata']['insert_data_stop']=max(j['insertion_metadata']['insert_data_stop'],i['insertion_metadata']['insert_data_stop'])
                         j['insertion_metadata']['insert_data_start']=min(j['insertion_metadata']['insert_data_start'],i['insertion_metadata']['insert_data_start'])
                         if debug:
-                            print "i matched j"
+                            print("i matched j")
                             matched=True
                     else:
                         if debug:
-                            print "i didn't match j"
+                            print("i didn't match j")
                 if not matched:
                     final_history.append(i)
         if debug:
-            print "Printing final history:"
-            print final_history
-            print len(final_history)
+            print("Printing final history:")
+            print(final_history)
+            print(len(final_history))
         self.insert_history=final_history
 
 

@@ -41,13 +41,13 @@ except ImportError:
   try:
     import pyRXP
   except ImportError, e:
-    print >> sys.stderr, """
+    print("""
 Error: unable to import the pyRXP module.
 
 You must have pyRXP installed and in your PYTHONPATH to run %s.
 
 %s
-""" %(sys.argv[0], e)
+""" %(sys.argv[0], e), file=sys.stderr)
 
 try:
   from glue import gpstime
@@ -61,13 +61,13 @@ try:
   from glue.ligolw.utils import process
   from glue.ligolw import types as ligolwtypes 
 except ImportError, e:
-  print >> sys.stderr, """
+  print("""
 Error: unable to import modules from glue.
 
 Check that glue is correctly installed and in your PYTHONPATH.
 
 %s
-""" % e
+""" % e, file=sys.stderr)
   sys.exit(1)
 ##################################################################
 __author__ = "Ryan Fisher <rpfisher@syr.edu>"
@@ -154,8 +154,8 @@ else:
   active_indicates_ifo_goodness=False # default
   
 if len(errmsg) and not options.ping:
-  print >> sys.stderr, errmsg
-  print >> sys.stderr, "Run\n    %s --help\nfor more information." % sys.argv[0]
+  print(errmsg, file=sys.stderr)
+  print("Run\n    %s --help\nfor more information." % sys.argv[0], file=sys.stderr)
   sys.exit(1)
 
 
@@ -165,9 +165,9 @@ if len(errmsg) and not options.ping:
 #o 
 #o if options.ping:
 #o    try:
-#o      print myClient.ping()
+#o      print(myClient.ping())
 #o    except Exception, e:
-#o      print "Error ping --segment-url", str(e)
+#o      print("Error ping --segment-url", str(e))
 #o      sys.exit(1)
 #o else:
 #o ########################################################################
@@ -188,7 +188,7 @@ def publishAndExit(filepath,debug=False):
     raise Exception("Call to InsertMultipleDQXMLFileThreaded returned failure status:  Publishing unsuccessful!")
   else:
     # We're done here
-    print "Insert worked!"
+    print("Insert worked!")
     sys.exit()
 
 def del_file(name):
@@ -245,11 +245,11 @@ server=o.netloc
 version=int(options.version)
 
 if debug:
-  print "Determining max version"
+  print("Determining max version")
 maxVersion=apicalls.dqsegdbMaxVersion(protocol,server,options.ifos,options.name)
 if debug:
-  print "maxVersion=%d" % maxVersion
-  print "Script call provided version=%d" % version
+  print("maxVersion=%d" % maxVersion)
+  print("Script call provided version=%d" % version)
 
 if version > maxVersion+1:
   # Should never insert or append to a version that is a 2 steps up from current version in db (including current version in DB = 0 case that is returned when flag does not yet exist in the database)
@@ -261,23 +261,23 @@ if maxVersion == 0:
   maxEndTime=0 ## Because this flag doesn't exist yet!
 elif maxVersion > version:
   # Fail!
-  print "Version in DB (%d) is greater than that specified (%d), exiting with error." % (maxVersion,version)
+  print("Version in DB (%d) is greater than that specified (%d), exiting with error." % (maxVersion,version))
   raise ValueError
 elif maxVersion == version and options.insert:
   # Fail!
-  print "Version in DB (%d) is equal to that specified (%d) for insertion, exiting with error." % (maxVersion,version)
+  print("Version in DB (%d) is equal to that specified (%d) for insertion, exiting with error." % (maxVersion,version))
   raise ValueError
 else:
   # Proceed to grab maxEndTime from server
   if debug:
-    print "Version approved by checks, determining max end time:"
+    print("Version approved by checks, determining max end time:")
   if options.append:
     data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
     maxEndTime=max([i[1] for i in data_dict['known']])
   elif options.insert and version == maxVersion + 1:
     maxEndTime=0 # The version is greater than the existing versionsi bye one, so we're ok to go forward regardless of what the summary segments are in the payload!
   else:
-    print "Specified version is not next version available to insert into database;  Existing max version is %d and provided version was %d." % (maxVersion,version)
+    print("Specified version is not next version available to insert into database;  Existing max version is %d and provided version was %d." % (maxVersion,version))
     raise ValueError
 
 
@@ -296,35 +296,35 @@ line_no = 1
 for line in fh.readlines():
   sum_line = line.strip().split(" ")
   if len(sum_line) != 2:
-     print "\nERROR: invalid format in your --summary-file row number: %d " % line_no
-     print "Invalid interval is %s" % str(sum_line)
+     print("\nERROR: invalid format in your --summary-file row number: %d " % line_no)
+     print("Invalid interval is %s" % str(sum_line))
      sys.exit(1)
   current_time = str(gpstime.GpsSecondsFromPyUTC(time.time()))
 
   # make sure gps time is 9 digits
   #if (len(sum_line[0])!=9 or len(sum_line[1])!=9):
-  #   print "\nERROR: gps time must be 9 digits"
-  #   print "Invalid interval in your --summary-file row number: %d " % line_no
-  #   print "Invalid interval is %s" % str(sum_line)
+  #   print("\nERROR: gps time must be 9 digits")
+  #   print("Invalid interval in your --summary-file row number: %d " % line_no)
+  #   print("Invalid interval is %s" % str(sum_line))
   #   sys.exit(1)
   ## make sure interval start time is less than and not equal to end time
   if (int(sum_line[0]) >= int(sum_line[1])):
-     print "\nERROR: start_time MUST be less than the end_time"
-     print "Invalid interval in your --summary-file row number: %d " % line_no
-     print "Invalid interval is %s" % str(sum_line)
+     print("\nERROR: start_time MUST be less than the end_time")
+     print("Invalid interval in your --summary-file row number: %d " % line_no)
+     print("Invalid interval is %s" % str(sum_line))
      sys.exit(1)
   # make sure interval start time is greater than the max end time in the database
   # unless --ignore-append-check is specified or we are inserting a new version
   elif (int(sum_line[0]) < maxEndTime) and options.append and (not options.ignore_append_check):
-     print "\nERROR: summary start_time MUST be greater than the max summary end_time %d in the database" % maxEndTime
-     print "Invalid interval in your --summary-file row number: %d" % line_no
-     print "Invalid interval is %s" % str(sum_line)
+     print("\nERROR: summary start_time MUST be greater than the max summary end_time %d in the database" % maxEndTime)
+     print("Invalid interval in your --summary-file row number: %d" % line_no)
+     print("Invalid interval is %s" % str(sum_line))
      sys.exit(1)
   # make sure interval end time is less than current time
   elif  (int(sum_line[1]) > int(current_time)) and not options.ignore_future:
-     print "\nERROR: summary end_time cannot be greater than the current time"
-     print "Invalid interval in your --summary-file row number: %d " % line_no
-     print "Invalid interval is %s" % str(sum_line)
+     print("\nERROR: summary end_time cannot be greater than the current time")
+     print("Invalid interval in your --summary-file row number: %d " % line_no)
+     print("Invalid interval is %s" % str(sum_line))
      sys.exit(1)
   # if interval is valid, append it to intervals list
   else:
@@ -340,27 +340,27 @@ line_no = 1
 for line in fh.readlines():
   seg_line = line.strip().split(" ")
   if len(seg_line) != 2:
-     print "\nERROR: invalid format in your --segment-file row number: %d " % line_no
-     print "Invalid segment is %s" % str(seg_line)
+     print("\nERROR: invalid format in your --segment-file row number: %d " % line_no)
+     print("Invalid segment is %s" % str(seg_line))
      sys.exit(1)
   # make sure gps time is 9 digits
   #if (len(seg_line[0]) != 9 or len(seg_line[1])!=9): 
-  #   print "\nERROR: gps time must be 9 digits"
-  #   print "Invalid segment in your --segment-file row number: %d" % line_no
-  #   print "Invalid segment is %s" % str(seg_line)
+  #   print("\nERROR: gps time must be 9 digits")
+  #   print("Invalid segment in your --segment-file row number: %d" % line_no)
+  #   print("Invalid segment is %s" % str(seg_line))
   #   sys.exit(1)
   # make sure segment start_time is less than end_time:
   if int(seg_line[0])>=int(seg_line[1]):
-    print "\nERROR: segment start_time MUST be less than the end_time"
-    print "Invalid segment in your --segment-file row number: %d" % line_no
-    print "Invalid segment is %s" % str(seg_line)
+    print("\nERROR: segment start_time MUST be less than the end_time")
+    print("Invalid segment in your --segment-file row number: %d" % line_no)
+    print("Invalid segment is %s" % str(seg_line))
     sys.exit(1)
   # make sure segment falls in the summary  intervals specified in the --summary-file
   this_seg = segments.segment(int(seg_line[0]),int(seg_line[1])) 
   if this_seg not in intervals:
-    print "\nERROR: segment cannot fall outside of the summary intervals specified in your --summary-file"
-    print "Invalid segment in your --segment-file row number: %d" % line_no
-    print "Invalid segment is %s" % str(seg_line)
+    print("\nERROR: segment cannot fall outside of the summary intervals specified in your --summary-file")
+    print("Invalid segment in your --segment-file row number: %d" % line_no)
+    print("Invalid segment is %s" % str(seg_line))
     sys.exit(1)
   # Otherwise, append this segment to the list of active segments
   active_segments.append(this_seg)
@@ -368,7 +368,7 @@ for line in fh.readlines():
 active_segments.coalesce()
 
 if debug:
-    print "Beginning INSERT part of code"
+    print("Beginning INSERT part of code")
 #######################################################################################
 #                            Process INSERT or APPEND
 #######################################################################################
@@ -432,13 +432,13 @@ if options.insert or options.append:
 
     if options.output:
       if debug:
-        print "Writing out to file and then exiting."
+        print("Writing out to file and then exiting.")
       fp = open(options.output,"w")
       fp.write(fake_file.getvalue())
       fp.close()
     else:
       if debug:
-        print "Writing to temporary file, then calling callInsertMultipleDQXMLThreaded"
+        print("Writing to temporary file, then calling callInsertMultipleDQXMLThreaded")
       filepath='/tmp/ligolw_segment_insert_'+str(time.time())+'.xml'
       if not debug:
         atexit.register(del_file,filepath) # 
@@ -452,7 +452,7 @@ if options.insert or options.append:
       #else:
       #    # We're done here
       #    if debug:
-      #      print "Insert worked!"
+      #      print("Insert worked!")
       #    sys.exit()
   else: # Direct to JSON
     ## Result JSON should look like this:
@@ -558,7 +558,7 @@ if options.insert or options.append:
     # for i in flag_versions.values():
     #   i.buildFlagDictFromInsertVersion()
     #   url=i.buildURL(server)
-    #   print json.dumps(i.flagDict)
+    #   print(json.dumps(i.flagDict))
     #   patchWithFailCases(i,url,debug,logger,testing_options)
 
     from dqsegdb.jsonhelper import InsertFlagVersion
