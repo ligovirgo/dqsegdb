@@ -16,7 +16,7 @@
 
 """
 Publishing client used to publish DQMXML (usually produced by DMT) from a set
-of directories to the DQSEGDB server.  This publisher supports grouping 
+of directories to the DQSEGDB server.  This publisher supports grouping
 multiple input files together, and then pushing data to the database either
 one flag:version at a time or pushing data in a threaded manner.
 
@@ -25,7 +25,7 @@ Also supports a start time and end time argument to restrict the range of input 
 Please see Python help documentation for all input arguments.
 
 Example call to function:
-    
+
 ligolw_publish_threaded_dqxml_dqsegdb --segment-url http://slwebtest.virgo.infn.it --state-file=/home/rfisher/DQSEGDB/DQSEGDBClient/var/spool/L-DQ_Segments_long_test.xml --pid-file=/home/rfisher/DQSEGDB/DQSEGDBClient/var/run/L-DQ_Segments.pid --log-file=/home/rfisher/DQSEGDB/DQSEGDBClient/var/log/L-DQ_Segments.log --input-directory=/archive/frames/dmt/ER4/DQ/L1 --log-level DEBUG -m 60 -c 20 -e 105819443
 """
 
@@ -123,11 +123,11 @@ if not options.segment_url:
 #old   msg = myClient.ping()
 #old   print msg
 #old   sys.exit(0)
-#old 
+#old
 if not options.state_file and not options.segments_file:
   raise ValueError, "missing argument --state-file or --segments-file"
 if options.state_file and options.segments_file:
-  raise ValueError, "incompatible arguments --state-file and --segments-file"  
+  raise ValueError, "incompatible arguments --state-file and --segments-file"
 if not options.pid_file:
   raise ValueError, "missing argument --pid-file"
 if not options.input_directory:
@@ -136,7 +136,7 @@ if not options.log_file:
   raise ValueError, "missing argument --log-file"
 if options.log_level=="DEBUG":
   local_debug=True
-else: 
+else:
   local_debug=False
 
 # check if a valid lock file already exists, and create one if not
@@ -200,7 +200,7 @@ try:
   if options.end_time:
       ending_time=segments.segmentlist([segments.segment(0,int(options.end_time))])
       pending_segments&=ending_time
-      
+
   logger.info("pending segments = %s" % str(pending_segments))
   pending_files = lal.Cache()
   # make a list of the files that need to be inserted
@@ -298,14 +298,14 @@ try:
             if result:
               logger.debug("published remaining segments before interrupt: %s" % str(grouped_segments))
               published_segments |= grouped_segments
-            #die_now = True unneeded because there is no loop here, we are just cleaning up 
+            #die_now = True unneeded because there is no loop here, we are just cleaning up
           except Exception, e:
             logger.error("failed to publish %s (%s)" % (infiles, str(e)))
           else:
             if result:
               logger.debug("published remaining segments %s" % str(grouped_segments))
               published_segments |= grouped_segments
-            else: 
+            else:
               logger.debug("Failed to publish segments in group: %s" % str(grouped_segments))
 
 

@@ -180,7 +180,7 @@ if site=='CIT' and S6:
         input_directory="/archive/frames/online/DQ/V1"
     elif interferometer=="H" or interferometer=="L":
         input_directory="/archive/frames/dmt/L${inf}O/triggers/DQ_Segments"
-elif site=='CIT': 
+elif site=='CIT':
     input_directory="/archive/frames/dmt/ER5/DQ/${inf}1" #assume ER5
 elif site=='SYR' and S6:
     if interferometer=="V":
@@ -224,13 +224,13 @@ do
   %(comment_cp)scp %(template_state_file)s %(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.xml
   rm -f /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log
   /usr/bin/env python -W ignore::DeprecationWarning %(publish_executable)s --segment-url %(server)s --state-file=%(run_dir)s/var/spool/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.xml --pid-file=%(run_dir)s/var/run/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.pid --log-file=/usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log --input-directory=%(input_directory)s --log-level %(log_level)s -m %(files_per_publish)s -c %(threading)s -b ${start} -e ${end} -o ${offset} %(synch_command)s
-  cp /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log %(log_file_dir)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log 
+  cp /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log %(log_file_dir)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log
   rm -f /usr1/%(user_name)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log) &
 done
 for i in {0..%(repeat_runs)s}
 do
   while [ ! -f %(log_file_dir)s/${inf}-DQ_Segments_S6_${start}_${end}_${offset}.log ]
-  do 
+  do
     sleep 2
   done
 done

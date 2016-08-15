@@ -32,7 +32,7 @@ import exceptions
 import binascii
 from optparse import OptionParser
 from dqsegdb import apicalls
-from dqsegdb import jsonhelper 
+from dqsegdb import jsonhelper
 import json
 
 try:
@@ -57,9 +57,9 @@ try:
   from glue.segmentdb import segmentdb_utils
   from glue.ligolw import table
   from glue.ligolw import lsctables
-  from glue.ligolw import ligolw 
+  from glue.ligolw import ligolw
   from glue.ligolw.utils import process
-  from glue.ligolw import types as ligolwtypes 
+  from glue.ligolw import types as ligolwtypes
 except ImportError, e:
   print >> sys.stderr, """
 Error: unable to import modules from glue.
@@ -89,7 +89,7 @@ except:
 ##################################################################
 def parse_command_line():
   parser = OptionParser()
-  
+
   parser.add_option("-p", "--ping", action = "store_true", default = None, help = "Ping the target server")
   parser.add_option("-t", "--segment-url", action = "store", metavar = "URL", default = None, help = "Users have to specify protocol 'https://' for a secure connection in the segment database url. For example, '--segment-url=https://segdb.ligo.caltech.edu'. No need to specify port number'.")
   parser.add_option("-o", "--output", action = "store", metavar = "FILE", default = None,help = "Write segments to FILE rather than the segment database")
@@ -107,13 +107,13 @@ def parse_command_line():
   parser.add_option("-S", "--summary-file", action = "store", metavar = "FILE", default = None, help = "Read the segment_summary rows from FILE. This should be a file containing the gps start and end times that the flag was defined (i.e. the union of on and off)")
   parser.add_option("-G", "--segment-file", action = "store", metavar = "FILE", default = None,  help = "Read the segment rows from FILE. This should containin the gps start and end times when the flag was active")
   parser.add_option("-B", "--active-indicates-ifo-goodness", action = "store_true", default = False,  help = "Sets the variable in the database to indicate that the flag is active when something is good in the ifo state. Default is False, so flags normally indicate something is wrong.")
-  
-  
+
+
   return parser.parse_args()
-  
-    
+
+
 (options, args) = parse_command_line()
-    
+
 # Make sure all necessary command line arguments are properly given
 errmsg = ""
 if not options.segment_url:
@@ -152,7 +152,7 @@ if options.active_indicates_ifo_goodness:
 else:
   use_xml=True
   active_indicates_ifo_goodness=False # default
-  
+
 if len(errmsg) and not options.ping:
   print >> sys.stderr, errmsg
   print >> sys.stderr, "Run\n    %s --help\nfor more information." % sys.argv[0]
@@ -162,7 +162,7 @@ if len(errmsg) and not options.ping:
 #o ########################################################################
 #o # open connection to LDBD(W)Server
 #o myClient = segmentdb_utils.setup_database(options.segment_url)
-#o 
+#o
 #o if options.ping:
 #o    try:
 #o      print myClient.ping()
@@ -213,23 +213,23 @@ lwtparser = ldbd.LIGOLwParser()
 segment_md = ldbd.LIGOMetadata(xmlparser,lwtparser)
 
 ########################################################################
-# Construct local table process, process_params and segment_definer 
+# Construct local table process, process_params and segment_definer
 ########################################################################
-# Table process and process_params will be popullated by calling the 
+# Table process and process_params will be popullated by calling the
 # process/process_params utility
 
 #myClient = segmentdb_utils.setup_database(options.segment_url)
 doc = ligolw.Document()
 doc.appendChild(ligolw.LIGO_LW())
 
-ligolwtypes.FromPyType[type(True)] = ligolwtypes.FromPyType[type(0)] 
+ligolwtypes.FromPyType[type(True)] = ligolwtypes.FromPyType[type(0)]
 
 process_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__,
              version = __version__,
              cvs_entry_time = __date__, comment = 'ligolw_segment_insert_dqsegdb client insert or append').process_id
 
 ##########################################################################
-#             Process segment-file and summary-file 
+#             Process segment-file and summary-file
 ##########################################################################
 # create the total time interval and storage for the active segments
 intervals = segments.segmentlist()
@@ -238,8 +238,8 @@ active_segments = segments.segmentlist()
 #-----------------Check version and type existence-------------------------
 
 # Query server for current highest version and flag name
-o=urlparse.urlparse(options.segment_url)        
-protocol=o.scheme        
+o=urlparse.urlparse(options.segment_url)
+protocol=o.scheme
 server=o.netloc
 
 version=int(options.version)
@@ -287,7 +287,7 @@ else:
 #data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
 #maxEndTime=max([i[1] for i in data_dict['known']])
 
-### Fix!!! (future upgrade):  If I'm going to allow an xml file input, I'm going to have to do the following check on the xml file instead, implement that when I allow that.  
+### Fix!!! (future upgrade):  If I'm going to allow an xml file input, I'm going to have to do the following check on the xml file instead, implement that when I allow that.
 
 #-----------------Check summary-file---------------------------------
 # get and check the summary intervals to be inserted
@@ -344,7 +344,7 @@ for line in fh.readlines():
      print "Invalid segment is %s" % str(seg_line)
      sys.exit(1)
   # make sure gps time is 9 digits
-  #if (len(seg_line[0]) != 9 or len(seg_line[1])!=9): 
+  #if (len(seg_line[0]) != 9 or len(seg_line[1])!=9):
   #   print "\nERROR: gps time must be 9 digits"
   #   print "Invalid segment in your --segment-file row number: %d" % line_no
   #   print "Invalid segment is %s" % str(seg_line)
@@ -356,7 +356,7 @@ for line in fh.readlines():
     print "Invalid segment is %s" % str(seg_line)
     sys.exit(1)
   # make sure segment falls in the summary  intervals specified in the --summary-file
-  this_seg = segments.segment(int(seg_line[0]),int(seg_line[1])) 
+  this_seg = segments.segment(int(seg_line[0]),int(seg_line[1]))
   if this_seg not in intervals:
     print "\nERROR: segment cannot fall outside of the summary intervals specified in your --summary-file"
     print "Invalid segment in your --segment-file row number: %d" % line_no
@@ -408,7 +408,7 @@ if options.insert or options.append:
 
       segment_table.append(segment)
 
-    
+
     #-------------- create local segment_summary table ------------#
     seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = [
                     'segment_sum_id', 'process_id', 'segment_def_id', 'start_time', 'end_time', 'comment'])
@@ -417,14 +417,14 @@ if options.insert or options.append:
     for this_sum in intervals:
        segment_summary = lsctables.SegmentSum()
        seg_sum_id = seg_sum_table.get_next_id()
-       
+
        segment_summary.segment_sum_id = seg_sum_id
        segment_summary.process_id = process_id
        segment_summary.segment_def_id = seg_def_id
        segment_summary.start_time = this_sum[0]
        segment_summary.end_time = this_sum[1]
        segment_summary.comment = options.comment
- 
+
        seg_sum_table.append(segment_summary)
 
     fake_file = StringIO.StringIO()
@@ -441,7 +441,7 @@ if options.insert or options.append:
         print "Writing to temporary file, then calling callInsertMultipleDQXMLThreaded"
       filepath='/tmp/ligolw_segment_insert_'+str(time.time())+'.xml'
       if not debug:
-        atexit.register(del_file,filepath) # 
+        atexit.register(del_file,filepath) #
       fp = open(filepath,'w')
       fp.write(fake_file.getvalue())
       fp.close()
@@ -456,7 +456,7 @@ if options.insert or options.append:
       #    sys.exit()
   else: # Direct to JSON
     ## Result JSON should look like this:
-    ''' 
+    '''
     {
        "name":"DCH-RYAN_TEST_MAY192016",
        "insert_history":[
@@ -530,14 +530,14 @@ if options.insert or options.append:
     '''
     # Ok, first need to build the dictionary object:
     # flag_versions[(ifo,name,version)] = InsertFlagVersion(ifo,name,version)
-    
+
     # new_seg_summary = segments.segmentlist([segments.segment(start_time,end_time)])
     # flag_versions[(ifo,name,version)].appendKnown(new_seg_summary)
-    
+
     # flag_versions[(ifo,name,version)].flag_description=str(flag_versions_numbered[i]['comment'])
     # flag_versions[(ifo,name,version)].provenance_url=seg_sum_comment
     # flag_versions[i].flag_version_comment=process_dict[pid]['process_comment']
-    
+
     # insert_history_dict = {}
     # process_name=i['process_metadata']['name']
     # process_pid=i['process_metadata']['pid']
@@ -546,7 +546,7 @@ if options.insert or options.append:
     # insert_history_dict['insertion_metadata'] = {}
     # insert_history_dict['insertion_metadata']['insert_data_stop'] = stop
     # insert_history_dict['insertion_metadata']['insert_data_start'] = start
-    # insert_history_dict['insertion_metadata']['timestamp'] = _UTCToGPS(time.gmtime()) 
+    # insert_history_dict['insertion_metadata']['timestamp'] = _UTCToGPS(time.gmtime())
     # insert_history_dict['insertion_metadata']['auth_user']=process.get_username()
     # insert_history_dict['insertion_metadata']['comment'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])
     # flag_versions[i].insert_history.append(insert_history_dict)
@@ -554,7 +554,7 @@ if options.insert or options.append:
     # new_seg = segments.segmentlist([segments.segment(start_time,end_time)])
     # flag_versions[(ifo,name,version)].appendActive(new_seg)
     # flag_versions[i].coalesceInsertHistory()
-    
+
     # for i in flag_versions.values():
     #   i.buildFlagDictFromInsertVersion()
     #   url=i.buildURL(server)
@@ -585,7 +585,7 @@ if options.insert or options.append:
     process_dict[PROGRAM_PID]['process_metadata']={}
     process_dict[PROGRAM_PID]['process_metadata']['name'] = PROGRAM_NAME
     process_dict[PROGRAM_PID]['process_metadata']['pid'] = PROGRAM_PID
-    process_dict[PROGRAM_PID]['process_metadata']['uid'] = USER_NAME 
+    process_dict[PROGRAM_PID]['process_metadata']['uid'] = USER_NAME
     arglist=[]
     for i in process.process_params_from_dict(options.__dict__):
         arglist.append(i[0])
@@ -594,13 +594,13 @@ if options.insert or options.append:
         else:
             arglist.append("None")
     process_dict[PROGRAM_PID]['process_metadata']['args'] = arglist  #[i[0],i[2] for i in process.process_params_from_dict(options.__dict__)
-    process_dict[PROGRAM_PID]['process_metadata']['fqdn'] = socket.gethostname() 
+    process_dict[PROGRAM_PID]['process_metadata']['fqdn'] = socket.gethostname()
     process_dict[PROGRAM_PID]['process_metadata']['process_start_timestamp'] = current_time
     insert_history_dict['process_metadata'] = process_dict[PROGRAM_PID]['process_metadata']
     insert_history_dict['insertion_metadata'] = {}
     insert_history_dict['insertion_metadata']['insert_data_start'] = min(min(intervals))
     insert_history_dict['insertion_metadata']['insert_data_stop'] = max(max(intervals))
-    insert_history_dict['insertion_metadata']['timestamp'] = current_time #_UTCToGPS(time.gmtime()) 
+    insert_history_dict['insertion_metadata']['timestamp'] = current_time #_UTCToGPS(time.gmtime())
     insert_history_dict['insertion_metadata']['auth_user']= USER_NAME #process.get_username()
     insert_history_dict['insertion_metadata']['comment'] = '/dq/'+'/'.join([str(options.ifos),str(options.name),str(options.version)])
     flag_version.insert_history.append(insert_history_dict)

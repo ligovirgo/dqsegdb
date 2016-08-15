@@ -29,11 +29,11 @@
 
 """
 This provides the means to answer several questions posed against either the
-segment database or a collection of DMT XML files.  Output should match 
+segment database or a collection of DMT XML files.  Output should match
 exactly the format returned by S6 style segment database tools.
 
   * What DQ flags exist in the database? ligolw_segment_query --show-types
-  * When was a given DQ flag defined? ligolw_segment_query --query-types 
+  * When was a given DQ flag defined? ligolw_segment_query --query-types
   * When was a given flag active? ligolw_segment_query --query-segments
 * Example: ligolw_segment_query_dqsegdb --segment-url=http://dqsegdb4.phy.syr.edu --query-segments --gps-start-time 987654321 --gps-end-time 987654333 --include-segments="H1:DMT-SCIENCE:1" -o example.xml
 """
@@ -137,14 +137,14 @@ def parse_command_line():
 
     parser.add_option("-S", "--strict-off", metavar = "use_strict", action = "store_true", help = "The default behavior is to truncate segments so that returned segments are entirely in the interval [gps-start-time, gps-end-time).  However if this option is given, the entire non-truncated segment is returned if any part of it overlaps the interval.")
 
-    parser.add_option("-n", "--result-name", metavar = "result_name", default = "RESULT", help = "Name for result segment definer (default = RESULT)") 
+    parser.add_option("-n", "--result-name", metavar = "result_name", default = "RESULT", help = "Name for result segment definer (default = RESULT)")
 
     parser.add_option("-o", "--output-file",   metavar = "output_file", help = "File to which output should be written.  Defaults to stdout.")
     #parser.add_option("-v", "--debug", metavar="debug", help= "Turn on debugging.")
 
     parser.add_option("-l", "--use-s6", metavar="use_s6", action = "store_true", help="Use old s6 style client code.  This is needed to connect to S6 style segdb servers using DB2.  Note that this code is duplicated from the old client, and may become deprecated over time.")
 
-    
+
     options, others = parser.parse_args()
 
     # Make sure we have exactly one thing to do
@@ -152,11 +152,11 @@ def parse_command_line():
     for arg in [options.ping, options.query_types, options.show_types, options.query_segments]:
         if arg:
             count += 1
-            
+
     if count != 1:
         raise ValueError("Exactly one of [ --ping | --show-types | --query-types | --query-segments ] must be provided")
-    
-    
+
+
     # Make sure we have required arguments
     database_location = None
     file_location     = None
@@ -169,10 +169,10 @@ def parse_command_line():
             file_location = options.segment_url[len('file://'):]
         else:
             tmp_dir = tempfile.mkdtemp()
-        
+
             # Grab the part of the name after the last slash
             pos     = options.segment_url[::-1].find('/')
-            fname   = (pos > -1) and options.segment_url[ -1 * pos:] or "dmt.xml" 
+            fname   = (pos > -1) and options.segment_url[ -1 * pos:] or "dmt.xml"
 
             inurl   = urllib.urlopen(options.segment_url)
             outfile = open(tmp_dir + "/" + fname, 'w')
@@ -195,7 +195,7 @@ def parse_command_line():
         file_location = tmp
     else:
         raise ValueError( "One of [ --segment-url | --database | --dmt-files ] must be provided" )
-        
+
 
     # Unless we're pinging, make sure we have start and end times
     if options.ping:
@@ -204,13 +204,13 @@ def parse_command_line():
     else:
         if not options.gps_start_time:
             raise ValueError( "missing required argument --gps-start-time" )
-    
+
         if not options.gps_end_time:
             raise ValueError( "missing required argument --gps-end-time" )
 
         if not options.show_types and not options.include_segments:
             raise ValueError( "missing required argument --include-segments")
-    
+
     return options, database_location, file_location
 
 
@@ -260,7 +260,7 @@ class ShowTypesResultTable(table.Table):
         "segment_summary_end_time": "int_4s",
         "segment_summary_comment": "lstring"
         }
-    
+
 
 
 class ShowTypesResult(object):
@@ -286,7 +286,7 @@ ShowTypesResultTable.RowType = ShowTypesResult
 def run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time, included_segments_string, excluded_segments_string):
     resulttable = lsctables.New(ShowTypesResultTable)
     doc.childNodes[0].appendChild(resulttable)
-    
+
     #sql = """SELECT segment_definer.ifos, segment_definer.name, segment_definer.version,
     #             (CASE WHEN segment_definer.comment IS NULL THEN '-' WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),
     #             segment_summary.start_time, segment_summary.end_time,
@@ -327,13 +327,13 @@ def run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time, 
             result.ifos, result.name, result.version, result.segment_definer_comment, result.segment_summary_comment = key
             result.segment_summary_start_time, result.segment_summary_end_time = segment
             result.ifos = result.ifos.strip()
-        
+
             resulttable.append(result)
 
     #engine.close()
 
 
-    
+
 
 
 
@@ -379,7 +379,7 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
             # Ok, we got a properly versioned query item, add it to the list:
             segments_to_query.append(spec)
         else:
-            versionQueryURL=urifunctions.constructVersionQueryURL(protocol,server,ifo,name) 
+            versionQueryURL=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
             if debug:
                 print versionQueryURL
             versionResult=urifunctions.getDataUrllib2(versionQueryURL)
@@ -407,7 +407,7 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
             if key not in segment_types:
                 segment_types[key] = glue.segments.segmentlist([])
             segment_types[key] |= glue.segments.segmentlist([glue.segments.segment(segment_summary_start_time, segment_summary_end_time)])
-        
+
 
 #  old s6 query:
 #    for row in engine.query(sql):
@@ -436,7 +436,7 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
 
         seg_def_id                     = seg_def_table.get_next_id()
         segment_definer                = lsctables.SegmentDef()
-        segment_definer.process_id     = process_id 
+        segment_definer.process_id     = process_id
         segment_definer.segment_def_id = seg_def_id
         segment_definer.ifos           = key[0]
         segment_definer.name           = key[1]
@@ -477,7 +477,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
     # the clientutils.calculate_combined_result function to generate the
     # final segments for the combined result
     # *_intermediate_JSON will contain the by-products of versionless queries
-    # where by-products mean the versioned results that are used to make the 
+    # where by-products mean the versioned results that are used to make the
     # combined versionless result
     included_JSON_results=[]
     included_intermediate_JSON=[]
@@ -499,7 +499,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
         # [('H1', 'DCH-TEST', 2, 1000000142, 1000000146, 0, 0), ('H1', 'DCH-TEST', 1 , 999999999, 1000000020, 0, 0), ('H1', 'DCH-TEST', 1, 1000000021, 1000000121, 0, 0), ('H1', 'DCH-TEST', 1, 1000000136, 1000000139, 0, 0), ('H1', 'DCH-TEST', 1, 1000000140, 1000000142, 0, 0)]
         # Of particular note: single version queries just use startTime and endTime, but versionless return the start and end time of the segment summaries that affect the final versionless result
         # This means that I need the versionless query above to return that additional information
-        
+
         if len(spec) is 3 and spec[2] is not '*':
             # This is a versioned query
             try:
@@ -543,7 +543,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
                     # Note that it appears I just need one segment summary that matches each segment definer above.
                     known_segments=glue.segments.segmentlist([glue.segments.segment(x[0],x[1]) for x in i_result['known']])
                     segment_summaries.append(known_segments&glue.segments.segmentlist([glue.segments.segment(seg[0],seg[1])]))
-    
+
     #n found_segments = segmentdb_utils.query_segments(engine, 'segment', segdefs)
     #n found_segments = reduce(operator.or_, found_segments).coalesce()
     #n ## Note: found_segments is a segments list of the RESULT after combining the segments, the xml result never includes the original segments for the flags queried, just the final result
@@ -553,7 +553,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
         print "Information on segdefs and segment_summaries: lengths, then first 10 entries"
         print len(segdefs)
         print len(segment_summaries)
-        if len(segdefs) > 10: 
+        if len(segdefs) > 10:
             print segdefs[:10]
         else:
             print segdefs
@@ -590,7 +590,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
             # [('H1', 'DCH-TEST', 2, 1000000142, 1000000146, 0, 0), ('H1', 'DCH-TEST', 1 , 999999999, 1000000020, 0, 0), ('H1', 'DCH-TEST', 1, 1000000021, 1000000121, 0, 0), ('H1', 'DCH-TEST', 1, 1000000136, 1000000139, 0, 0), ('H1', 'DCH-TEST', 1, 1000000140, 1000000142, 0, 0)]
             # Of particular note: single version queries just use startTime and endTime, but versionless return the start and end time of the segment summaries that affect the final versionless result
             # This means that I need the versionless query above to return that additional information
-            
+
             if len(spec) is 3 and spec[2] is not '*':
                 version = int(spec[2])
                 if version < 1:
@@ -645,7 +645,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
         print type(found_segments)
         print found_segments
 
-           
+
 
 
 #
@@ -659,13 +659,13 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
 # ER6 Kipp API CHANGES:
 class ContentHandler(ligolw.LIGOLWContentHandler):
     connection = None
-# 
+#
 # def setup_files(dir_name, gps_start_time, gps_end_time):
 #     # Filter out the ones that are outside our time range
 #@@ -477,7 +478,13 @@ def setup_files(dir_name, gps_start_time, gps_end_time):
 #     target     = dbtables.get_connection_filename(temp_db, None, True, False)
 #     connection = ligolw_sqlite.setup(target)
-# 
+#
 #-    ligolw_sqlite.insert_from_urls(connection, xml_files) # [temp_xml])
 #+    ContentHandler.connection = connection
 #+    dbtables.use_in(ContentHandler)
@@ -691,9 +691,9 @@ def setup_files(dir_name, gps_start_time, gps_end_time):
     ligolw_sqlite.insert_from_urls(xml_files, ContentHandler)
 
     segmentdb_utils.ensure_segment_table(connection)
-        
+
     return temp_db, connection
-    
+
 #
 # =============================================================================
 #
@@ -703,7 +703,7 @@ def setup_files(dir_name, gps_start_time, gps_end_time):
 #
 
 if __name__ == '__main__':
-    options, database_location, file_location  = parse_command_line()    
+    options, database_location, file_location  = parse_command_line()
 
     # Ping the database and exit if requested
     if options.ping:
@@ -723,7 +723,7 @@ if __name__ == '__main__':
             server_version=flags_information['query_information']['api_version']
             print "Server version is %s" % server_version
             sys.exit(0)
-            
+
 
 
     #gps_start_time = int(options.gps_start_time)
@@ -739,7 +739,7 @@ if __name__ == '__main__':
     temp_files = False
 
     if database_location and not options.use_s6:
-        # Use new dqsegdb client 
+        # Use new dqsegdb client
         o=urlparse.urlparse(options.segment_url)
         protocol=o.scheme
         server=o.netloc
@@ -748,11 +748,11 @@ if __name__ == '__main__':
 
         if options.query_segments:
             run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments, options.exclude_segments, options.result_name)
-        
+
         if options.query_types:
             warnings.warn("Notice: This call has not been optimized for DQSEGDB yet, and may take a few minutes.")
             run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, options.include_segments)
-    
+
     else:
         # Run old client
         warnings.warn('Warning: using old client code that may be less carefully maintained than DQSEGDB clients.')
@@ -760,15 +760,15 @@ if __name__ == '__main__':
             connection = segmentdb_utils.setup_database(database_location)
             engine     = query_engine.LdbdQueryEngine(connection)
         else:
-            temp_db, connection = setup_files(file_location, gps_start_time, gps_end_time) 
+            temp_db, connection = setup_files(file_location, gps_start_time, gps_end_time)
             engine     = query_engine.SqliteQueryEngine(connection)
             temp_files = True
         if options.show_types:
             clientutils.run_show_types(doc, connection, engine, gps_start_time, gps_end_time, options.include_segments,options.exclude_segments)
-    
+
         if options.query_segments:
             clientutils.run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time, options.include_segments, options.exclude_segments, options.result_name)
-    
+
         if options.query_types:
             clientutils.run_query_types(doc, process_id, connection, engine, gps_start_time, gps_end_time, options.include_segments)
 

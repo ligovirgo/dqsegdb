@@ -31,7 +31,7 @@ Provides tools to query the DQSEGDB segment database egarding the
 set of flags defined/active at or near a given time:
 
 
-The --report option prints an extensive query of the database for (a) given gps time(s). For the flags which were defined, it reports all active segments within the time span provided as input.  
+The --report option prints an extensive query of the database for (a) given gps time(s). For the flags which were defined, it reports all active segments within the time span provided as input.
   * What is the status of all DQ flags at this time? ligolw_dq_query --report
   * In a custom window (default is +/-10 seconds? ligolw_dq_query --start-pad --end-pad
 """
@@ -103,7 +103,7 @@ def parse_command_line():
     parser.add_option("-a", "--active-only",  action = "store_true", help = "Only report about active segments in specified window, excludes report of known times for flags.")
     parser.add_option("-f", "--tom-formatting", action = "store_true", help = "Tom Dent requested formatting option: condensed output into single lines.")
     parser.add_option("-b", "--seperate-good-from-bad", action = "store_true", help = "Seperates flags marked by the database as being active when the ifo is in a bad state from those that are active when the ifo is in a good state.")
-   
+
     options, time = parser.parse_args()
 
     # Make sure we have required arguments
@@ -150,7 +150,7 @@ def get_full_name(ifo, name, version):
 #
 #    # I'm not happy with the fact that this is done with four separate
 #    # queries.  However it is possible that, say, there won't be a segment
-#    # after the given time in which case 
+#    # after the given time in which case
 #    #
 #    #   select MAX(end_time), MIN(start_time)
 #    #   where end_time < given time and start_time > given time
@@ -170,7 +170,7 @@ def get_full_name(ifo, name, version):
 #             FROM segment_definer, segment
 #             WHERE segment_definer.segment_def_id = segment.segment_def_id
 #             AND %d BETWEEN segment.start_time AND segment.end_time
-#             %s """ % (tm, segment_clause)) 
+#             %s """ % (tm, segment_clause))
 #
 #        in_times = {}
 #        for ifo, name, version, start_time, end_time in rows:
@@ -187,8 +187,8 @@ def get_full_name(ifo, name, version):
 #                WHERE segment_definer.segment_def_id = segment.segment_def_id
 #                AND segment.end_time < %d %s
 #                GROUP BY segment_definer.ifos, segment_definer.name, segment_definer.version""" % (tm, segment_clause))
-#           
-#           
+#
+#
 #            for ifo, name, version, end_time in rows:
 #                full_name = get_full_name(ifo, name, version)
 #                out_times[full_name] = ['%d)' % end_time, '[now']
@@ -225,7 +225,7 @@ def get_full_name(ifo, name, version):
 #        AND   segment_definer.segment_def_id = segment.segment_def_id
 #        AND """ + time_clause + segment_clause)
 #
-#    
+#
 #    distinct_names = []
 #    distinct_rows = []
 #    for x in rows:
@@ -290,15 +290,15 @@ def get_full_name(ifo, name, version):
 #
 
 if __name__ == '__main__':
-    options, database_location, time  = parse_command_line()    
+    options, database_location, time  = parse_command_line()
 
     o=urlparse.urlparse(options.segment_url)
     protocol=o.scheme
     server=o.netloc
-    
+
     start_pad = 0
     end_pad   = 0
-    
+
     if len(time) > 1:
         raise ValueError("Please provide one central gps time for your query.")
     else:
@@ -350,7 +350,7 @@ if __name__ == '__main__':
                 active_results[flag_string].append(segments.segment(start_time,end_time))
                 if i['metadata']['active_indicates_ifo_badness']!=True:
                     active_results_not_bad[flag_string].append(segments.segmentlist([segments.segment(start_time,end_time)]))
-    
+
     if not options.tom_formatting:
         tom=False
     else:
@@ -440,10 +440,10 @@ if __name__ == '__main__':
         if options.seperate_good_from_bad:
             print "Flags marked as active means ifo operating well, that are defined but inactive in this period.  These should be considered as possible vetoes!"
             for i in known_dict['results']:
-                ifo=i['ifo'] 
-                name=i['name'] 
-                version=str(i['version']) 
-                flag_string=":".join([ifo,name,version]) 
+                ifo=i['ifo']
+                name=i['name']
+                version=str(i['version'])
+                flag_string=":".join([ifo,name,version])
                 if flag_string not in active_results:
                     if i['metadata']['active_indicates_ifo_badness']!=True:
                         if tom==True:
@@ -470,6 +470,6 @@ if __name__ == '__main__':
         fh=open(options.output_file,'w')
         fh.write(json_string_out)
         fh.close()
-        
+
 
 

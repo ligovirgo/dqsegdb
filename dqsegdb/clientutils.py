@@ -36,7 +36,7 @@ from dqsegdb import jsonhelper
 def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol, server,include_list_string):
     """
     Function to query the dqsegdb for lists of included and excluded flags.
-    Returns lists of JSON for the included and excluded flags and lists of 
+    Returns lists of JSON for the included and excluded flags and lists of
     URLs used to query the database.
 
     Parameters
@@ -83,7 +83,7 @@ def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol,
     return includedJSON,includedURL,excludedJSON,excludedURL,ifo
 
 def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
-    """ 
+    """
     Calculate the result of the union of the active times for the included flag less the intersection of that result with the union of the excluded flags
     Inputs are 2 lists of python dictionaries representing the JSON (already have run json.loads() on the JSON), a start time, and end time, and the ifo name (it does not make sense to include/exclude across multiple ifos)
 
@@ -97,58 +97,58 @@ def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
         Ex: 'L1'
 
     """
-    total_active_list=segments.segmentlist([]) 
-    for flag in includedJSON: 
-        #result=json.loads(flag) 
-        #flagDict=result['flags'][0] 
-        active_list=flag['active'] 
-        active_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in active_list]) 
-        total_active_list=total_active_list+active_segments 
+    total_active_list=segments.segmentlist([])
+    for flag in includedJSON:
+        #result=json.loads(flag)
+        #flagDict=result['flags'][0]
+        active_list=flag['active']
+        active_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in active_list])
+        total_active_list=total_active_list+active_segments
         total_active_list.coalesce()
-    for flag in excludedJSON: 
-        #result=json.loads(flag) 
-        #flagDict=result['flags'][0] 
-        active_list=flag['active'] 
-        active_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in active_list]) 
-        total_active_list=total_active_list-active_segments 
+    for flag in excludedJSON:
+        #result=json.loads(flag)
+        #flagDict=result['flags'][0]
+        active_list=flag['active']
+        active_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in active_list])
+        total_active_list=total_active_list-active_segments
         total_active_list.coalesce()
-    # Now, total_active_list contains a segmentlist object with segments spanning the expected result     # includedJSON and excludedJSON contain lists of JSON text blobs (not parsed with json.loads yet) 
- 
-    ## Note:  About known segments for the result:  We just report the start and end time of the period queried!  If you wanted to report the actual validity of multiple segments, it's somewhat undefined if the excluded ones and/or some of the included flags aren't known about for a time when the included ones are;  Technically since exclusion trumps all inclusions, if an excluded segment is known and active at any given time, the result is known for that time explicitly. 
-    result_known_segment_list=segments.segmentlist([segments.segment(startTime,endTime)]) 
- 
-    ## Now we have to build the JSON for this flag 
-    # JSON flag objects looks like this (each is a dictionary!): 
-    #  { 
-    #    "ifo" : "ifo", 
-    #    "name" : "flag", 
-    #    "version" : n, 
-    #    "comment" : "description",     #    "provenance_url" : "aLog URL", 
-    #    "deactivated" : false|true, 
-    #    "active_indicates_ifo_badness" : true|false|null, 
-    #    // known segments returned for both /active and /known URIs, no segments are returned for the /metadata or /report/flags queries 
-    #    // aka S6 summary segments 
-    #    "known" : [ [ts,te], [ts,te], ... ] 
-    #    // active segments returned only for /active URI: 
-    #    "active" : [ [ts,te], [ts,te], ... ] 
-    #    // \textcolor{red}{Comment: or "segment" : [ [ts,te,value], [ts,te,value], ...] (where value can be -1,0 or +1)} 
-    #    // inactive == (known - active) 
-    #    // unknown == (all_time - known) 
-    #  }, 
-    ## Make the json-ready flag dictionary for the combined result: 
-    ifo=ifo # replicating old behavoir from ligolw_segment_query 
-    # Note: This just uses the ifo of the last excluded flag! 
-    name='RESULT' 
-    version=1 
-    known_segments=result_known_segment_list 
-    active_segments=total_active_list 
+    # Now, total_active_list contains a segmentlist object with segments spanning the expected result     # includedJSON and excludedJSON contain lists of JSON text blobs (not parsed with json.loads yet)
+
+    ## Note:  About known segments for the result:  We just report the start and end time of the period queried!  If you wanted to report the actual validity of multiple segments, it's somewhat undefined if the excluded ones and/or some of the included flags aren't known about for a time when the included ones are;  Technically since exclusion trumps all inclusions, if an excluded segment is known and active at any given time, the result is known for that time explicitly.
+    result_known_segment_list=segments.segmentlist([segments.segment(startTime,endTime)])
+
+    ## Now we have to build the JSON for this flag
+    # JSON flag objects looks like this (each is a dictionary!):
+    #  {
+    #    "ifo" : "ifo",
+    #    "name" : "flag",
+    #    "version" : n,
+    #    "comment" : "description",     #    "provenance_url" : "aLog URL",
+    #    "deactivated" : false|true,
+    #    "active_indicates_ifo_badness" : true|false|null,
+    #    // known segments returned for both /active and /known URIs, no segments are returned for the /metadata or /report/flags queries
+    #    // aka S6 summary segments
+    #    "known" : [ [ts,te], [ts,te], ... ]
+    #    // active segments returned only for /active URI:
+    #    "active" : [ [ts,te], [ts,te], ... ]
+    #    // \textcolor{red}{Comment: or "segment" : [ [ts,te,value], [ts,te,value], ...] (where value can be -1,0 or +1)}
+    #    // inactive == (known - active)
+    #    // unknown == (all_time - known)
+    #  },
+    ## Make the json-ready flag dictionary for the combined result:
+    ifo=ifo # replicating old behavoir from ligolw_segment_query
+    # Note: This just uses the ifo of the last excluded flag!
+    name='RESULT'
+    version=1
+    known_segments=result_known_segment_list
+    active_segments=total_active_list
     result_flag=jsonhelper.buildFlagDict(ifo,name,version,known_segments,active_segments)
     return result_flag
 
 def calculate_versionless_result(jsonResults,startTime,endTime,ifo_input=None):
     """
     Construct output segments lists from multiple JSON objects.
-    The jsonResults input is a list of json ojbects and 
+    The jsonResults input is a list of json ojbects and
     are expected to be in order of decreasing versions.
     """
     debug=False
@@ -213,7 +213,7 @@ def calculate_versionless_result(jsonResults,startTime,endTime,ifo_input=None):
 ################################
 #
 #  S6 Client Utilities
-# 
+#
 ################################
 
 def seg_spec_to_sql(spec):
@@ -251,7 +251,7 @@ class ShowTypesResultTable(table.Table):
         "segment_summary_end_time": "int_4s",
         "segment_summary_comment": "lstring"
         }
-    
+
 
 
 class ShowTypesResult(object):
@@ -277,7 +277,7 @@ ShowTypesResultTable.RowType = ShowTypesResult
 def run_show_types(doc, connection, engine, gps_start_time, gps_end_time, included_segments_string, excluded_segments_string):
     resulttable = lsctables.New(ShowTypesResultTable)
     doc.childNodes[0].appendChild(resulttable)
-    
+
     sql = """SELECT segment_definer.ifos, segment_definer.name, segment_definer.version,
                  (CASE WHEN segment_definer.comment IS NULL THEN '-' WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),
                  segment_summary.start_time, segment_summary.end_time,
@@ -308,7 +308,7 @@ def run_show_types(doc, connection, engine, gps_start_time, gps_end_time, includ
             result.ifos, result.name, result.version, result.segment_definer_comment, result.segment_summary_comment = key
             result.segment_summary_start_time, result.segment_summary_end_time = segment
             result.ifos = result.ifos.strip()
-        
+
             resulttable.append(result)
 
     engine.close()
@@ -451,7 +451,7 @@ def run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time, in
     segmentdb_utils.add_to_segment(doc, process_id, seg_def_id, found_segments)
     print "Made it to the end of the query code"
     print doc
-           
+
 
 
 #
@@ -476,9 +476,9 @@ def setup_files(dir_name, gps_start_time, gps_end_time):
     ligolw_sqlite.insert_from_urls(connection, xml_files) # [temp_xml])
 
     segmentdb_utils.ensure_segment_table(connection)
-        
+
     return temp_db, connection
-   
+
 def add_to_segment_ns(xmldoc, proc_id, seg_def_id, sgmtlist):
     try:
         segtable = table.get_table(xmldoc, lsctables.SegmentTable.tableName)

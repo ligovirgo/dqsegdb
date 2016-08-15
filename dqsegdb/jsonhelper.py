@@ -25,7 +25,7 @@ import glue.segments as segments
 #  is trivial, as shown here:
 #
 # Example from a file:
-#[rpfisher@sugar-dev2 ~]$ cat test_jsonnocomments.json 
+#[rpfisher@sugar-dev2 ~]$ cat test_jsonnocomments.json
 #{
 # "meta": {
 #    "query_uri" : "uri",
@@ -42,9 +42,9 @@ import glue.segments as segments
 ################################################################################
 
 def convertJSONtoXML(json_response):
-    """ 
+    """
     Incomplete!!
-    Converts a standard JSON response from the dqsegdb server into a 
+    Converts a standard JSON response from the dqsegdb server into a
     DQXML format.
 
     """
@@ -80,9 +80,9 @@ def convertJSONtoXML(json_response):
 def buildFlagDict(ifo,name,version,known_segments,active_segments):
     """
     Helper function to build a flag_version dictionary for JSON production.
-    
+
     known_segments and active_segments are assumed to be segmentlist objects
-    Note that this currently does not generate a false "query_metadata" block        
+    Note that this currently does not generate a false "query_metadata" block
     """
     flag={}
     flag['ifo']=ifo
@@ -95,8 +95,8 @@ def buildFlagDict(ifo,name,version,known_segments,active_segments):
 
 
 class FlagVersion(object):
-    """ 
-    Class to set up a flag version object for parsing into JSON 
+    """
+    Class to set up a flag version object for parsing into JSON
     """
     def __init__(self,ifo,name,version):
         self.known=segments.segmentlist([])
@@ -110,14 +110,14 @@ class FlagVersion(object):
         url=server+'/dq/'+'/'.join([str(self.ifo),str(self.name),str(self.version)])
         return url
     def appendKnown(self,known_segments):
-        """ Appends a segmentlist of known segments to the existing known 
+        """ Appends a segmentlist of known segments to the existing known
         segments for the object, and coalesces.
         """
         # known_segments must be a segmentlist object
         self.known=self.known+known_segments
         self.known.coalesce()
     def appendActive(self,active_segments):
-        """ Appends a segmentlist of active segments to the existing active 
+        """ Appends a segmentlist of active segments to the existing active
         segments for the object, and coalesces.
         """
         # active_segments must be a segmentlist object
@@ -128,8 +128,8 @@ class FlagVersion(object):
         self.flagDict=buildFlagDict(self.ifo,self.name,self.version,self.known,self.active)
 
 class PatchFlagVersion(FlagVersion):
-    __doc__ = FlagVersion.__doc__ + """ 
-    Class to extend basic flag version class to include insert_history 
+    __doc__ = FlagVersion.__doc__ + """
+    Class to extend basic flag version class to include insert_history
     """
     def __init__(self,ifo,name,version,hackDec11=False):
         self.known=segments.segmentlist([])
@@ -139,7 +139,7 @@ class PatchFlagVersion(FlagVersion):
         self.ifo=ifo
         self.name=name
         self.version=version
-        self.temp_process_ids={} # Used to hold the data 
+        self.temp_process_ids={} # Used to hold the data
         #                         # associated with a process_id
         if hackDec11:
             self.insert_history={}
@@ -201,8 +201,8 @@ class PatchFlagVersion(FlagVersion):
 
 
 class InsertFlagVersion(PatchFlagVersion):
-    __doc__ = PatchFlagVersion.__doc__ + """ 
-    Adds metadata for initial inserts 
+    __doc__ = PatchFlagVersion.__doc__ + """
+    Adds metadata for initial inserts
     """
     def __init__(self,ifo,name,version):
         super(InsertFlagVersion, self).__init__(ifo,name,version)
@@ -225,8 +225,8 @@ class InsertFlagVersion(PatchFlagVersion):
         self.flagDict['metadata']['active_indicates_ifo_badness']=self.active_indicates_ifo_badness
 
 class InsertFlagVersionOld(PatchFlagVersion):
-    __doc__ = PatchFlagVersion.__doc__ + """ 
-    Adds metadata for initial inserts 
+    __doc__ = PatchFlagVersion.__doc__ + """
+    Adds metadata for initial inserts
     """
     def __init__(self,ifo,name,version):
         super(InsertFlagVersionOld, self).__init__(ifo,name,version)
@@ -247,26 +247,26 @@ class InsertFlagVersionOld(PatchFlagVersion):
         self.flagDict['metadata']['provenance_url']=self.provenance_url
         self.flagDict['metadata']['deactivated']=self.deactivated
         self.flagDict['metadata']['active_indicates_ifo_badness']=self.active_indicates_ifo_badness
-    
+
 
 ################################################################################
 #
-#  Helper functions to convert segmentlist to json list of lists type object 
+#  Helper functions to convert segmentlist to json list of lists type object
 #  and vice versa
 #
 ################################################################################
 
 def convert_segmentlist_to_json(segmentlist_input):
-    """ 
-    Helper function used to convert segmentlist to json list of lists type 
+    """
+    Helper function used to convert segmentlist to json list of lists type
     object.
     """
     json_list=[[x[0],x[1]] for x in segmentlist_input]
     return json_list
 
 def convert_json_list_to_segmentlist(jsonlist):
-     """ 
-     Helper function used to convert json list of lists type object to a 
+     """
+     Helper function used to convert json list of lists type object to a
      segmentlist object
      """
      segment_list=segments.segmentlist([segments.segment(x[0],x[1]) for x in jsonlist])
@@ -353,7 +353,7 @@ def generated_ascii(json_str,filepath):
 #     "inserted_data_end": gpstime, // Last gpstime of data this insertion describes
 #     "process_start_timestamp": gpstime, // When the insert process was started, use to determine run time of inserts
 #     // NOT to be added by client code -- these are server-side annotations, prior to insertion into the DB
-#     "auth_user" : "user identification" // from the auth infrastructure used to talk to the server 
+#     "auth_user" : "user identification" // from the auth infrastructure used to talk to the server
 #     "insert_timestamp" : gpstime,    // when the insert was committed to the DB
 #    },
 #    "flag" : {
@@ -364,7 +364,7 @@ def generated_ascii(json_str,filepath):
 #         "deactivated" : false|true,
 #         "active_indicates_ifo_badness" : true|false|null,
 #         // all of the above will be needed for /dq/IFO/FLAG inserts
-#         "version" : n,  
+#         "version" : n,
 #         // all of the above will be needed for /dq/IFO/FLAG/VERSION inserts
 #         // all of the below are required for /dq/IFO/FLAG/VERSION/active inserts
 #         "known" : [ [ts,te], [ts,te], ... ]
