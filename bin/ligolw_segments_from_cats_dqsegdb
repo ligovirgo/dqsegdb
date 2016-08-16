@@ -1,35 +1,6 @@
 #!/usr/bin/env python
-## Copyright (C) 2015 Ryan Fisher, Gary Hemming
-# 
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-# 
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright (C) 2009 Larne Pekowsky
 # Copyright (C) 2015 Ryan Fisher, Gary Hemming
-# 
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-# 
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-# Copyright (C) 2009  Larne Pekowsky
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -57,7 +28,7 @@
 
 """
 Takes one or more segment XML files and a query file, runs the query against
-the segments, and produces veto files as XML.  Produces output to match S6 
+the segments, and produces veto files as XML.  Produces output to match S6
 style segment database tools.
 """
 
@@ -94,8 +65,8 @@ from glue.ligolw.utils import process
 
 from glue import git_version
 
-from dqsegdb import apicalls 
-from dqsegdb import clientutils 
+from dqsegdb import apicalls
+from dqsegdb import clientutils
 
 import re
 import urllib
@@ -130,9 +101,9 @@ def parse_command_line():
     parser = OptionParser(
         version = "Name: %%prog\n%s" % git_version.verbose_msg,
         usage   = "%prog -v|--veto-file filename [options]",
-        description = "Reads one or more segment files and a veto file and generates files of veto segments"        
+        description = "Reads one or more segment files and a veto file and generates files of veto segments"
 	)
-    
+
     parser.add_option("-v", "--veto-file",    metavar = "veto_file",    help = "veto XML file (required).")
     parser.add_option("-o", "--output-dir",   metavar = "output_dir",   default = '.',          help = "Directory to write output (default=cwd).")
     parser.add_option("-k", "--keep-db",      metavar = "keep_db",      action  = "store_true", help = "Keep sqlite database.")
@@ -157,7 +128,7 @@ def parse_command_line():
 
     if not options.veto_file:
         raise ValueError, "missing required argument --veto-file"
-   
+
     # User must specify how to treat the categories
     if not (options.cumulative_categories or options.separate_categories) or (options.cumulative_categories and options.separate_categories):
         print >>sys.stderr, "Must provide one of --cumulative-categories | --separate-categories"
@@ -179,7 +150,7 @@ def parse_command_line():
 
         # Grab the part of the name after the last slash
         pos     = options.veto_file[::-1].find('/')
-        fname   = (pos > -1) and options.veto_file[ -1 * pos:] or "veto_definer.xml" 
+        fname   = (pos > -1) and options.veto_file[ -1 * pos:] or "veto_definer.xml"
 
         loaded_file = tmp_dir + "/" + fname
 
@@ -204,10 +175,10 @@ def parse_command_line():
             file_location = options.segment_url[len('file://'):]
         else:
             tmp_dir = tempfile.mkdtemp()
-        
+
             # Grab the part of the name after the last slash
             pos     = options.segment_url[::-1].find('/')
-            fname   = (pos > -1) and options.segment_url[ -1 * pos:] or "dmt.xml" 
+            fname   = (pos > -1) and options.segment_url[ -1 * pos:] or "dmt.xml"
 
             inurl   = urllib.urlopen(options.segment_url)
             outfile = open(tmp_dir + "/" + fname, 'w')
@@ -236,11 +207,11 @@ def parse_command_line():
 
     if not options.gps_start_time:
         raise ValueError( "missing required argument --gps-start-time" )
-    
+
     if not options.gps_end_time:
         raise ValueError( "missing required argument --gps-end-time" )
 
-        
+
     return options, database_location, file_location, loaded_file, debug
 
 
@@ -295,7 +266,7 @@ if __name__ == '__main__':
 
     dbtables.get_column_info = kludge_get_column_info
 
-    options, db_location, file_location, loaded_file, debug = parse_command_line()    
+    options, db_location, file_location, loaded_file, debug = parse_command_line()
 
     if options.non_integer:
         allow_non_int=True
@@ -303,7 +274,7 @@ if __name__ == '__main__':
         allow_non_int=False
     now = gpstime.GpsSecondsFromPyUTC(time.time())
 
-    # 1. Load the veto file into sqlite    
+    # 1. Load the veto file into sqlite
     handle, temp_db    = tempfile.mkstemp(suffix='.sqlite')
     os.close(handle)
     target          = dbtables.get_connection_filename(temp_db, None, True, False)
@@ -320,7 +291,7 @@ if __name__ == '__main__':
         min_start_time = int(options.gps_start_time)
         max_end_time   = int(options.gps_end_time)
     # 2. If we're working with DMT files load them into sqlite as well
-    
+
     if file_location:
         xml_files += segmentdb_utils.get_all_files_in_range(file_location, min_start_time, max_end_time)
         segment_query_engine = veto_query_engine
@@ -338,12 +309,12 @@ if __name__ == '__main__':
     # If we're working with DMT files make sure we have a segment table
     if file_location:
         segmentdb_utils.ensure_segment_table(veto_connection)
-    
+
     #cli_interval = glue.segments.segmentlist([glue.segments.segment(int(options.gps_start_time), int(options.gps_end_time))])
     cli_interval = glue.segments.segmentlist([glue.segments.segment(min_start_time,max_end_time)])
-            
+
     #
-    # Get the set of veto categories and ifos for which we have segments 
+    # Get the set of veto categories and ifos for which we have segments
     #
     #categories = [row[0] for row in veto_query_engine.query("select distinct(category) from veto_definer")]
     #ifos       = [row[0] for row in veto_query_engine.query("select distinct(ifo) from veto_definer")]
@@ -458,7 +429,7 @@ if __name__ == '__main__':
             manual_debug=False
             #manual_debug=True
             if manual_debug:
-                import pdb 
+                import pdb
                 pdb.set_trace()
             # Form the result
             if len(vetoed_segments)>0:
@@ -469,17 +440,17 @@ if __name__ == '__main__':
             seg_def_id = segmentdb_utils.add_to_segment_definer(doc, proc_id, ifo, seg_name, 1)
 
             # and segment summary
-            if allow_non_int: 
+            if allow_non_int:
                 clientutils.add_to_segment_summary_ns(doc, proc_id, seg_def_id, [[min_start_time, max_end_time]])
             else:
                 segmentdb_utils.add_to_segment_summary(doc, proc_id, seg_def_id, [[min_start_time, max_end_time]])
 
             # and store the segments
-            if allow_non_int: 
+            if allow_non_int:
                 clientutils.add_to_segment_ns(doc, proc_id, seg_def_id, vetoed_segments)
             else:
                 segmentdb_utils.add_to_segment(doc, proc_id, seg_def_id, vetoed_segments)
-            
+
             # Dump to XML
             output_name = "%s/%s-VETOTIME_CAT%d-%d-%d.xml" % (options.output_dir, ifo, category_num, min_start_time, (max_end_time - min_start_time))
             utils.write_filename(doc, output_name)

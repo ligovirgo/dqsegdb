@@ -1,15 +1,15 @@
 # Copyright (C) 2015 Ryan Fisher, Gary Hemming
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import warnings
@@ -27,7 +27,7 @@ import re
 #
 # =============================================================================
 #
-#                Library for DQSEGDB API Providing URL Functions 
+#                Library for DQSEGDB API Providing URL Functions
 #
 # =============================================================================
 #
@@ -132,7 +132,7 @@ def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
 
 def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
     """
-    Simple url construction method for dqsegdb server flag:version queries 
+    Simple url construction method for dqsegdb server flag:version queries
     including restrictions on time ranges.
 
     Parameters
@@ -166,9 +166,9 @@ def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_
 
 def constructSegmentQueryURL(protocol,server,ifo,name,version,include_list_string):
     """
-    Simple url construction method for dqsegdb server flag:version queries 
+    Simple url construction method for dqsegdb server flag:version queries
     not including restrictions on time ranges.
-    
+
     Parameters
     ----------
     protocol : `string`
@@ -191,8 +191,8 @@ def constructSegmentQueryURL(protocol,server,ifo,name,version,include_list_strin
 
 def constructVersionQueryURL(protocol,server,ifo,name):
     """
-    Simple url construction method for dqsegdb server version queries. 
-    
+    Simple url construction method for dqsegdb server version queries.
+
     Parameters
     ----------
     protocol : `string`
@@ -211,8 +211,8 @@ def constructVersionQueryURL(protocol,server,ifo,name):
 
 def constructFlagQueryURL(protocol,server,ifo):
     """
-    Simple url construction method for dqsegdb server flag queries. 
-    
+    Simple url construction method for dqsegdb server flag queries.
+
     Parameters
     ----------
     protocol : `string`
@@ -285,7 +285,7 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
 def patchDataUrllib2(url,payload,timeout=900,logger=None):
     """
     Wrapper method for urllib2 that supports PATCHs to a url.
-    
+
     Parameters
     ----------
     url : `string`
@@ -337,7 +337,7 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
 def handleHTTPError(method,url,e):
     if int(e.code)!=404:
         warnings.warn("Warning: Issue accessing url: %s" % url)
-        warnings.warn("Code: %s" % str(e.code)) 
+        warnings.warn("Code: %s" % str(e.code))
         warnings.warn("Message: %s" % str(e.msg))
         #print e.reason
         #print url
@@ -360,12 +360,12 @@ def handleHTTPError(method,url,e):
 # terms of the GNU General Public License as published by the Free Software
 # Foundation, either version 3 of the License, or (at your option) any later
 # version.
-# 
+#
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 # details.
-# 
+#
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 #
