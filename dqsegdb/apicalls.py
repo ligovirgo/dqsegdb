@@ -20,19 +20,11 @@ import glue
 from dqsegdb.jsonhelper import InsertFlagVersion
 from dqsegdb.jsonhelper import InsertFlagVersionOld
 from urllib2 import HTTPError
-from urllib2 import URLError
 import time
 import json
-from glue import gpstime
 from glue import ldbd
 from glue import segments
-from glue import git_version
-from glue.segmentdb import segmentdb_utils
-from glue.ligolw import table
-from glue.ligolw import lsctables
-from glue.ligolw import ligolw
 from glue.ligolw.utils import process
-from glue.ligolw import types as ligolwtypes
 import os
 try:
     import pyRXPU as pyRXP
