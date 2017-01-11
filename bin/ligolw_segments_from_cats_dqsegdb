@@ -32,6 +32,7 @@ the segments, and produces veto files as XML.  Produces output to match S6
 style segment database tools.
 """
 
+from __future__ import print_function
 
 from optparse import OptionParser
 import urlparse
@@ -131,7 +132,7 @@ def parse_command_line():
 
     # User must specify how to treat the categories
     if not (options.cumulative_categories or options.separate_categories) or (options.cumulative_categories and options.separate_categories):
-        print >>sys.stderr, "Must provide one of --cumulative-categories | --separate-categories"
+        print("Must provide one of --cumulative-categories | --separate-categories", file=sys.stderr)
         sys.exit(-1)
 
     tmp_dir = None
@@ -156,7 +157,7 @@ def parse_command_line():
 
         outfile = open(loaded_file, 'w')
         for l in inurl:
-            print >>outfile, l,
+            print(l, file=outfile)
 
         inurl.close()
         outfile.close()
@@ -183,7 +184,7 @@ def parse_command_line():
             inurl   = urllib.urlopen(options.segment_url)
             outfile = open(tmp_dir + "/" + fname, 'w')
             for l in inurl:
-                print >>outfile, l,
+                print(l, file=outfile)
 
             inurl.close()
             outfile.close()
@@ -389,31 +390,31 @@ if __name__ == '__main__':
                 json_result,queryurl=apicalls.dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
                 # This pads and truncates to the size of the queried region
                 if debug:
-                    print "Known for %s" % name
-                #print json_result['known']
+                    print("Known for %s" % name)
+                #print(json_result['known'])
                 # NOTE: Adding startpad to match S6, even though it seems backwards!
                 cur_segment_summaries=glue.segments.segmentlist([glue.segments.segment(x[0]+startpad,x[1]+endpad) for x in json_result['known']])
                 cur_segment_summaries.coalesce()
                 if debug:
-                    print cur_segment_summaries
+                    print(cur_segment_summaries)
                 cur_segment_summaries=cur_segment_summaries&glue.segments.segmentlist([glue.segments.segment(startTime,endTime)])
                 if debug:
-                    print "Resulting segment summaries:"
-                    print cur_segment_summaries
+                    print("Resulting segment summaries:")
+                    print(cur_segment_summaries)
                     # This pads and truncates to the size of the queried region
                     #debug:
-                    print "Active for %s" % name
-                    #print json_result['active']
+                    print("Active for %s" % name)
+                    #print(json_result['active'])
                 # NOTE: Adding startpad to match S6, even though it seems backwards!
                 cur_vetoed_segments=glue.segments.segmentlist([glue.segments.segment(x[0]+startpad,x[1]+endpad) for x in json_result['active']])
                 #debug:
                 cur_vetoed_segments.coalesce()
                 if debug:
-                    print cur_vetoed_segments
+                    print(cur_vetoed_segments)
                 cur_vetoed_segments=cur_vetoed_segments&glue.segments.segmentlist([glue.segments.segment(startTime,endTime)])
                 if debug:
-                    print "Resulting segments:"
-                    print cur_vetoed_segments
+                    print("Resulting segments:")
+                    print(cur_vetoed_segments)
                 # And now we add the results to the list!
                 segment_summaries.append(cur_segment_summaries)
                 vetoed_segments.append(cur_vetoed_segments)
@@ -465,5 +466,5 @@ if __name__ == '__main__':
     if not options.keep_db:
         os.remove(temp_db)
     if debug:
-        print "If you see this message, your call to ligolw_segments_from_cats was successful."
-        print "You may want to follow up on any warnings printed before this point, they will indicate any flags that didn't exist in the database but were in the veto definer file."
+        print("If you see this message, your call to ligolw_segments_from_cats was successful.")
+        print("You may want to follow up on any warnings printed before this point, they will indicate any flags that didn't exist in the database but were in the veto definer file.")
