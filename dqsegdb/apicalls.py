@@ -103,7 +103,7 @@ def dqsegdbMaxVersion(protocol,server,ifo,name):
     try:
         result=urifunctions.getDataUrllib2(queryurl,warnings=False)
     except HTTPError as e:
-        print "e.code: %s  FIX!" % str(e.code)
+        print("e.code: %s  FIX!" % str(e.code))
         if int(e.code)==404:
             return 0
         else:
@@ -280,7 +280,7 @@ def queryAPIVersion(protocol,server,verbose):
     """
     queryurl=protocol+"://"+server+"/dq"
     if verbose:
-        print queryurl
+        print(queryurl)
     result=urifunctions.getDataUrllib2(queryurl)
     dictResult=json.loads(result)
     apiVersion=str(dictResult['query_information']['api_version'])
@@ -303,7 +303,7 @@ def reportFlags(protocol,server,verbose):
     """
     queryurl=protocol+"://"+server+"/report/flags"
     if verbose:
-        print queryurl
+        print(queryurl)
     result=urifunctions.getDataUrllib2(queryurl)
     return result
 
@@ -337,7 +337,7 @@ def reportActive(protocol,server,includeSegments,verbose,gps_start_time,gps_end_
         timeText="&s=%d&e=%d"%(gps_start_time,gps_end_time)
     queryurl=protocol+"://"+server+"/report/active"+includeText+timeText
     if verbose:
-        print queryurl
+        print(queryurl)
     result=urifunctions.getDataUrllib2(queryurl,timeout=1200)
     return result,queryurl
 
@@ -370,7 +370,7 @@ def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_t
         timeText="&s=%d&e=%d"%(gps_start_time,gps_end_time)
     queryurl=protocol+"://"+server+"/report/known"+includeText+timeText
     if verbose:
-        print queryurl
+        print(queryurl)
     result=urifunctions.getDataUrllib2(queryurl,timeout=1200)
     return result,queryurl
 
@@ -504,7 +504,7 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     ## of versions
     versionQueryURL=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
     if verbose:
-        print versionQueryURL
+        print(versionQueryURL)
     try:
         versionResult=urifunctions.getDataUrllib2(versionQueryURL)
     except HTTPError as e:
@@ -541,7 +541,7 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
             version=versioned_url.split('/')[-1]
             queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
             if verbose:
-                print queryurl
+                print(queryurl)
             result=urifunctions.getDataUrllib2(queryurl)
             result_parsed=json.loads(result)
             jsonResults.append(result_parsed)
@@ -554,9 +554,9 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
                     tmpfile=open(filename,'w')
                     json.dump(result_parsed,tmpfile)
                     tmpfile.close()
-                    print "Stored partial result for individual version to disk as %s" % filename
+                    print("Stored partial result for individual version to disk as %s" % filename)
                 except:
-                    print "Couldn't save partial results to disk.... continuing anyway."
+                    print("Couldn't save partial results to disk.... continuing anyway.")
 
     ## Construct output segments lists from multiple JSON objects
     # The jsonResults are in order of decreasing versions,
@@ -567,8 +567,8 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     # so we're done the math! :
     result_flag,affected_results=clientutils.calculate_versionless_result(jsonResults,startTime,endTime,ifo_input=ifo)
     if verbose:
-        print "active segments:", result_flag['active']
-        print "known segments:", result_flag['known']
+        print("active segments:", result_flag['active'])
+        print("known segments:", result_flag['known'])
 
     ### Old before JSON spec change:
     ### Need to build the client_meta part of the JSON results
@@ -637,7 +637,7 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
         #patch to the flag/version
         if debug:
             inlogger.debug("Trying to patch alone for url: %s" % url)
-            #print "Trying to patch alone for url: %s" % url 
+            #print("Trying to patch alone for url: %s" % url)
         if 'synchronize' in testing_options:
             startTime=testing_options['synchronize']
             inlogger.debug("Trying to patch synchronously at time %s" % startTime)
@@ -645,7 +645,7 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
         patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
         if debug:
             inlogger.debug("Patch alone succeeded for %s" % url)
-            #print "Patch alone succeeded for %s" % url
+            #print("Patch alone succeeded for %s" % url)
     except HTTPError as e:
         if e.code!=404:
             raise e
@@ -653,11 +653,11 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
             #put to version
             if debug:
                 inlogger.debug("Trying to put alone for url: %s" % url)
-                #print "Trying to put alone for %s" % url
+                #print("Trying to put alone for %s" % url)
             putDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
             if debug:
                 inlogger.debug("Put alone succeeded for %s" % url)
-                #print "Put alone succeeded for %s" % url
+                #print("Put alone succeeded for %s" % url)
         except HTTPError as ee:
             if ee.code!=404:
                 raise ee
@@ -665,13 +665,13 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
             suburl='/'.join(url.split('/')[:-1])
             if debug:
                 inlogger.debug("Trying to PUT flag and version to: %s" % suburl)
-                #print "Trying to PUT flag and version to: "+suburl
+                #print("Trying to PUT flag and version to: "+suburl)
             putDataUrllib2(suburl,json.dumps(i.flagDict),logger=inlogger)
             #put to version
             putDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
             if debug:
                 inlogger.debug("Had to PUT flag and version")
-                #print "Had to PUT flag and version"
+                #print("Had to PUT flag and version")
 
 
 def threadedPatchWithFailCases(q,server,debug,inputlogger=None):
@@ -685,7 +685,7 @@ def threadedPatchWithFailCases(q,server,debug,inputlogger=None):
         try:
             patchWithFailCases(i,url,debug,inlogger=inputlogger)
         except KeyboardInterrupt:
-            print "interrupted by user!"
+            print("interrupted by user!")
             sys.exit(1)
         q.task_done()
 
@@ -696,7 +696,7 @@ def setupSegment_md(filename,xmlparser,lwtparser,debug):
     segment_md = ldbd.LIGOMetadata(xmlparser,lwtparser)
 
     #if debug:
-    #    print "Inserting file %s." % filename
+    #    print("Inserting file %s." % filename)
     fh=open(filename,'r')
     xmltext = fh.read()
     fh.close()
@@ -757,7 +757,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
 
     # This next bunch of code is specific to a given file:
     if len(filenames)<1:
-        print "Empty file list sent to InsertMultipleDQXMLFileThreaded"
+        print("Empty file list sent to InsertMultipleDQXMLFileThreaded")
         raise ValueError
     for filename in filenames:
 
@@ -770,7 +770,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         for j in range(len(segment_md.table['segment_definer']['stream'])):
             flag_versions_numbered[j] = {}
             for i,entry in enumerate(segment_md.table['segment_definer']['orderedcol']):
-              #print j,entry,segment_md.table['segment_definer']['stream'][j][i]
+              #print(j,entry,segment_md.table['segment_definer']['stream'][j][i])
               flag_versions_numbered[j][entry] = segment_md.table['segment_definer']['stream'][j][i]
 
 
@@ -794,7 +794,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             # Now we're going to assign elements to process_dict[process_id]
             process_dict[temp_process_id] = {}
             for i,entry in enumerate(segment_md.table['process']['orderedcol']):
-                #print j,entry,segment_md.table['process']['stream'][j][i]
+                #print(j,entry,segment_md.table['process']['stream'][j][i])
                 process_dict[temp_process_id][entry] = segment_md.table['process']['stream'][j][i]
                 # Note that the segment_md.table['process']['stream'][0] looks like this:
                 #0 program SegGener
@@ -897,7 +897,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         for j in range(len(segment_md.table['segment_summary']['stream'])):
             #flag_versions_numbered[j] = {}
             seg_def_index = segment_md.table['segment_summary']['orderedcol'].index('segment_def_id')
-            #print "associated seg_def_id is: "+ segment_md.table['segment_summary']['stream'][j][seg_def_index]
+            #print("associated seg_def_id is: "+ segment_md.table['segment_summary']['stream'][j][seg_def_index])
             (ifo,name,version) = temp_id_to_flag_version[segment_md.table['segment_summary']['stream'][j][seg_def_index]]
             seg_sum_index = segment_md.table['segment_summary']['orderedcol'].index('segment_sum_id')
             # Unneeded:
@@ -974,7 +974,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
                     insert_history_dict['insertion_metadata']['comment'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])  # FIX make dq a constant string in case we ever change it
                 else:
                     insert_history_dict['insertion_metadata']['uri'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])  # FIX make dq a constant string in case we ever change it
-                #print ifo,name,version
+                #print(ifo,name,version)
                 insert_history_dict['insertion_metadata']['timestamp'] = _UTCToGPS(time.gmtime())
                 insert_history_dict['insertion_metadata']['auth_user']=process.get_username()
                 #if hackDec11:
@@ -992,8 +992,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             for j in range(len(segment_md.table['segment']['stream'])):
                 #flag_versions_numbered[j] = {}
                 seg_def_index = segment_md.table['segment']['orderedcol'].index('segment_def_id')
-                #print "associated seg_def_id is: "+ 
-                #    segment_md.table['segment']['stream'][j][seg_def_index]
+                #print("associated seg_def_id is: "+
+                #    segment_md.table['segment']['stream'][j][seg_def_index])
                 (ifo,name,version) = temp_id_to_flag_version[segment_md.table['segment']['stream'][j][seg_def_index]]
                 #seg_sum_index = segment_md.table['segment']['orderedcol'].index('segment_sum_id')
                 start_time_index = segment_md.table['segment']['orderedcol'].index('start_time')
@@ -1005,9 +1005,9 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         except KeyError:
             logger.info("No segment table for this file: %s" % filename)
             if debug:
-                print "No segment table for this file: %s" % filename
+                print("No segment table for this file: %s" % filename)
         except:
-            print "Unexpected error:", sys.exc_info()[0]
+            print("Unexpected error:", sys.exc_info()[0])
             raise
 
     for i in flag_versions.keys():
@@ -1026,12 +1026,12 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             #i.flagDict
             url=i.buildURL(server)
             if debug:
-                print url
+                print(url)
                 logger.debug("json.dumps(i.flagDict):")
                 logger.debug("%s"%json.dumps(i.flagDict))
             #if hackDec11:
             #    if len(i.active)==0:
-            #        print "No segments for this url"
+            #        print("No segments for this url")
             #        continue
             q.put(i)
         q.join()
@@ -1042,21 +1042,21 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             url=i.buildURL(server)
             if debug:
                 logger.debug("Url for the following data: %s" % url)
-                #print url
+                #print(url)
                 logger.debug("json.dumps(i.flagDict):")
                 logger.debug("%s"%json.dumps(i.flagDict))
             #if hackDec11:
             #    if len(i.active)==0:
-            #        print "No segments for this url"
+            #        print("No segments for this url")
             #        continue
             patchWithFailCases(i,url,debug,logger,testing_options)
 
     if debug:
         logger.debug("If we made it this far, no errors were encountered in the inserts.")
-        #print "If we made it this far, no errors were encountered in the inserts."
+        #print("If we made it this far, no errors were encountered in the inserts.")
     ### Fix!!! Improvement: Should be more careful about error handling here.
     if debug:
         t2=time.time()
         logger.debug("Time elapsed for file %s = %d." % (filename,t2-t1))
-        #print "Time elapsed for file %s = %d." % (filename,t2-t1)
+        #print("Time elapsed for file %s = %d." % (filename,t2-t1))
     return True

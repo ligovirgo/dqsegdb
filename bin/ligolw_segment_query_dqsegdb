@@ -38,6 +38,7 @@ exactly the format returned by S6 style segment database tools.
 * Example: ligolw_segment_query_dqsegdb --segment-url=http://dqsegdb4.phy.syr.edu --query-segments --gps-start-time 987654321 --gps-end-time 987654333 --include-segments="H1:DMT-SCIENCE:1" -o example.xml
 """
 
+from __future__ import print_function
 
 from optparse import OptionParser
 
@@ -177,7 +178,7 @@ def parse_command_line():
             inurl   = urllib.urlopen(options.segment_url)
             outfile = open(tmp_dir + "/" + fname, 'w')
             for l in inurl:
-                print >>outfile, l,
+                print(l, file=outfile)
 
             inurl.close()
             outfile.close()
@@ -381,7 +382,7 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
         else:
             versionQueryURL=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
             if debug:
-                print versionQueryURL
+                print(versionQueryURL)
             versionResult=urifunctions.getDataUrllib2(versionQueryURL)
             versionData=json.loads(versionResult)  #JSON is nice... :)
             ## Construct urls and issue queries for the multiple versions and dump the results to disk locally for careful provenance
@@ -427,7 +428,7 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
 
     doc.childNodes[0].appendChild(seg_sum_table)
     if debug:
-        print segment_types
+        print(segment_types)
 
     for key in segment_types:
         # Make sure the intervals fall within the query window and coalesce
@@ -490,7 +491,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
         spec = included.split(':')
 
         if len(spec) < 2 or len(spec) > 3:
-            print >>sys.stderr, "Included segements must be of the form ifo:name:version or ifo:name:*"
+            print("Included segements must be of the form ifo:name:version or ifo:name:*", file=sys.stderr)
             sys.exit(1)
 
         ifo     = spec[0]
@@ -507,14 +508,14 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
             except ValueError:
                 raise ValueError("Bad version specification, please provide a valid integer.")
             if version < 1:
-                print >>sys.stderr, "Segment version numbers must be greater than zero"
+                print("Segment version numbers must be greater than zero", file=sys.stderr)
                 sys.exit(1)
             # call to single version flag query goes here!
             # result is already processed into a python dict using json.loads :
             json_result,queryurl=apicalls.dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
             if debug:
-                print json_result
-                print queryurl
+                print(json_result)
+                print(queryurl)
             included_JSON_results.append(json_result)
             segdefs.append((ifo, name, version, startTime, endTime, 0, 0))
             known_segments=glue.segments.segmentlist([glue.segments.segment(x[0],x[1]) for x in json_result['known']])
@@ -524,12 +525,12 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
             # Trigger versionless call to return a JSON result here
             json_result,versioned_JSON,affected_results=apicalls.dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime)
             if debug:
-                print "Cascaded query call results:"
-                print json_result
-                print "Versioned intermediate results"
-                print versioned_JSON
-                print "Affected results segments"
-                print affected_results
+                print("Cascaded query call results:")
+                print(json_result)
+                print("Versioned intermediate results")
+                print(versioned_JSON)
+                print("Affected results segments")
+                print(affected_results)
             # affected_results contains the segments of time that affected the final result for each version used in the calculation
             # This replicates the S6 behavior:
             included_JSON_results.append(json_result)
@@ -550,21 +551,21 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
 
     # And we could write out everything we found
     if debug:
-        print "Information on segdefs and segment_summaries: lengths, then first 10 entries"
-        print len(segdefs)
-        print len(segment_summaries)
-        if len(segdefs) > 10:
-            print segdefs[:10]
+        print("Information on segdefs and segment_summaries: lengths, then first 10 entries")
+        print(len(segdefs))
+        print(len(segment_summaries))
+        if len(segdefs) > 10: 
+            print(segdefs[:10])
         else:
-            print segdefs
+            print(segdefs)
         if len(segment_summaries)>10:
-            print "Lots of summaries:"
-            print segment_summaries[:10]
+            print("Lots of summaries:")
+            print(segment_summaries[:10])
         else:
-            print "Segment Summaries:"
-            print segment_summaries
-        print doc
-        print process_id
+            print("Segment Summaries:")
+            print(segment_summaries)
+        print(doc)
+        print(process_id)
     segment_summaries=[glue.segments.segmentlist(x) for x in segment_summaries]
     for x in segment_summaries:
         x.coalesce()
@@ -581,7 +582,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
             spec = excluded.split(':')
 
             if len(spec) < 2 or len(spec) > 3:
-                print >>sys.stderr, "Included segements must be of the form ifo:name:version or ifo:name:*"
+                print("Included segements must be of the form ifo:name:version or ifo:name:*", file=sys.stderr)
                 sys.exit(1)
 
             ifo     = spec[0]
@@ -594,7 +595,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
             if len(spec) is 3 and spec[2] is not '*':
                 version = int(spec[2])
                 if version < 1:
-                    print >>sys.stderr, "Segment version numbers must be greater than zero"
+                    print("Segment version numbers must be greater than zero", file=sys.stderr)
                     sys.exit(1)
                 # call to single version flag query goes here!
                 # result is already processed into a python dict using json.loads :
@@ -637,13 +638,13 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
     # and store the segments
     clientutils.add_to_segment_ns(doc, process_id, seg_def_id, found_segments)
     if debug:
-        print "Result name:"
-        print result_name
-        print "seg_def_id"
-        print seg_def_id
-        print "Found segments:"
-        print type(found_segments)
-        print found_segments
+        print("Result name:")
+        print(result_name)
+        print("seg_def_id")
+        print(seg_def_id)
+        print("Found segments:")
+        print(type(found_segments))
+        print(found_segments)
 
 
 
@@ -709,7 +710,7 @@ if __name__ == '__main__':
     if options.ping:
         if options.use_s6:
             connection = segmentdb_utils.setup_database(database_location)
-            print connection.ping()
+            print(connection.ping())
             sys.exit( 0 )
         else:
             # DQSEGDB 'ping'
@@ -721,7 +722,7 @@ if __name__ == '__main__':
             json_out=urifunctions.getDataUrllib2(url_result)
             flags_information=json.loads(json_out)
             server_version=flags_information['query_information']['api_version']
-            print "Server version is %s" % server_version
+            print("Server version is %s" % server_version)
             sys.exit(0)
 
 

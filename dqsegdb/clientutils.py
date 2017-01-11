@@ -12,6 +12,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import print_function
+
 import sys
 import math
 import os
@@ -174,8 +177,8 @@ def calculate_versionless_result(jsonResults,startTime,endTime,ifo_input=None):
             active_segments.coalesce()
             active_results[version]=active_segments
             if debug:
-                print "Active results for version %d" % version
-                print active_results[version]
+                print("Active results for version %d" % version)
+                print(active_results[version])
             # Now I have 2 dictionaries of known and active segments with versions as keys in case I want/need them later...
             # This next step might seem a bit confusing:
             # We need to take the active segments for this version only during times that were not known by higher segment versions
@@ -183,7 +186,7 @@ def calculate_versionless_result(jsonResults,startTime,endTime,ifo_input=None):
             total_active_list |= (total_query_time-total_known_list)&known_segments&active_segments
             if debug:
                 import pdb
-                print "Running pdb to see what is in total_active_list"
+                print("Running pdb to see what is in total_active_list")
                 pdb.set_trace()
             total_active_list.coalesce()
             # The S6 clients want to know about the range of times affected by a given version explicitly, so those are calculated here:
@@ -389,7 +392,7 @@ def run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time, in
         spec = included.split(':')
 
         if len(spec) < 2 or len(spec) > 3:
-            print >>sys.stderr, "Included segements must be of the form ifo:name:version or ifo:name:*"
+            print("Included segements must be of the form ifo:name:version or ifo:name:*", file=sys.stderr)
             sys.exit(1)
 
         ifo     = spec[0]
@@ -397,7 +400,7 @@ def run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time, in
         if len(spec) is 3 and spec[2] is not '*':
             version = int(spec[2])
             if version < 1:
-                print >>sys.stderr, "Segment version numbers must be greater than zero"
+                print("Segment version numbers must be greater than zero", file=sys.stderr)
                 sys.exit(1)
         else:
             version = '*'
@@ -422,7 +425,7 @@ def run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time, in
             spec = excluded.split(':')
 
             if len(spec) < 2:
-                print >>sys.stderr, "Excluded segements must be of the form ifo:name:version or ifo:name:*"
+                print("Excluded segements must be of the form ifo:name:version or ifo:name:*", file=sys.stderr)
                 sys.exit(1)
 
             ifo     = spec[0]
@@ -449,10 +452,9 @@ def run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time, in
 
     # and store the segments
     segmentdb_utils.add_to_segment(doc, process_id, seg_def_id, found_segments)
-    print "Made it to the end of the query code"
-    print doc
-
-
+    print("Made it to the end of the query code")
+    print(doc)
+           
 
 #
 # =============================================================================

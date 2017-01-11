@@ -12,6 +12,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import print_function
+
 import warnings
 import sys
 import httplib
@@ -80,37 +83,37 @@ def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
         logger.debug("Beginning url call: %s" % url)
     try:
         if urlparse.urlparse(url).scheme == 'https':
-            #print "attempting to send https query"
-            #print certfile
-            #print keyfile
+            #print("attempting to send https query")
+            #print(certfile)
+            #print(keyfile)
             opener=urllib2.build_opener(HTTPSClientAuthHandler)
-            #print opener.handle_open.items()
+            #print(opener.handle_open.items())
             request = urllib2.Request(url)
             output=opener.open(request)
         else:
-            #print "attempting to send http query"
+            #print("attempting to send http query")
             output=urllib2.urlopen(url)
     except urllib2.HTTPError,e:
-        #print "Warnings setting FIX:"
-        #print warnings
+        #print("Warnings setting FIX:")
+        #print(warnings)
         if warnings:
             handleHTTPError("GET",url,e)
         else:
             handleHTTPError("QUIET",url,e)
 
-        ##print e.read()
-        #print "Warning: Issue accessing url: %s" % url
-        #print "Code: "
-        #print e.code
-        #print e.msg
+        ##print(e.read())
+        #print("Warning: Issue accessing url: %s" % url)
+        #print("Code: ")
+        #print(e.code)
+        #print(e.msg)
         ##import pdb
         ##pdb.set_trace()
-        ##print e.reason
-        ##print url
-        #print "May be handled cleanly by calling instance: otherwise will result in an error."
+        ##print(e.reason)
+        ##print(url)
+        #print("May be handled cleanly by calling instance: otherwise will result in an error.")
         raise
     except urllib2.URLError,e:
-        #print e.read()
+        #print(e.read())
         warnings.warn("Issue accesing url: %s; Reason: %s" % (url,str(e.reason)))
         try:
             type, value, traceback_stack = sys.exc_info()
@@ -254,23 +257,23 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
         urlreturned = opener.open(request)
     except urllib2.HTTPError,e:
         handleHTTPError("PUT",url,e)
-        ##print e.read()
+        ##print(e.read())
         #if int(e.code)==404:
-        #    print "Flag does not exist in database yet for url: %s" % url
+        #    print("Flag does not exist in database yet for url: %s" % url)
         #else:
-        #    print "Warning: Issue accessing url: %s" % url
-        #    print "Code: "
-        #    print e.code
-        #    print "Message: "
-        #    print e.msg
-        #    #print e.reason
-        #    #print url
-        #    print "May be handled cleanly by calling instance: otherwise will result in an error."
-        ##print e.reason
-        ##print urlreturned
+        #    print("Warning: Issue accessing url: %s" % url)
+        #    print("Code: ")
+        #    print(e.code)
+        #    print("Message: ")
+        #    print(e.msg)
+        #    #print(e.reason)
+        #    #print(url)
+        #    print("May be handled cleanly by calling instance: otherwise will result in an error.")
+        ##print(e.reason)
+        ##print(urlreturned)
         raise
     except urllib2.URLError,e:
-        #print e.read()
+        #print(e.read())
         warnmsg="Warning: Issue accessing url: %s" % url
         warnmsg+="; "
         warnmsg+=str(e.reason)
@@ -300,7 +303,7 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
         opener=urllib2.build_opener(HTTPSClientAuthHandler)
     else:
         opener = urllib2.build_opener(urllib2.HTTPHandler)
-    #print opener.handle_open.items()            
+    #print(opener.handle_open.items())
     request = urllib2.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PATCH'
@@ -310,16 +313,16 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
         urlreturned = opener.open(request)
     except urllib2.HTTPError,e:
         handleHTTPError("PATCH",url,e)
-        ##print e.read()
-        #print "Warning: Issue accessing url: %s" % url
-        #print "Code: "
-        #print e.code
-        ##print e.reason
-        ##print url
-        #print "May be handled cleanly by calling instance: otherwise will result in an error."
+        ##print(e.read())
+        #print("Warning: Issue accessing url: %s" % url)
+        #print("Code: ")
+        #print(e.code)
+        ##print(e.reason)
+        ##print(url)
+        #print("May be handled cleanly by calling instance: otherwise will result in an error.")
         raise
     except urllib2.URLError,e:
-        #print e.read()
+        #print(e.read()
         warnmsg="Warning: Issue accessing url: %s" % url
         warnmsg+="; "
         warnmsg+=str(e.reason)
@@ -339,15 +342,15 @@ def handleHTTPError(method,url,e):
         warnings.warn("Warning: Issue accessing url: %s" % url)
         warnings.warn("Code: %s" % str(e.code))
         warnings.warn("Message: %s" % str(e.msg))
-        #print e.reason
-        #print url
+        #print(e.reason)
+        #print(url)
         warnings.warn("May be handled cleanly by calling instance: otherwise will result in an error.")
     else:
         if method == "PUT" or method == "PATCH":
             warnings.warn("Info: Flag does not exist in database yet for url: %s" % url)
         elif method == "GET":
             warnings.warn("Warning: Issue accessing url: %s" % url)
-            #print "yo! FIX!!!"
+            #print("yo! FIX!!!")
             warnings.warn("Code: %s" % str(e.code))
             warnings.warn("Message: %s" % str(e.msg))
             warnings.warn("May be handled cleanly by calling instance: otherwise will result in an error.")
@@ -424,7 +427,7 @@ Could not find a valid proxy credential.
 LIGO users, please run 'ligo-proxy-init' and try again.
 Others, please run 'grid-proxy-init' and try again.
 """
-    print >>sys.stderr, msg
+    print(msg, file=sys.stderr)
 
 def validateProxy(path):
     """
@@ -438,7 +441,7 @@ def validateProxy(path):
         proxy = M2Crypto.X509.load_cert(path)
     except Exception, e:
         msg = "Unable to load proxy from path %s : %s" % (path, e)
-        print >>sys.stderr, msg
+        print(msg, file=sys.stderr)
         sys.exit(1)
 
     # make sure the proxy is RFC 3820 compliant
@@ -473,7 +476,7 @@ Your proxy certificate is expired.
 Please generate a new proxy certificate and
 try again.
 """
-        print >>sys.stderr, msg
+        print(msg, file=sys.stderr)
         sys.exit(1)
 
     # return True to indicate validated proxy
