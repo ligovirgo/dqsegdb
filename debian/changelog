@@ -1,3 +1,9 @@
+dqsegdb (1.4.1-1) unstable; urgency=low
+
+  * Intermediate base code only release to change python packaging code.  No corresponding rpm or debian release.
+
+ -- Ryan Fisher <ryan.fisher@ligo.org>  Wed, Jan 18 2017 14:00 -0500
+ 
 dqsegdb (1.4.0-1) unstable; urgency=low
 
   * ER10 release 
@@ -16,7 +22,7 @@ dqsegdb (1.3.0-1) unstable; urgency=low
 
  -- Ryan Fisher <ryan.fisher@ligo.org>  Mon, Jun 13 2016 17:00 -0500
 
-dqsegdb (1.2.2-1) unstable; urgency=low
+-1dqsegdb (1.2.2-1) unstable; urgency=low
 
   * Two bug fixes to correct improper user inserts and add back in tables to
     veto definer for ligolw_segments_from_cats.
