@@ -5,16 +5,14 @@ addons:
     packages:
       - swig  # needed by m2crypto
 
+python:
+  - '2.6'
+  - '2.7'
+  - '3.5'
+
 matrix:
-  # test multiple versions of python
-  include:
-    - python: 2.6
-    - python: 2.7
-    - python: 3.5
-  # allow python 3.5 build to fail silently
   allow_failures:
-    - python: 3.5
-  # declare build result after all required tests pass
+    - python: '3.5'
   fast_finish: true
 
 before_install:
