@@ -15,7 +15,7 @@
 
 from __future__ import print_function
 
-import warnings
+from warnings import warn
 import sys
 import httplib
 import urlparse
@@ -40,7 +40,7 @@ class HTTPSClientAuthConnection(httplib.HTTPSConnection):
       try:
           certfile,keyfile=findCredential()
       except:
-          warnings.warn("Warning:  No proxy found or other error encountered during check for authentication credentials, connections to https will not work.")
+          warn("Warning:  No proxy found or other error encountered during check for authentication credentials, connections to https will not work.")
           certfile=""
           keyfile=""
           ### Fix!!! This doesn't actually seem to work because someone thought sys.exit was good error handling... Beyond that:  What does HTTPSConnection expect in this case?  The connections will fail, but we might want to report that carefully...
@@ -60,13 +60,13 @@ def getDataHttplib(url):
     url="http://segdb-test-internal/dq/H1/DMT-SCIENCE/1/active?s=10&e=20"
     Returns JSON response from server
     """
-    warnings.warn("Warning: using function that my not work any more!")
+    warn("Warning: using function that my not work any more!")
     urlsplit=urlparse.urlparse(url)
     conn=httplib.HTTPConnection(urlsplit.netloc)
     conn.request("GET",'?'.join([urlsplit.path,urlsplit.query]))
     r1=conn.getresponse()
     if r1.status!=200:
-        warnings.warn("Return status code: %s, %s; URL=%s" % (str(r1.status),str(r1.reason),url))
+        warn("Return status code: %s, %s; URL=%s" % (str(r1.status),str(r1.reason),url))
         raise(urllib2.URLError)
     data1=r1.read()
     return data1
@@ -114,20 +114,20 @@ def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
         raise
     except urllib2.URLError,e:
         #print(e.read())
-        warnings.warn("Issue accesing url: %s; Reason: %s" % (url,str(e.reason)))
+        warn("Issue accesing url: %s; Reason: %s" % (url,str(e.reason)))
         try:
             type, value, traceback_stack = sys.exc_info()
             warnmsg="Trying custom URLError."
             warnmsg+=" "
             warnmsg+=str(type)
             warnmsg+=str(value)
-            warnings.warn(warnmsg)
+            warn(warnmsg)
             import traceback
             traceback.print_tb(traceback_stack)
             raise e
 
         except:
-            warnings.warn(url)
+            warn(url)
             raise
     if logger:
         logger.debug("Completed url call: %s" % url)
@@ -279,7 +279,7 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
         warnmsg+=str(e.reason)
         warnmsg+="; "
         warnmsg+="May be handled cleanly by calling instance: otherwise will result in an error."
-        warnings.warn(warnmsg)
+        warn(warnmsg)
         raise
     if logger:
         logger.debug("Completed url call: %s" % url)
@@ -328,10 +328,10 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
         warnmsg+=str(e.reason)
         warnmsg+="; "
         warnmsg+="May be handled cleanly by calling instance: otherwise will result in an error."
-        warnings.warn(warnmsg)
-        #warnings.warn("Warning: Issue accessing url: %s" % url
-        #warnings.warn(e.reason
-        #warnings.warn("May be handled cleanly by calling instance: otherwise will result in an error."
+        warn(warnmsg)
+        #warn("Warning: Issue accessing url: %s" % url
+        #warn(e.reason
+        #warn("May be handled cleanly by calling instance: otherwise will result in an error."
         raise
     if logger:
         logger.debug("Completed url call: %s" % url)
@@ -339,21 +339,21 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
 
 def handleHTTPError(method,url,e):
     if int(e.code)!=404:
-        warnings.warn("Warning: Issue accessing url: %s" % url)
-        warnings.warn("Code: %s" % str(e.code))
-        warnings.warn("Message: %s" % str(e.msg))
+        warn("Warning: Issue accessing url: %s" % url)
+        warn("Code: %s" % str(e.code))
+        warn("Message: %s" % str(e.msg))
         #print(e.reason)
         #print(url)
-        warnings.warn("May be handled cleanly by calling instance: otherwise will result in an error.")
+        warn("May be handled cleanly by calling instance: otherwise will result in an error.")
     else:
         if method == "PUT" or method == "PATCH":
-            warnings.warn("Info: Flag does not exist in database yet for url: %s" % url)
+            warn("Info: Flag does not exist in database yet for url: %s" % url)
         elif method == "GET":
-            warnings.warn("Warning: Issue accessing url: %s" % url)
+            warn("Warning: Issue accessing url: %s" % url)
             #print("yo! FIX!!!")
-            warnings.warn("Code: %s" % str(e.code))
-            warnings.warn("Message: %s" % str(e.msg))
-            warnings.warn("May be handled cleanly by calling instance: otherwise will result in an error.")
+            warn("Code: %s" % str(e.code))
+            warn("Message: %s" % str(e.msg))
+            warn("May be handled cleanly by calling instance: otherwise will result in an error.")
         # If method == "QUIET" print nothing:  used for GET checks that don't need to toss info on a 404
 
 ###################
