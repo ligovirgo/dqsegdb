@@ -10,6 +10,11 @@ import os
 import subprocess
 import time
 
+try:
+    string_types = (str, unicode)
+except NameError:
+    string_types = (str,)
+
 
 class GitStatus(object):
     """Git repository version information
@@ -45,12 +50,12 @@ class GitStatus(object):
         p = subprocess.Popen(cmdargs,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
-                             shell=isinstance(args, basestring))
+                             shell=isinstance(args, string_types))
         out, err = p.communicate()
         if p.returncode != 0:
             raise subprocess.CalledProcessError(p.returncode,
                                                 ' '.join(cmdargs))
-        return out.strip()
+        return out.strip().decode('utf-8')
 
     # ------------------------------------------------------------------------
     # Git communication methods
