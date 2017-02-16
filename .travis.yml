@@ -2,8 +2,22 @@ language: python
 
 addons:
   apt:
+    sources:
+      - sourceline: deb http://software.ligo.org/lscsoft/debian wheezy contrib
+        key_url: http://software.ligo.org/keys/deb/lscsoft.key
+      - sourceline: deb-src http://software.ligo.org/lscsoft/debian wheezy contrib
+        key_url: http://software.ligo.org/keys/deb/lscsoft.key
     packages:
-      - swig  # needed by m2crypto
+      - swig  # lal, m2crypto
+      - libfftw3-dev  # lal
+      - pkg-config  # lal
+      - zlib1g-dev  # lal
+      - libgsl0-dev  # lal
+      - bc  # lal
+
+env:
+  global:
+    - LAL_VERSION="6.18.0"
 
 python:
   - '2.7'
@@ -21,6 +35,8 @@ before_install:
   - pip install --quiet --upgrade pip
   # install requirements
   - pip install -r requirements.txt
+  # install LAL from tarball
+  - .travis/build-lal.sh
   # install test-only requirements
   - pip install coveralls
 
@@ -40,3 +56,5 @@ after_success:
 cache:
   apt: true
   pip: true
+  directories:
+    - lal-${LAL_VERSION}-${TRAVIS_PYTHON_VERSION}
