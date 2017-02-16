@@ -1,5 +1,4 @@
 pykerberos
-python-cjson
 m2crypto
 pyRXP
 http://software.ligo.org/lscsoft/source/glue-1.50.0.tar.gz
