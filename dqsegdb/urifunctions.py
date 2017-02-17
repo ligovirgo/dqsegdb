@@ -391,9 +391,6 @@ def findCredential():
         filePath = os.environ['X509_USER_PROXY']
         if validateProxy(filePath):
             return filePath, filePath
-        else:
-            RFCproxyUsage()
-            sys.exit(1)
 
     # use X509_USER_CERT and X509_USER_KEY if set
     if os.environ.has_key('X509_USER_CERT'):
@@ -409,25 +406,10 @@ def findCredential():
     if os.access(path, os.R_OK):
         if validateProxy(path):
             return path, path
-        else:
-            RFCproxyUsage()
-            sys.exit(1)
 
     # if we get here could not find a credential
-    RFCproxyUsage()
-    sys.exit(1)
+    raise RuntimeError("Could not find a valid proxy credential")
 
-def RFCproxyUsage():
-    """
-    Print a simple error message about not finding
-    a RFC 3820 compliant proxy certificate.
-    """
-    msg = """\
-Could not find a valid proxy credential.
-LIGO users, please run 'ligo-proxy-init' and try again.
-Others, please run 'grid-proxy-init' and try again.
-"""
-    print(msg, file=sys.stderr)
 
 def validateProxy(path):
     """Validate a proxy certificate as RFC3820 and not expired
