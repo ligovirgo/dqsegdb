@@ -1,3 +1,9 @@
+dqsegdb (1.4.2-1) unstable; urgency=low
+
+  * Small change release to depend on updated glue called lscsoft-glue
+
+ -- Ryan Fisher <ryan.fisher@ligo.org>  Thu, Apr 6 2017 18:00 -0500
+ 
 dqsegdb (1.4.1-1) unstable; urgency=low
 
   * Intermediate base code only release to change python packaging code.  No corresponding rpm or debian release.

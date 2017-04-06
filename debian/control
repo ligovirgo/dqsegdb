@@ -8,7 +8,7 @@ X-Python-Version: >= 2.6
 
 Package: python-dqsegdb
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.6), python-glue (>= 1.47), pyrxp | python-pyrxp
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.6), python-lscsoft-glue (>= 1.55), pyrxp | python-pyrxp
 Description: dqsegdb client
  This package provides the client tools to connect to LIGO/VIRGO
   DQSEGDB instances.
