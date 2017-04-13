@@ -8,7 +8,7 @@ addons:
       - sourceline: deb-src http://software.ligo.org/lscsoft/debian wheezy contrib
         key_url: http://software.ligo.org/keys/deb/lscsoft.key
     packages:
-      - swig  # lal, m2crypto
+      - swig  # lal
       - libfftw3-dev  # lal
       - pkg-config  # lal
       - zlib1g-dev  # lal

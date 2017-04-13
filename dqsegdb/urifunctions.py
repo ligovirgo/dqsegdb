@@ -21,11 +21,11 @@ import httplib
 import urlparse
 import urllib2
 import socket
-import M2Crypto
 import calendar
 import time
 import os
 import re
+from OpenSSL import crypto
 
 #
 # =============================================================================
@@ -391,9 +391,6 @@ def findCredential():
         filePath = os.environ['X509_USER_PROXY']
         if validateProxy(filePath):
             return filePath, filePath
-        else:
-            RFCproxyUsage()
-            sys.exit(1)
 
     # use X509_USER_CERT and X509_USER_KEY if set
     if os.environ.has_key('X509_USER_CERT'):
@@ -409,75 +406,58 @@ def findCredential():
     if os.access(path, os.R_OK):
         if validateProxy(path):
             return path, path
-        else:
-            RFCproxyUsage()
-            sys.exit(1)
 
     # if we get here could not find a credential
-    RFCproxyUsage()
-    sys.exit(1)
+    raise RuntimeError("Could not find a valid proxy credential")
 
-def RFCproxyUsage():
-    """
-    Print a simple error message about not finding
-    a RFC 3820 compliant proxy certificate.
-    """
-    msg = """\
-Could not find a valid proxy credential.
-LIGO users, please run 'ligo-proxy-init' and try again.
-Others, please run 'grid-proxy-init' and try again.
-"""
-    print(msg, file=sys.stderr)
 
 def validateProxy(path):
-    """
-    Test that the proxy certificate is RFC 3820
-    compliant and that it is valid for at least
-    the next 15 minutes.
-    """
+    """Validate a proxy certificate as RFC3820 and not expired
 
+    Parameters
+    ----------
+    path : `str`
+        the path of the proxy certificate file
+
+    Returns
+    -------
+    True
+        if the proxy is validated
+
+    Raises
+    ------
+    IOError
+        if the proxy certificate file cannot be read
+    RuntimeError
+        if the proxy is found to be a legacy globus cert, or has expired
+    """
     # load the proxy from path
     try:
-        proxy = M2Crypto.X509.load_cert(path)
-    except Exception, e:
-        msg = "Unable to load proxy from path %s : %s" % (path, e)
-        print(msg, file=sys.stderr)
-        sys.exit(1)
+        with open(path, 'rt') as f:
+            cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
+    except IOError as e:
+        e.args = ('Failed to load proxy certificate: %s' % str(e),)
+        raise
 
-    # make sure the proxy is RFC 3820 compliant
-    # or is an end-entity X.509 certificate
-    try:
-        proxy.get_ext("proxyCertInfo")
-    except LookupError:
-        # it is not an RFC 3820 proxy so check
-        # if it is an old globus legacy proxy
-        subject = proxy.get_subject().as_text()
-        if re.search(r'.+CN=proxy$', subject):
-            # it is so print warning and exit
-            RFCproxyUsage()
-            sys.exit(1)
+    # try and read proxyCertInfo
+    rfc3820 = False
+    for i in range(cert.get_extension_count()):
+        if cert.get_extension(i).get_short_name() == 'proxyCertInfo':
+            rfc3820 = True
+            break
 
-    # attempt to make sure the proxy is still good for more than 15 minutes
-    try:
-        expireASN1 = proxy.get_not_after().__str__()
-        expireGMT  = time.strptime(expireASN1, "%b %d %H:%M:%S %Y %Z")
-        expireUTC  = calendar.timegm(expireGMT)
-        now = int(time.time())
-        secondsLeft = expireUTC - now
-    except Exception, e:
-        # problem getting or parsing time so just let the client
-        # continue and pass the issue along to the server
-        secondsLeft = 3600
+    # otherwise test common name
+    if not rfc3820:
+        subject = cert.get_subject()
+        if subject.CN.startswith('proxy'):
+            raise RuntimeError('Could not find a valid proxy credential')
 
-    if secondsLeft <= 0:
-        msg = """\
-Your proxy certificate is expired.
+    # check time remaining
+    expiry = cert.get_notAfter()
+    if isinstance(expiry, bytes):
+        expiry = expiry.decode('utf-8')
+    expiryu = calendar.timegm(time.strptime(expiry, "%Y%m%d%H%M%SZ"))
+    if expiryu < time.time():
+        raise RuntimeError('Required proxy credential has expired')
 
-Please generate a new proxy certificate and
-try again.
-"""
-        print(msg, file=sys.stderr)
-        sys.exit(1)
-
-    # return True to indicate validated proxy
     return True
