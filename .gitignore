@@ -2,7 +2,6 @@
 /build
 /dist
 /dqsegdb.egg-info
-/dqsegdb/version.py
 server/db/db_utils/component_interface_data_integrity_test_suite/src/.project
 server/log_file_analysis_tool/src/.buildpath
 server/log_file_analysis_tool/src/.project
