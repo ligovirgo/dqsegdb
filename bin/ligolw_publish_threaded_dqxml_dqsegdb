@@ -260,7 +260,7 @@ try:
           logger.debug("published segment before interrupt: %s" % str(grouped_segments))
           published_segments |= grouped_segments
         die_now = True
-      except Exception, e:
+      except Exception as e:
         logger.error("failed to publish %s (%s)" % (infiles, str(e)))
         traceback.print_exc()
         die_now = True
@@ -301,7 +301,7 @@ try:
               logger.debug("published remaining segments before interrupt: %s" % str(grouped_segments))
               published_segments |= grouped_segments
             #die_now = True unneeded because there is no loop here, we are just cleaning up
-          except Exception, e:
+          except Exception as e:
             logger.error("failed to publish %s (%s)" % (infiles, str(e)))
           else:
             if result:
@@ -323,7 +323,7 @@ try:
     logger.debug("writing state to %s" % options.state_file)
     ligolw_utils.write_filename(outdoc, options.state_file)
 
-except Exception, e:
+except Exception as e:
   try:
     logger.error(str(e))
   except:
