@@ -93,7 +93,7 @@ def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
         else:
             #print("attempting to send http query")
             output=urllib2.urlopen(url)
-    except urllib2.HTTPError,e:
+    except urllib2.HTTPError as e:
         #print("Warnings setting FIX:")
         #print(warnings)
         if warnings:
@@ -112,7 +112,7 @@ def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
         ##print(url)
         #print("May be handled cleanly by calling instance: otherwise will result in an error.")
         raise
-    except urllib2.URLError,e:
+    except urllib2.URLError as e:
         #print(e.read())
         warn("Issue accesing url: %s; Reason: %s" % (url,str(e.reason)))
         try:
@@ -255,7 +255,7 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
         logger.debug("Beginning url call: %s" % url)
     try:
         urlreturned = opener.open(request)
-    except urllib2.HTTPError,e:
+    except urllib2.HTTPError as e:
         handleHTTPError("PUT",url,e)
         ##print(e.read())
         #if int(e.code)==404:
@@ -272,7 +272,7 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
         ##print(e.reason)
         ##print(urlreturned)
         raise
-    except urllib2.URLError,e:
+    except urllib2.URLError as e:
         #print(e.read())
         warnmsg="Warning: Issue accessing url: %s" % url
         warnmsg+="; "
@@ -311,7 +311,7 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
         logger.debug("Beginning url call: %s" % url)
     try:
         urlreturned = opener.open(request)
-    except urllib2.HTTPError,e:
+    except urllib2.HTTPError as e:
         handleHTTPError("PATCH",url,e)
         ##print(e.read())
         #print("Warning: Issue accessing url: %s" % url)
@@ -321,7 +321,7 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
         ##print(url)
         #print("May be handled cleanly by calling instance: otherwise will result in an error.")
         raise
-    except urllib2.URLError,e:
+    except urllib2.URLError as e:
         #print(e.read()
         warnmsg="Warning: Issue accessing url: %s" % url
         warnmsg+="; "
