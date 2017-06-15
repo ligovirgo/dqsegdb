@@ -36,12 +36,8 @@ import traceback
 import copy
 import pwd
 import os
-import re
-import exceptions
 import signal
 import re
-import time
-import glob
 import logging
 import logging.handlers
 
@@ -49,14 +45,11 @@ from optparse import OptionParser
 
 from glue import lal
 from glue import segments
-from glue import gpstime
 from glue import segmentsUtils
 from glue import pidfile
 
 from glue.ligolw import ligolw
-from glue.ligolw import lsctables
 from glue.ligolw import utils as ligolw_utils
-from glue.ligolw.utils import segments as ligolw_segments
 from glue.ligolw.utils import process as ligolw_process
 # ER6 Glue fixes:
 from glue.ligolw import table

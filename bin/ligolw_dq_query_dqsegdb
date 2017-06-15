@@ -47,7 +47,6 @@ from glue import segments
 
 from glue import git_version
 
-from dqsegdb import urifunctions
 from dqsegdb import apicalls
 import json
 import urlparse
