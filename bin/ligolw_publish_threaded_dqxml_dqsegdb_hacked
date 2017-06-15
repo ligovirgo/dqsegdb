@@ -70,7 +70,6 @@ import traceback
 import copy
 import pwd
 import os
-import re
 import signal
 import logging
 import logging.handlers
