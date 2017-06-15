@@ -115,7 +115,7 @@ parser.add_option("-c", "--thread-count",metavar="thread_count",help="Setting to
 options, filenames = parser.parse_args()
 
 if not options.segment_url:
-  raise ValueError, "missing argument --segment-url"
+  raise ValueError("missing argument --segment-url")
 
 #old # open connection to LDBDWClient
 #old myClient = segmentdb_utils.setup_database(options.segment_url)
@@ -127,15 +127,15 @@ if not options.segment_url:
 #old   sys.exit(0)
 #old
 if not options.state_file and not options.segments_file:
-  raise ValueError, "missing argument --state-file or --segments-file"
+  raise ValueError("missing argument --state-file or --segments-file")
 if options.state_file and options.segments_file:
-  raise ValueError, "incompatible arguments --state-file and --segments-file"
+  raise ValueError("incompatible arguments --state-file and --segments-file")
 if not options.pid_file:
-  raise ValueError, "missing argument --pid-file"
+  raise ValueError("missing argument --pid-file")
 if not options.input_directory:
-  raise ValueError, "missing argument --input-directory"
+  raise ValueError("missing argument --input-directory")
 if not options.log_file:
-  raise ValueError, "missing argument --log-file"
+  raise ValueError("missing argument --log-file")
 if options.log_level=="DEBUG":
   local_debug=True
 else:
