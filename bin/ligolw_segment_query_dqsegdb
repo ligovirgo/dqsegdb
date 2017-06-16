@@ -50,8 +50,10 @@ import os
 import pwd
 import tempfile
 import urllib
-import urlparse
 import json
+
+from six.moves.urllib.parse import urlparse
+
 from dqsegdb import apicalls
 from dqsegdb import urifunctions
 from dqsegdb import clientutils
