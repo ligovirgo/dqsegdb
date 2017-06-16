@@ -15,24 +15,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ###################################################################
+
+from __future__ import print_function
+
 import socket
 import os
 import socket
 import atexit
 import pwd
-import re
 import urlparse
 import time
 import sys
-import commands
 import StringIO
 import logging
 import logging.handlers
-import exceptions
-import binascii
 from optparse import OptionParser
 from dqsegdb import apicalls
-from dqsegdb import jsonhelper
 import json
 
 try:
@@ -54,8 +52,7 @@ try:
   from glue import ldbd
   from glue import segments
   from glue import git_version
-  from glue.segmentdb import segmentdb_utils
-  from glue.ligolw import table
+  #from glue.segmentdb import segmentdb_utils
   from glue.ligolw import lsctables
   from glue.ligolw import ligolw
   from glue.ligolw.utils import process

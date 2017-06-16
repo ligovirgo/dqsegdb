@@ -46,12 +46,8 @@ from optparse import OptionParser
 import sys
 import warnings
 import os
-import math
-import operator
+#import operator
 import pwd
-import glob
-import time
-import socket
 import tempfile
 import urllib
 import urlparse
@@ -67,7 +63,6 @@ from glue.ligolw import table
 from glue.ligolw import lsctables
 from glue.ligolw import utils
 
-from glue.ligolw.utils import ligolw_add
 from glue.ligolw.utils import process
 from glue.segmentdb import query_engine
 from glue.segmentdb import segmentdb_utils

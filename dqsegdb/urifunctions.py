@@ -24,7 +24,6 @@ import socket
 import calendar
 import time
 import os
-import re
 from OpenSSL import crypto
 
 #
