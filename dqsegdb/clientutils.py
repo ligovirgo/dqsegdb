@@ -21,6 +21,8 @@ import os
 import operator
 import tempfile
 
+from six.moves import reduce
+
 import glue.segments
 
 from glue.ligolw import table
