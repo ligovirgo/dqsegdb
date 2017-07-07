@@ -17,14 +17,16 @@ from __future__ import print_function
 
 from warnings import warn
 import sys
-import httplib
-import urlparse
-import urllib2
 import socket
 import calendar
 import time
 import os
 from OpenSSL import crypto
+
+from six.moves.urllib.parse import urlparse
+from six.moves import http_client
+from six.moves.urllib import (request as urllib_request,
+                              error as urllib_error)
 
 #
 # =============================================================================
@@ -34,7 +36,7 @@ from OpenSSL import crypto
 # =============================================================================
 #
 
-class HTTPSClientAuthConnection(httplib.HTTPSConnection):
+class HTTPSClientAuthConnection(http_client.HTTPSConnection):
   def __init__(self, host, timeout=None):
       try:
           certfile,keyfile=findCredential()
@@ -43,15 +45,15 @@ class HTTPSClientAuthConnection(httplib.HTTPSConnection):
           certfile=""
           keyfile=""
           ### Fix!!! This doesn't actually seem to work because someone thought sys.exit was good error handling... Beyond that:  What does HTTPSConnection expect in this case?  The connections will fail, but we might want to report that carefully...
-      httplib.HTTPSConnection.__init__(self, host, key_file=keyfile, cert_file=certfile)
+      http_client.HTTPSConnection.__init__(self, host, key_file=keyfile, cert_file=certfile)
       self.timeout = timeout # Only valid in Python 2.6
 
-class HTTPSClientAuthHandler(urllib2.HTTPSHandler):
+class HTTPSClientAuthHandler(urllib_request.HTTPSHandler):
   def https_open(self, req):
       return self.do_open(HTTPSClientAuthConnection, req)
 
 
-def getDataHttplib(url):
+def getDatahttp_client(url):
     """
     DEPRECATED!
     Optional fall back in case of failure in getDataUrllib2
@@ -60,13 +62,13 @@ def getDataHttplib(url):
     Returns JSON response from server
     """
     warn("Warning: using function that my not work any more!")
-    urlsplit=urlparse.urlparse(url)
-    conn=httplib.HTTPConnection(urlsplit.netloc)
+    urlsplit=urlparse(url)
+    conn=http_client.HTTPConnection(urlsplit.netloc)
     conn.request("GET",'?'.join([urlsplit.path,urlsplit.query]))
     r1=conn.getresponse()
     if r1.status!=200:
         warn("Return status code: %s, %s; URL=%s" % (str(r1.status),str(r1.reason),url))
-        raise(urllib2.URLError)
+        raise(urllib_error.URLError)
     data1=r1.read()
     return data1
 
@@ -81,18 +83,18 @@ def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
     if logger:
         logger.debug("Beginning url call: %s" % url)
     try:
-        if urlparse.urlparse(url).scheme == 'https':
+        if urlparse(url).scheme == 'https':
             #print("attempting to send https query")
             #print(certfile)
             #print(keyfile)
-            opener=urllib2.build_opener(HTTPSClientAuthHandler)
+            opener=urllib_request.build_opener(HTTPSClientAuthHandler)
             #print(opener.handle_open.items())
-            request = urllib2.Request(url)
+            request = urllib_request.Request(url)
             output=opener.open(request)
         else:
             #print("attempting to send http query")
-            output=urllib2.urlopen(url)
-    except urllib2.HTTPError as e:
+            output=urllib_request.urlopen(url)
+    except urllib_error.HTTPError as e:
         #print("Warnings setting FIX:")
         #print(warnings)
         if warnings:
@@ -111,7 +113,7 @@ def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
         ##print(url)
         #print("May be handled cleanly by calling instance: otherwise will result in an error.")
         raise
-    except urllib2.URLError as e:
+    except urllib_error.URLError as e:
         #print(e.read())
         warn("Issue accesing url: %s; Reason: %s" % (url,str(e.reason)))
         try:
@@ -243,18 +245,18 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
     """
     socket.setdefaulttimeout(timeout)
     #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
-    if urlparse.urlparse(url).scheme == 'https':
-        opener=urllib2.build_opener(HTTPSClientAuthHandler)
+    if urlparse(url).scheme == 'https':
+        opener=urllib_request.build_opener(HTTPSClientAuthHandler)
     else:
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
-    request = urllib2.Request(url, data=payload)
+        opener = urllib_request.build_opener(urllib_request.HTTPHandler)
+    request = urllib_request.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PUT'
     if logger:
         logger.debug("Beginning url call: %s" % url)
     try:
         urlreturned = opener.open(request)
-    except urllib2.HTTPError as e:
+    except urllib_error.HTTPError as e:
         handleHTTPError("PUT",url,e)
         ##print(e.read())
         #if int(e.code)==404:
@@ -271,7 +273,7 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
         ##print(e.reason)
         ##print(urlreturned)
         raise
-    except urllib2.URLError as e:
+    except urllib_error.URLError as e:
         #print(e.read())
         warnmsg="Warning: Issue accessing url: %s" % url
         warnmsg+="; "
@@ -298,19 +300,19 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
     """
     socket.setdefaulttimeout(timeout)
     #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
-    if urlparse.urlparse(url).scheme == 'https':
-        opener=urllib2.build_opener(HTTPSClientAuthHandler)
+    if urlparse(url).scheme == 'https':
+        opener=urllib_request.build_opener(HTTPSClientAuthHandler)
     else:
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        opener = urllib_request.build_opener(urllib_request.HTTPHandler)
     #print(opener.handle_open.items())
-    request = urllib2.Request(url, data=payload)
+    request = urllib_request.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PATCH'
     if logger:
         logger.debug("Beginning url call: %s" % url)
     try:
         urlreturned = opener.open(request)
-    except urllib2.HTTPError as e:
+    except urllib_error.HTTPError as e:
         handleHTTPError("PATCH",url,e)
         ##print(e.read())
         #print("Warning: Issue accessing url: %s" % url)
@@ -320,7 +322,7 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
         ##print(url)
         #print("May be handled cleanly by calling instance: otherwise will result in an error.")
         raise
-    except urllib2.URLError as e:
+    except urllib_error.URLError as e:
         #print(e.read()
         warnmsg="Warning: Issue accessing url: %s" % url
         warnmsg+="; "

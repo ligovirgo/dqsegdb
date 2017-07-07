@@ -19,7 +19,7 @@ import json
 import glue
 from dqsegdb.jsonhelper import InsertFlagVersion
 from dqsegdb.jsonhelper import InsertFlagVersionOld
-from urllib2 import HTTPError
+from six.moves.urllib.error import HTTPError
 import time
 import json
 from glue import ldbd

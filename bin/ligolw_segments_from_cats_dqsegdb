@@ -35,13 +35,15 @@ style segment database tools.
 from __future__ import print_function
 
 from optparse import OptionParser
-import urlparse
 
 import sys
 import os
 import pwd
 import tempfile
 import operator
+
+from six.moves.urllib.parse import urlparse
+
 import glue.segments
 
 import time
@@ -366,7 +368,7 @@ if __name__ == '__main__':
             #     #pdb.set_trace()
             # else:
             # New DQSEGDB client:
-            o=urlparse.urlparse(options.segment_url)
+            o=urlparse(options.segment_url)
             protocol=o.scheme
             server=o.netloc
             vetoed_segments=[]
