@@ -44,7 +44,7 @@ programversion='0.1'
 author = "Ryan Fisher"
 verbose=False
 
-def dqsegdbCheckVersion(protocol,server,ifo,name,version):
+def dqsegdbCheckVersion(protocol,server,ifo,name,version,warnings=True):
     """
     Checks for existence of a given version of a flag in the db.
     Returns true if version exists
@@ -61,11 +61,14 @@ def dqsegdbCheckVersion(protocol,server,ifo,name,version):
         Ex: 'DMT-SCIENCE'
     version : `string` or `int`
         Ex: '1'
+    warnings : `bool`
+        show warnings for `HTTPError` (as well as raising exception),
+        default: `True`
     """
     ### Fix!!! This looks wrong:  seems to check if the flag exists, not whether a version on the server matches what was passed to the function
     queryurl=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
     try:
-        result=urifunctions.getDataUrllib2(queryurl)
+        result=urifunctions.getDataUrllib2(queryurl, warnings=warnings)
     except HTTPError as e:
         if e.code==404:
             return False
@@ -144,7 +147,7 @@ def dqsegdbFindEndTime(flag_dict):
         warnings.warn("Function used to find max known_time from a flag was handed a flag with an empty set of known times.  Returning None")
         return None
 
-def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
+def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime,warnings=True):
     """
     Issue query to server for ifo:name:version with start and end time
     Returns the python loaded JSON response!
@@ -167,14 +170,18 @@ def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,start
         Ex: 999999999
     endTime : `int`
         Ex: 999999999
+    warnings : `bool`
+        show warnings for `HTTPError` (as well as raising exception),
+        default: `True`
     """
     queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
-    result=urifunctions.getDataUrllib2(queryurl)
+    result=urifunctions.getDataUrllib2(queryurl,warnings=warnings)
     result_json=json.loads(result)
     return result_json,queryurl
 
+
 #dqsegdbQueryTimesCompatible
-def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
+def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime,warnings=True):
     """
     Issue query to server for ifo:name:version with start and end time
     This is the version that reproduces S6 style query results when the query is empty
@@ -198,11 +205,14 @@ def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_st
         Ex: 999999999
     endTime : `int`
         Ex: 999999999
+    warnings : `bool`
+        show warnings for `HTTPError` (as well as raising exception),
+        default: `True`
 
     """
     queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
     try:
-        result=urifunctions.getDataUrllib2(queryurl)
+        result=urifunctions.getDataUrllib2(queryurl, warnings=warnings)
         result_json=json.loads(result)
     except HTTPError as e:
         if e.code==404:
@@ -214,7 +224,7 @@ def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_st
     return result_json,queryurl
 
 
-def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string):
+def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string,warnings=True):
     """
     Issue query to server for ifo:name:version without start and end time
     Returns the python loaded JSON response converted into a dictionary and queryurl!
@@ -236,9 +246,12 @@ def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string):
         Ex: '1'
     include_list_string : `string`
         Ex: "metadata,known,active"
+    warnings : `bool`
+        show warnings for `HTTPError` (as well as raising exception),
+        default: `True`
     """
     queryurl=urifunctions.constructSegmentQueryURL(protocol,server,ifo,name,version,include_list_string)
-    result=urifunctions.getDataUrllib2(queryurl)
+    result=urifunctions.getDataUrllib2(queryurl, warnings=warnings)
     result_json=json.loads(result)
     return result_json,queryurl
 
@@ -266,7 +279,7 @@ def coalesceResultDictionary(result_dict):
     out_result_dict['known']=known_seg_list
     return out_result_dict
 
-def queryAPIVersion(protocol,server,verbose):
+def queryAPIVersion(protocol,server,verbose,warnings=True):
     """
     Construct url and issue query to get the reported list of all IFOs
     provided by dqsegd and the API version of the server.
@@ -277,17 +290,20 @@ def queryAPIVersion(protocol,server,verbose):
         Ex: 'https'
     server : `string`
         Ex: 'dqsegdb5.phy.syr.edu'
+    warnings : `bool`
+        show warnings for `HTTPError` (as well as raising exception),
+        default: `True`
     """
     queryurl=protocol+"://"+server+"/dq"
     if verbose:
         print(queryurl)
-    result=urifunctions.getDataUrllib2(queryurl)
+    result=urifunctions.getDataUrllib2(queryurl, warnings=warnings)
     dictResult=json.loads(result)
     apiVersion=str(dictResult['query_information']['api_version'])
     return apiVersion
 
 
-def reportFlags(protocol,server,verbose):
+def reportFlags(protocol,server,verbose,warnings=True):
     """
     Construct url and issue query to get the reported list of all flags
     provided by dqsegdb.
@@ -300,14 +316,17 @@ def reportFlags(protocol,server,verbose):
         Ex: 'https'
     server : `string`
         Ex: 'dqsegdb5.phy.syr.edu'
+    warnings : `bool`
+        show warnings for `HTTPError` (as well as raising exception),
+        default: `True`
     """
     queryurl=protocol+"://"+server+"/report/flags"
     if verbose:
         print(queryurl)
-    result=urifunctions.getDataUrllib2(queryurl)
+    result=urifunctions.getDataUrllib2(queryurl,warnings=warnings)
     return result
 
-def reportActive(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time):
+def reportActive(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time,warnings=True):
     """
     Construct url and issue query to get the reported list of all active segments for all flags in the time window provided.
     From the API Doc:
@@ -327,6 +346,9 @@ def reportActive(protocol,server,includeSegments,verbose,gps_start_time,gps_end_
         Ex: 999999999
     gps_end_time: `int`
         Ex: 999999999
+    warnings : `bool`
+        show warnings for `HTTPError` (as well as raising exception),
+        default: `True`
 
     """
     if includeSegments:
@@ -338,10 +360,10 @@ def reportActive(protocol,server,includeSegments,verbose,gps_start_time,gps_end_
     queryurl=protocol+"://"+server+"/report/active"+includeText+timeText
     if verbose:
         print(queryurl)
-    result=urifunctions.getDataUrllib2(queryurl,timeout=1200)
+    result=urifunctions.getDataUrllib2(queryurl,timeout=1200,warnings=warnings)
     return result,queryurl
 
-def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time):
+def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time,warnings=True):
     """
     Construct url and issue query to get the reported list of all known segments for all flags in the time window provided.
     From the API Doc:
@@ -361,6 +383,9 @@ def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_t
         Ex: 999999999
     gps_end_time: `int`
         Ex: 999999999
+    warnings : `bool`
+        show warnings for `HTTPError` (as well as raising exception),
+        default: `True`
     """
     if includeSegments:
         includeText=""
@@ -371,7 +396,7 @@ def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_t
     queryurl=protocol+"://"+server+"/report/known"+includeText+timeText
     if verbose:
         print(queryurl)
-    result=urifunctions.getDataUrllib2(queryurl,timeout=1200)
+    result=urifunctions.getDataUrllib2(queryurl,timeout=1200,warnings=warnings)
     return result,queryurl
 
 def parseKnown(jsonResult):
@@ -465,7 +490,7 @@ def parseKnown(jsonResult):
 
     return rows
 
-def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime, debug=False):
+def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime, debug=False, warnings=True):
     """
     Queries server for needed flag_versions to generate the result of a
     cascaded query (was called a versionless query in S6).
@@ -494,6 +519,9 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
         Ex: 999999999
     debug : `bool`
         Ex: False
+    warnings : `bool`
+        show warnings for `HTTPError` (as well as raising exception),
+        default: `True`
     """
     if debug==True:
         verbose=True
@@ -506,7 +534,8 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     if verbose:
         print(versionQueryURL)
     try:
-        versionResult=urifunctions.getDataUrllib2(versionQueryURL)
+        versionResult=urifunctions.getDataUrllib2(versionQueryURL,
+                                                  warnings=warnings)
     except HTTPError as e:
         if e.code==404:
             import warnings
@@ -542,7 +571,7 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
             queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
             if verbose:
                 print(queryurl)
-            result=urifunctions.getDataUrllib2(queryurl)
+            result=urifunctions.getDataUrllib2(queryurl, warnings=warnings)
             result_parsed=json.loads(result)
             jsonResults.append(result_parsed)
             # Fix!!! Improvement: Executive Decision:  Should we force these intermediate results to hit disk?
