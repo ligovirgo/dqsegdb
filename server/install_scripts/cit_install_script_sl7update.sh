@@ -2,10 +2,14 @@
 # Set server version number.
 #export SERVER_VERSION='2.1.9'
 
+# FIX!!! Can I just point to /backup copies?
+rync -avP /backup/segdb/segments/install_support/.bashrc .
+rync -avP /backup/segdb/segments/install_support/.vimrc .
+rync -avP /backup/segdb/segments/install_support/.pythonrc .
 
-rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:.bashrc .
-rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:.pythonrc .
-rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:.vimrc .
+#rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:.bashrc .
+#rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:.pythonrc .
+#rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:.vimrc .
 
 yum -y install git
 mkdir dqsegdb_git
@@ -28,13 +32,16 @@ yum -y install httpd
 yum -y install mod_wsgi
 
 
-# Install MySQL.
-yum -y install mysql-server
+#OLD# Install MySQL.
+#yum -y install mysql-server
 
-# Start MySQL server.
-#service mysqld start
-/etc/init.d/mysqld restart
-chkconfig mysqld on
+## Start MySQL server.
+##service mysqld start
+#/etc/init.d/mysqld restart
+#chkconfig mysqld on
+
+yum -y install mariadb-server mariadb mariadb-devel
+
 
 # Install PHP (for web interface).
 yum -y install php php-mysql
@@ -91,48 +98,54 @@ echo "WSGIScriptAlias / /opt/dqsegdb/python_server/src/application.py" >> /etc/h
 
 cd /etc/httpd/
 mv conf.d conf.d.bck.$(date +%y%m%d)
-rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/httpd/conf.d .
+rsync -avP /backup/segdb/segments/install_support/conf.d /etc/httpd/
+#rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/httpd/conf.d .
 
-int_addr=`ifconfig eth0 |sed -n 's/.*inet addr:\([0-9\.]*\).*/\1/p'`
-
-ext_addr=`ifconfig eth1 |sed -n 's/.*inet addr:\([0-9\.]*\).*/\1/p'` 
+#FIX!!! the Devices don't seem to have standard names on SL7?
+int_addr=`ifconfig ens10 |sed -n 's/.*inet \([0-9\.]*\).*/\1/p'`
+#int_addr=`ifconfig eno1 |sed -n 's/.*inet addr:\([0-9\.]*\).*/\1/p'`
+ext_addr=`ifconfig ens3 |sed -n 's/.*inet \([0-9\.]*\).*/\1/p'`
+#ext_addr=`ifconfig eno2 |sed -n 's/.*inet addr:\([0-9\.]*\).*/\1/p'` 
 
 server_name=`hostname -f`
 
-sed -i "s/segments-backup\.ligo\.org/${server_name}/g" /etc/httpd/conf.d/dqsegdb.conf
+sed -i "s/segments\.ligo\.org/${server_name}/g" /etc/httpd/conf.d/dqsegdb.conf
 
-sed -i "s/131\.215\.113\.158/${ext_addr}/g" /etc/httpd/conf.d/dqsegdb.conf
+sed -i "s/131\.215\.113\.156/${ext_addr}/g" /etc/httpd/conf.d/dqsegdb.conf
 
-sed -i "s/10\.14\.0\.105/${int_addr}/g" /etc/httpd/conf.d/dqsegdb.conf
+sed -i "s/10\.14\.0\.101/${int_addr}/g" /etc/httpd/conf.d/dqsegdb.conf
 
+## FIX!!! Replace with openssl!!!
 # Install M2Crypto library.
 yum -y install m2crypto
 
-### Note:  this assumes your db name will be dqsegdb-backup for this server!!
+### Note:  this assumes your db name will be dqsegdbfor this server!!
 # Setup ODBC Data Source Name (DSN)
 echo "[DQSEGDB]
 DRIVER=MySQL
-DATABASE=segments-backup
+DATABASE=segments
 USER=dqsegdb_user
 PASSWORD=Q6a6jS6L63RtqnDm" >> /etc/odbc.ini
 
-# Install repo for phpMyAdmin.
-yum -y install http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+#OLD?FIX if brokenX!!!!# Install repo for phpMyAdmin.
+#yum -y install http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 
 # Install phpMyAdmin
 yum -y install phpmyadmin
-cd /etc/phpMyAmin
+cd /etc/phpMyAdmin
 mv /etc/phpMyAdmin/config.inc.php /etc/phpMyAdmin/config.inc.php.bck.$(date +%y%m%d)
-rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/phpMyAdmin/config.inc.php .
+rsync -avP /backup/segdb/segments/install_support/config.inc.php /etc/phpMyAdmin/
+#rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/phpMyAdmin/config.inc.php .
 
 # Fix default httpd/conf dir
 mv /etc/httpd/conf /etc/httpd/conf.bck.$(date +%y%m%d)
 cd /etc/httpd
-rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/httpd/conf .
+rsync -avP /backup/segdb/segments/install_support/conf /etc/httpd/
+#rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/httpd/conf .
 
-mv /etc/init.d/httpd /etc/init.d/httpd.bck.$(date +%y%m%d)
-cd /etc/init.d/
-rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/init.d/httpd .
+echo "OPENSSL_ALLOW_PROXY_CERTS=1" >> /etc/sysconfig/httpd 
+echo 'PYTHONPATH="/opt/dqsegdb/python_server/src:${PYTHONPATH}"'>> /etc/sysconfig/httpd 
+
 
 # Import data and create main database.
 #curl http://10.20.5.14/repos/segdb/dqsegdb/dqsegdb.sql > dqsegdb.sql
