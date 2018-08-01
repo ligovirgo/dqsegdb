@@ -28,6 +28,7 @@ from six.moves import http_client
 from six.moves.urllib import (request as urllib_request,
                               error as urllib_error)
 
+
 #
 # =============================================================================
 #
@@ -36,103 +37,41 @@ from six.moves.urllib import (request as urllib_request,
 # =============================================================================
 #
 
-class HTTPSClientAuthConnection(http_client.HTTPSConnection):
-  def __init__(self, host, timeout=None):
-      try:
-          certfile,keyfile=findCredential()
-      except:
-          warn("Warning:  No proxy found or other error encountered during check for authentication credentials, connections to https will not work.")
-          certfile=""
-          keyfile=""
-          ### Fix!!! This doesn't actually seem to work because someone thought sys.exit was good error handling... Beyond that:  What does HTTPSConnection expect in this case?  The connections will fail, but we might want to report that carefully...
-      http_client.HTTPSConnection.__init__(self, host, key_file=keyfile, cert_file=certfile)
-      self.timeout = timeout # Only valid in Python 2.6
+def getDataUrllib2(url, timeout=900, logger=None, warnings=True,
+                   **urlopen_kw):
+    """Return response from server
 
-class HTTPSClientAuthHandler(urllib_request.HTTPSHandler):
-  def https_open(self, req):
-      return self.do_open(HTTPSClientAuthConnection, req)
+    Parameters
+    ----------
+    url : `str`
+        remote URL to request (HTTP or HTTPS)
 
+    timeout : `float`
+        time (seconds) to wait for reponse
 
-def getDatahttp_client(url):
-    """
-    DEPRECATED!
-    Optional fall back in case of failure in getDataUrllib2
-    Takes a url such as:
-    url="http://segdb-test-internal/dq/H1/DMT-SCIENCE/1/active?s=10&e=20"
-    Returns JSON response from server
-    """
-    warn("Warning: using function that my not work any more!")
-    urlsplit=urlparse(url)
-    conn=http_client.HTTPConnection(urlsplit.netloc)
-    conn.request("GET",'?'.join([urlsplit.path,urlsplit.query]))
-    r1=conn.getresponse()
-    if r1.status!=200:
-        warn("Return status code: %s, %s; URL=%s" % (str(r1.status),str(r1.reason),url))
-        raise(urllib_error.URLError)
-    data1=r1.read()
-    return data1
+    logger : `logging.Logger`
+        logger to print to
 
-def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
-    socket.setdefaulttimeout(timeout)
-    """
-    Takes a url such as:
-    url="http://segdb-test-internal/dq/dq/H1/DMT-SCIENCE/1/active?s=10&e=20"
-    Returns JSON response from server
-    Also handles https requests with grid certs (or proxy certs).
+    **urlopen_kw
+        other keywords are passed to :func:`urllib.request.urlopen`
+
+    Returns
+    -------
+    response : `str`
+        the text reponse from the server
     """
     if logger:
         logger.debug("Beginning url call: %s" % url)
-    try:
-        if urlparse(url).scheme == 'https':
-            #print("attempting to send https query")
-            #print(certfile)
-            #print(keyfile)
-            opener=urllib_request.build_opener(HTTPSClientAuthHandler)
-            #print(opener.handle_open.items())
-            request = urllib_request.Request(url)
-            output=opener.open(request)
-        else:
-            #print("attempting to send http query")
-            output=urllib_request.urlopen(url)
-    except urllib_error.HTTPError as e:
-        #print("Warnings setting FIX:")
-        #print(warnings)
-        if warnings:
-            handleHTTPError("GET",url,e)
-        else:
-            handleHTTPError("QUIET",url,e)
-
-        ##print(e.read())
-        #print("Warning: Issue accessing url: %s" % url)
-        #print("Code: ")
-        #print(e.code)
-        #print(e.msg)
-        ##import pdb
-        ##pdb.set_trace()
-        ##print(e.reason)
-        ##print(url)
-        #print("May be handled cleanly by calling instance: otherwise will result in an error.")
-        raise
-    except urllib_error.URLError as e:
-        #print(e.read())
-        warn("Issue accesing url: %s; Reason: %s" % (url,str(e.reason)))
-        try:
-            type, value, traceback_stack = sys.exc_info()
-            warnmsg="Trying custom URLError."
-            warnmsg+=" "
-            warnmsg+=str(type)
-            warnmsg+=str(value)
-            warn(warnmsg)
-            import traceback
-            traceback.print_tb(traceback_stack)
-            raise e
-
-        except:
-            warn(url)
-            raise
+    if urlparse(url).scheme == 'https' and 'context' not in urlopen_kw:
+        from ssl import create_default_context
+        from gwdatafind.utils import find_credential
+        urlopen_kw['context'] = context = create_default_context()
+        context.load_cert_chain(*find_credential())
+    output = urllib_request.urlopen(url, timeout=timeout, **urlopen_kw)
     if logger:
         logger.debug("Completed url call: %s" % url)
     return output.read()
+
 
 def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
     """
