@@ -711,7 +711,7 @@ if __name__ == '__main__':
             sys.exit( 0 )
         else:
             # DQSEGDB 'ping'
-            o=urlparse.urlparse(options.segment_url)
+            o = urlparse(options.segment_url)
             protocol=o.scheme
             server=o.netloc
             ifo="L1"
@@ -738,7 +738,7 @@ if __name__ == '__main__':
 
     if database_location and not options.use_s6:
         # Use new dqsegdb client
-        o=urlparse.urlparse(options.segment_url)
+        o = urlparse(options.segment_url)
         protocol=o.scheme
         server=o.netloc
         if options.show_types:
