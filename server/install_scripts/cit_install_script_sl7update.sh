@@ -188,4 +188,4 @@ chkconfig httpd on
 
 # Add Web Interface configuration.
 echo "Alias /dqsegdb_web /usr/share/dqsegdb_web" >> /etc/httpd/conf.d/dqsegdb_web.conf
-
+yum -y install glue lal lal-python python-pyRXP
