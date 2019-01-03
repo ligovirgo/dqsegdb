@@ -49,10 +49,10 @@ import os
 #import operator
 import pwd
 import tempfile
-import urllib
 import json
 
 from six.moves.urllib.parse import urlparse
+from six.moves.urllib.request import urlopen
 
 from dqsegdb import apicalls
 from dqsegdb import urifunctions
@@ -172,7 +172,7 @@ def parse_command_line():
             pos     = options.segment_url[::-1].find('/')
             fname   = (pos > -1) and options.segment_url[ -1 * pos:] or "dmt.xml"
 
-            inurl   = urllib.urlopen(options.segment_url)
+            inurl   = urlopen(options.segment_url)
             outfile = open(tmp_dir + "/" + fname, 'w')
             for l in inurl:
                 print(l, file=outfile)

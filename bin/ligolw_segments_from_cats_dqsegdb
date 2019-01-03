@@ -43,6 +43,7 @@ import tempfile
 import operator
 
 from six.moves.urllib.parse import urlparse
+from six.moves.urllib.request import urlopen
 
 import glue.segments
 
@@ -65,7 +66,6 @@ from dqsegdb import apicalls
 from dqsegdb import clientutils
 
 import re
-import urllib
 
 PROGRAM_NAME = sys.argv[0].replace('./','')
 PROGRAM_PID  = os.getpid()
@@ -142,7 +142,7 @@ def parse_command_line():
 
     if options.veto_file.find(':') != -1:
         tmp_dir = tempfile.mkdtemp()
-        inurl   = urllib.urlopen(options.veto_file)
+        inurl   = urlopen(options.veto_file)
 
         # Grab the part of the name after the last slash
         pos     = options.veto_file[::-1].find('/')
@@ -176,7 +176,7 @@ def parse_command_line():
             pos     = options.segment_url[::-1].find('/')
             fname   = (pos > -1) and options.segment_url[ -1 * pos:] or "dmt.xml"
 
-            inurl   = urllib.urlopen(options.segment_url)
+            inurl   = urlopen(options.segment_url)
             outfile = open(tmp_dir + "/" + fname, 'w')
             for l in inurl:
                 print(l, file=outfile)
