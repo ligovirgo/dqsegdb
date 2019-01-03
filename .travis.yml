@@ -1,45 +1,18 @@
 language: python
 
-sudo: false
-dist: trusty
-
-addons:
-  apt:
-    sources:
-      - sourceline: deb http://software.ligo.org/lscsoft/debian wheezy contrib
-        key_url: http://software.ligo.org/keys/deb/lscsoft.key
-      - sourceline: deb-src http://software.ligo.org/lscsoft/debian wheezy contrib
-        key_url: http://software.ligo.org/keys/deb/lscsoft.key
-    packages:
-      - swig  # lal
-      - libfftw3-dev  # lal
-      - pkg-config  # lal
-      - zlib1g-dev  # lal
-      - libgsl0-dev  # lal
-      - bc  # lal
-
-env:
-  global:
-    - LAL_VERSION="6.18.0"
-
 python:
   - '2.7'
+  - '3.4'
   - '3.5'
-  - 'nightly'
-
-matrix:
-  allow_failures:
-    - python: '3.5'
-    - python: 'nightly'
-  fast_finish: true
+  - '3.6'
 
 before_install:
   # upgrade pip
   - pip install --quiet --upgrade pip
   # install requirements
   - pip install -r requirements.txt
-  # install LAL from tarball
-  - .travis/build-lal.sh
+  # install LAL (for glue)
+  - pip install lalsuite
   # install test-only requirements
   - pip install coveralls
 
@@ -57,7 +30,4 @@ after_success:
   - coveralls
 
 cache:
-  apt: true
   pip: true
-  directories:
-    - lal-${LAL_VERSION}-${TRAVIS_PYTHON_VERSION}

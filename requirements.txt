@@ -1,6 +1,6 @@
 six
 pykerberos
 pyRXP
-pyOpenSSL
-http://software.ligo.org/lscsoft/source/glue-1.53.0.tar.gz
+pyOpenSSL >= 0.14
+lscsoft-glue >= 1.55.0
 gwdatafind
