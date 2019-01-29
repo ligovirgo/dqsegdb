@@ -297,6 +297,7 @@ cp /etc/pki/tls/private/localhost.key /etc/pki/tls/private/localhost.key.bck.$(d
 # NOTE:  NEXT TWO LINES ASSUME KEY/CERT PAIR ARE IN LOCATION /ETC/GRID-SECURITY!
 ### they are not there in a standard install!
 if [ $host == "segments" ] then \
+   cp  /backup/segdb/reference/install_support/segments/ldbd*pem  /etc/grid-security/; \
    cp  /backup/segdb/reference/install_support/segments/segments.ligo.org.*  /etc/grid-security/; fi
 if [ $host == "segments-backup" ] then \
    cp  /backup/segdb/reference/install_support/segments-backup/segments-backup.ligo.org.*  /etc/grid-security/; fi
@@ -305,6 +306,7 @@ if [ $host == "segments-web" ] then \
    mkdir -p /etc/httpd/x509-certs/
    cp  /backup/segdb/reference/install_support/segments-web/segments-web.ligo.org.*  /etc/httpd/x509-certs/; fi
 if [ $host == "segments-dev" ] then \
+   cp  /backup/segdb/reference/install_support/segments-dev/ldbd*pem  /etc/grid-security/; \
    cp  /backup/segdb/reference/install_support/segments-dev/segments-dev.ligo.org.*  /etc/grid-security/; fi
 if [ $host == "segments-s6" ] then \
    cp  /backup/segdb/reference/install_support/segments-s6/segments-s6.ligo.org.*  /etc/grid-security/; fi
@@ -388,6 +390,22 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
   cp  /backup/segdb/reference/install_support/ligolw_dtd.txt  /root/Publisher/etc/
   
   cp /backup/segdb/reference/lgmm/grid-mapfile-insert /etc/grid-security/
+fi
+
+# create crontab files
+if [ $host == "segments" ]
+then
+  if [ -e /var/spool/cron/root ]; then cp /var/spool/cron/root /root/cron_root_$(date +%Y.%m.%d) ; fi
+  if [ -e /var/spool/cron/ldbd ]; then cp /var/spool/cron/ldbd /root/cron_ldbd_$(date +%Y.%m.%d) ; fi
+
+# destination for files grabbed by Nagios, for monitor.ligo.org:
+  if [ ! -d /var/www/nagios/ ]; then mkdir -p /var/www/nagios/ ; fi
+fi
+if [ $host == "segments-dev" ]
+then
+  if [ -e /var/spool/cron/root ]; then cp /var/spool/cron/root /root/cron_root_$(date +%Y.%m.%d) ; fi
+  if [ -e /var/spool/cron/ldbd ]; then cp /var/spool/cron/ldbd /root/cron_ldbd_$(date +%Y.%m.%d) ; fi
+
 fi
 
 # create some useful links
