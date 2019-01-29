@@ -12,9 +12,6 @@ then
   exit
 fi
 
-# Set server version number.
-#export SERVER_VERSION='2.1.9'
-
 # make backups of user root config files (if they exist) and then import new files
 cd /root/ 
 if [ -e ./.bashrc ]; then cp  ./.bashrc  ./.bashrc_$(date +%Y.%m.%d).bak ; fi
@@ -40,8 +37,10 @@ echo "Installation script/instructions printed"
 # used for connecting to git repositories with Kerberos (if this is still used)
 yum -y install ecp-cookie-init
 git config --global http.cookiefile /tmp/ecpcookie.u`id -u`
-git config --global user.email ryan.fisher@ligo.org
-git config --global user.name "Ryan Fisher"
+#git config --global user.email ryan.fisher@ligo.org
+#git config --global user.name "Ryan Fisher"
+git config --global user.email robert.bruntz@ligo.org
+git config --global user.name "Robert Bruntz"
 # these lines above might be changed to a different user later
 
 # Install Apache server.
@@ -53,13 +52,6 @@ yum -y install mod_wsgi
 # Set LGMM (LIGO Grid-Mapfile Manager) to run on reboot and start it now
 /sbin/chkconfig lgmm on
 systemctl restart lgmm
-
-#OLD# Install MySQL.
-#yum -y install mysql-server
-## Start MySQL server.
-##service mysqld start
-#/etc/init.d/mysqld restart
-#chkconfig mysqld on
 
 # Install mariaDB, set it to run on startup, and start it
 yum -y install mariadb-server mariadb mariadb-devel
@@ -78,6 +70,7 @@ yum -y install mysql-connector-odbc
 
 # Increase innodb buffer pool size.
 echo "[mysqld]" >> /etc/my.cnf
+# set max_connections to 256 here? - do in /etc/mysql/my.cnf ?
 if [ $host == "segments-backup" ]
 then
   echo "innodb_buffer_pool_size = 20G" >> /etc/my.cnf
@@ -94,19 +87,11 @@ mkdir -p /opt/dqsegdb/python_server/logs
 #    so that the code and logs are separate?
 chmod 777 /opt/dqsegdb/python_server/logs
 mkdir -p /opt/dqsegdb/python_server/src
-### do we need the following lines?
-#mkdir $SERVER_VERSION
-#cd $SERVER_VERSION
-#mkdir cache
-#chmod 777 cache
 
 # Add server files.
 cd ~
 git clone https://github.com/ligovirgo/dqsegdb.git
-### do we need the following commented-out lines?
-#curl http://10.20.5.14/repos/segdb/dqsegdb/$SERVER_VERSION/src.tar > src.tar
-#mv src.tar /opt/dqsegdb/python_server/src/
-cp ~/dqsegdb/server/src/* /opt/dqsegdb/python_server/src/
+cp  ~/dqsegdb/server/src/*  /opt/dqsegdb/python_server/src/
 
 # Add WSGI script alias to Apache configuration file.
 echo "WSGIScriptAlias / /opt/dqsegdb/python_server/src/application.py" >> /etc/httpd/conf.d/wsgi.conf
@@ -115,19 +100,11 @@ echo "WSGIScriptAlias / /opt/dqsegdb/python_server/src/application.py" >> /etc/h
 ### so the above line isn't needed at all; it just creates the file, which is then moved
 
 # Configure application Apache:
-### this would be a good place to have separate blocks for each server - segments, segments-backup, segments-web, segments-dev, segments-dev2, segments-s6
-
-### do we need the following commented-out lines?
-#curl http://10.20.5.14/repos/segdb/dqsegdb/dqsegdb5_example.conf > dqsegdb.conf
-#/bin/cp dqsegdb.conf /etc/httpd/conf.d/
-#cd ~
-#rsync -avP sugar.phy.syr.edu:/home/rpfisher/dqsegdb5_backups_Jul272015 .
 
 ### will this be the same for any of the machines we use now (I.e., starting with SL 7)?
 mv /etc/httpd/conf.d   /etc/httpd/conf.d.bck.$(date +%Y.%m.%d)
 rsync -avP /backup/segdb/segments/install_support/conf.d   /etc/httpd/
 chown -R root:root /etc/httpd/conf.d
-#rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/httpd/conf.d .
 
 # Get the IP addresses for (2 Ethernet ports? Are these special somehow?) and the hostname
 #FIX!!! the Devices don't seem to have standard names on SL7?
@@ -286,10 +263,7 @@ fi
 
 
 # Try to import a backup of primary database
-### do we need to do this?
-rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:bin /root/
-cd /root/bin
-#/bin/bash populate_from_backup.sh
+
 
 # move certs to appropriate locations, as referenced by /etc/httpd/conf.d/dqsegdb
 cp /etc/pki/tls/certs/localhost.crt /etc/pki/tls/certs/localhost.crt.old.$(date +%Y.%m.%d)
