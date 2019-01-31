@@ -12,6 +12,13 @@ then
   exit
 fi
 
+# The default is to create a 'live' system, with all services, cron jobs, etc. ready to run immediately;
+#    if you don't want that, change the 'live' variable to 0 before running this script.
+# If 'live' is not 1, some services will be started to set them up, then shut down after that.
+# NOTE: This doesn't apply to mariadb and httpd yet.
+#       They will be started, no matter what.  We'll work on making that optional later.
+live=1
+
 # make backups of user root config files (if they exist) and then import new files
 cd /root/ 
 if [ -e ./.bashrc ]; then cp  ./.bashrc  ./.bashrc_$(date +%Y.%m.%d).bak ; fi
@@ -78,6 +85,13 @@ else
   echo "innodb_buffer_pool_size = 40G" >> /etc/my.cnf
 fi
 ### Note: 20 GB for segments-dev2 is b/c it has limited disk space; others should be fine.  (Maybe increase it for some/all others?)
+#if [ $live -eq 1 ]
+#then
+#  systemctl enable mariadb.service
+#  systemctl restart mariadb.service
+#else
+#  echo "### NOTICE ### The 'live' variable is not set to 1, so the mariadb service is not being started."
+#fi
 systemctl enable mariadb.service
 systemctl restart mariadb.service
 
@@ -162,39 +176,30 @@ then
   sed -i "s/131\.215\.125\.182/${ext_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
   sed -i "s/10\.14\.0\.117/${int_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
 fi
-### Note that dqsegdb.conf will not be changed for segments-other (which doesn't exist; it's there as an 'unexpected other case' option)
+### Note that dqsegdb.conf will not be changed for segments-other (which doesn't exist; 
+###   it's there as a future 'unexpected other case' option)
 
 ## FIX!!! Replace with openssl!!!
 # Install M2Crypto library.
 yum -y install m2crypto
 ### some code uses m2crypto; need to change that code at the same time as (or before) changing this over to openssl
 
-### Note:  this assumes your db name will be dqsegdb for this server!!
-### this would be a good place to have separate blocks for each server - segments, segments-backup, segments-web, segments-dev, segments-dev2, segments-s6
 # Setup ODBC Data Source Name (DSN)
-db_name="dqsegdb"
-if [ $host == "segments" ];               then db_name="dqsegdb";                 fi
-if [ $host == "segments-backup" ]; then db_name="segments_backup"; fi
-if [ $host == "segments-dev" ];        then db_name="segments_backup"; fi
-if [ $host == "segments-s6" ];          then db_name="dqsegdb_s6";           fi
-if [ $host != "segments-web" ] && [ $host != "segments-other" ]
+if [ $host == "segments" ] || [ $host == "segments-web" ] || [ $host == "segments-backup" ] || [ $host == "segments-dev" ]
 then
-  echo "[DQSEGDB]
-  DRIVER=MySQL
-  #DATABASE=dqsegdb
-  DATABASE=$db_name
-  USER=dqsegdb_user
-  PASSWORD=Q6a6jS6L63RtqnDm" >> /etc/odbc.ini
+  if [ -e /etc/odbc.ini ]; then mv  /etc/odbc.ini  /etc/odbc.ini_bak_$(date +%Y.%m.%d) ; fi
+  cp  /backup/segdb/reference/root_files/$host/odbc.ini  /etc/
 fi
-# DATABASE=segments   ### one old version
 
 # Install phpMyAdmin
 ### do we want to do this for every segments machine?
-yum -y install phpmyadmin
-mv /etc/phpMyAdmin/config.inc.php   /etc/phpMyAdmin/config.inc.php.bck.$(date +%Y.%m.%d)
-rsync -avP /backup/segdb/reference/install_support/config.inc.php   /etc/phpMyAdmin/
-#rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/phpMyAdmin/config.inc.php .
-chown root:apache /etc/phpMyAdmin/config.inc.php
+if [ $host == "segments" ] || [ $host == "segments-web" ] || [ $host == "segments-backup" ] || [ $host == "segments-dev" ]
+then
+  yum -y install phpmyadmin
+  mv /etc/phpMyAdmin/config.inc.php   /etc/phpMyAdmin/config.inc.php.bck.$(date +%Y.%m.%d)
+  rsync -avP /backup/segdb/reference/install_support/config.inc.php   /etc/phpMyAdmin/
+  chown root:apache /etc/phpMyAdmin/config.inc.php
+fi
 
 # Fix default httpd/conf dir
 mv /etc/httpd/conf /etc/httpd/conf.bck.$(date +%Y.%m.%d)
@@ -210,11 +215,6 @@ echo "OPENSSL_ALLOW_PROXY_CERTS=1" >> /etc/sysconfig/httpd
 echo 'PYTHONPATH="/opt/dqsegdb/python_server/src:${PYTHONPATH}"'>> /etc/sysconfig/httpd 
 
 # Import data and create main database.
-#curl http://10.20.5.14/repos/segdb/dqsegdb/dqsegdb.sql > dqsegdb.sql
-#mysql -e "DROP DATABASE IF EXISTS dqsegdb"
-#mysql -e "CREATE DATABASE dqsegdb"
-#mysql -e "use dqsegdb"
-#mysql dqsegdb < dqsegdb.sql
  
 # Create database users and give them privileges
 ### Note that the ‘empty_database.tgz’ and dqsegdb backups have users ‘dqsegdb_user’ and ‘admin’, but they don’t work right, 
@@ -320,7 +320,6 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
   mkdir -p /dqxml/G1
   cp  /backup/segdb/reference/install_support/etc_init.d_dir/dqxml_pull_from_obs  /etc/init.d/
   cp  /backup/segdb/reference/install_support/root_bin_dir/dqxml_pull_from_obs  /root/bin/
-  /sbin/chkconfig  dqxml_pull_from_obs  on
 
   cp  /backup/segdb/reference/install_support/ligolw_dtd.txt  /root/bin/
   cp  /backup/segdb/reference/install_support/dqsegdb_September_11_2018.tgz  /root/
@@ -364,23 +363,39 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
   cp  /backup/segdb/reference/install_support/ligolw_dtd.txt  /root/Publisher/etc/
   
   cp /backup/segdb/reference/lgmm/grid-mapfile-insert /etc/grid-security/
+
+  if [ $live -eq 1 ]
+  then
+    /sbin/chkconfig  dqxml_pull_from_obs  on
+    systemctl start dqxml_pull_from_obs.service
+    if [ $host == "segments" ]
+    then 
+      /sbin/chkconfig  dqxml_push_to_ifocache  on 
+      systemctl start dqxml_pull_from_obs.service
+    fi
+  fi
 fi
+
 
 # create crontab files
-if [ $host == "segments" ]
+# first, backup any existing cron files that would be overwritten (though there shouldn't be any)
+if [ -e /var/spool/cron/root ]; then cp /var/spool/cron/root /root/cron_root_bak_$(date +%Y.%m.%d) ; fi
+if [ -e /var/spool/cron/ldbd ]; then cp /var/spool/cron/ldbd /root/cron_ldbd_bak_$(date +%Y.%m.%d) ; fi
+if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segments-backup" ]
 then
-  if [ -e /var/spool/cron/root ]; then cp /var/spool/cron/root /root/cron_root_$(date +%Y.%m.%d) ; fi
-  if [ -e /var/spool/cron/ldbd ]; then cp /var/spool/cron/ldbd /root/cron_ldbd_$(date +%Y.%m.%d) ; fi
-
-# destination for files grabbed by Nagios, for monitor.ligo.org:
-  if [ ! -d /var/www/nagios/ ]; then mkdir -p /var/www/nagios/ ; fi
+  if [ $live -eq 1 ]; then
+    cp  `ls -1rt /backup/segdb/reference/root_files/$host/crontab_-l_root* | tail -n 1` /var/spool/cron/root
+    cp  `ls -1rt /backup/segdb/reference/ldbd_files/$host/crontab_-l_ldbd* | tail -n 1` /var/spool/cron/ldbd
+  else
+    cp  `ls -1rt /backup/segdb/reference/root_files/$host/crontab_-l_root*all_lines_commented* | tail -n 1` /var/spool/cron/root
+    cp  `ls -1rt /backup/segdb/reference/ldbd_files/$host/crontab_-l_ldbd*all_lines_commented* | tail -n 1` /var/spool/cron/ldbd
+  fi
+  # create dir to hold files that are created by a cron job, then grabbed by Nagios, for use on monitor.ligo.org:
+  if [ $host == "segments"] && [ ! -d /var/www/nagios/ ]; then mkdir -p /var/www/nagios/ ; fi
 fi
-if [ $host == "segments-dev" ]
-then
-  if [ -e /var/spool/cron/root ]; then cp /var/spool/cron/root /root/cron_root_$(date +%Y.%m.%d) ; fi
-  if [ -e /var/spool/cron/ldbd ]; then cp /var/spool/cron/ldbd /root/cron_ldbd_$(date +%Y.%m.%d) ; fi
+# Note that there are currently (Jan. 2019) no crontabs for any users on segments-web or segments-dev2, 
+#   and segments-s6 is likely to be decommissioned very soon, so it does not need to be handled.
 
-fi
 
 # create some useful links
 # format reminder: 'ln -s [actual_file]   [link_name]'
@@ -392,20 +407,38 @@ ln -s /var/log/publishing/dev  /root/bin/publisher_log_files
 ln -s /opt/dqsegdb/python_server/logs/ /root/bin/python_server_log_files
 
 
+# run some machine-specific items
+if [ $host == "segments" ]
+then
+  sudo -u ldbd mkdir -p /usr1/ldbd/
+  sudo -u ldbd mkdir -p /usr1/ldbd/bin
+  sudo -u ldbd cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
+  # what else?
+fi
+if [ $host == "segments-backup" ]
+then
+  sudo -u ldbd mkdir -p /usr1/ldbd/
+  sudo -u ldbd mkdir -p /usr1/ldbd/bin
+  sudo -u ldbd mkdir -p /usr1/ldbd/backup_logging
+  sudo -u ldbd cp -rp  /backup/segdb/segments/backup_logging/*  /usr1/ldbd/backup_logging/
+  sudo -u ldbd cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
+  # what else?
+fi
+if [ $host == "segments-dev" ]
+then
+  sudo -u ldbd mkdir -p /usr1/ldbd/
+  sudo -u ldbd mkdir -p /usr1/ldbd/bin
+  sudo -u ldbd cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
+  # what else?
+fi
+# note: no user 'ldbd' used on segments-web; we aren't planning to ever restore segments-s6; segments-dev2 is done manually
+
+
 # something about adding the cert to grid-mapfile and grid-mapfile-insert in /etc/grid-security/
  
 # something about backups
 
 
-### User tasks:
-#systemctl start dqxml_pull_from_obs.service
-if [ 0 -eq 1 ]; then
-crontab -u root  /backup/segdb/segments-dev/install/root_crontab_-l
-crontab -u ldbd  /backup/segdb/segments-dev/install/ldbd_crontab_-l
-fi
-if [ 0 -eq 1 ]; then
-crontab -u root  /backup/segdb/segments-dev/install/root_crontab_-l_all_lines_commented
-crontab -u ldbd  /backup/segdb/segments-dev/install/ldbd_crontab_-l_all_lines_commented
-fi
+### User tasks to be performed manually:
 
 
