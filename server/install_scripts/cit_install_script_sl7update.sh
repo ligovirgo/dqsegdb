@@ -53,9 +53,12 @@ git config --global user.name "Robert Bruntz"
 # these lines above might be changed to a different user later
 
 # Set LGMM (LIGO Grid-Mapfile Manager) to run on reboot and start it now
+cp  /backup/segdb/reference/lgmm/whitelist  /etc/grid-security/
+touch /etc/grid-security/grid-mapfile
+chown nobody:nobody /etc/grid-security/grid-mapfile
+chmod 644 /etc/grid-security/grid-mapfile
 /sbin/chkconfig lgmm on
 systemctl restart lgmm
-cp  /backup/segdb/reference/lgmm/whitelist  /etc/grid-security/
 
 
 # Install Apache, MariaDB (successor to MySQL), PHPMyAdmin, etc.
