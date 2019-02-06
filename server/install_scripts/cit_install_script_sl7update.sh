@@ -82,7 +82,7 @@ yum -y install mysql-connector-odbc
 # Increase innodb buffer pool size.
 echo "[mysqld]" >> /etc/my.cnf
 # set max_connections to 256 here? - do in /etc/mysql/my.cnf ?
-if [ $host == "segments-backup" ]
+if [ $host == "segments-dev2" ]
 then
   echo "innodb_buffer_pool_size = 20G" >> /etc/my.cnf
 else
@@ -251,7 +251,7 @@ if [ 1 -eq 0 ]; then
   mysql -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'admin'@'localhost'"
   mysql -e "DROP USER 'admin'@'localhost'"
 fi
-# this part IS done
+# this part IS done, and is done for all segments machines
 mysql -e "CREATE USER 'dqsegdb_user'@'localhost' IDENTIFIED BY 'Q6a6jS6L63RtqnDm'"
 mysql -e "GRANT SELECT, INSERT, UPDATE ON dqsegdb.* TO 'dqsegdb_user'@'localhost'"
 mysql -e "CREATE USER 'admin'@'localhost' IDENTIFIED BY 'lvdb_11v35'"
@@ -465,7 +465,7 @@ fi
 
 
 ### to do:
-### * make sure that grid-mapfile gets created
+### * make sure that grid-mapfile gets created, and with proper ownership and permissions
 ### * Start a new dir for httpd, with contents selected from 
 ###     the line "rsync -avP /backup/segdb/segments/install_support/conf.d   /etc/httpd/", above
 ### * Set up files for /etc/httpd/conf.d/ for segments-web
