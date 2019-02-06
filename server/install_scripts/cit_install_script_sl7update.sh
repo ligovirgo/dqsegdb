@@ -33,6 +33,7 @@ rsync -avP /backup/segdb/reference/install_support/.vimrc .
 rsync -avP /backup/segdb/reference/install_support/.pythonrc .
 chown  root:root  .bashrc  .pythonrc  .vimrc
 . ./.bashrc
+mkdir /root/bin/
 
 yum -y install git nano mlocate screen
 mkdir dqsegdb_git
@@ -164,13 +165,14 @@ then
 fi
 if [ $host == "segments-backup" ]
 then
-  cp -r  /backup/segdb/reference/install_support/segments-backup/etc_httpd_conf.d  /etc/httpd/
-  cp -r  /backup/segdb/reference/install_support/segments-backup/etc_httpd_conf    /etc/httpd/
+  cp -r  /backup/segdb/reference/install_support/segments-backup/etc_httpd_conf    /etc/httpd/conf/
+  cp -r  /backup/segdb/reference/install_support/segments-backup/etc_httpd_conf.d  /etc/httpd/conf.d/
 fi
 if [ $host == "segments-web" ]
 then
 #  cp -r  /backup/segdb/reference/install_support/segments-web/etc_httpd_conf.d  /etc/httpd/
 ### note: this one isn't set up yet
+  sleep 0   ### have to do *something*, or bash gets cranky
 fi
 chown -R root:root /etc/httpd/conf.d
 chown -R root:root /etc/httpd/conf
@@ -271,17 +273,42 @@ if [ 1 -eq 0 ]; then
 fi
 
 ### Restore a full backup of dqsegdb here
-if [ $host == "segments" ]  || [ $host == "segments-dev" ] || [ $host == "segments-backup" ]
+if [ $host == "segments" ]  || [ $host == "segments-dev" ]
 then
-### this part restores a backed-up DB
-  mkdir /var/backup_of_dqsegdb/
-  cp /backup/segdb/reference/install_support/segments/populate_from_backup.sh  /var/backup_of_dqsegdb/
-  cp /backup/segdb/segments/primary/*.tar.gz  /var/backup_of_dqsegdb/
-  cd /var/backup_of_dqsegdb/
+  # this part restores a backed-up segments DB
+  #mkdir /var/backup_of_dqsegdb/
+  tmp_dir=/backup/segdb/segments/install_support/tmp/segments_restore
+  mkdir -p  $tmp_dir
+  cp /backup/segdb/reference/install_support/segments/populate_from_backup.sh  $tmp_dir
+  cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir
+  cd $tmp_dir
   tar xvzf *.tar.gz
   #/bin/bash ./populate_from_backup.sh
   #/bin/bash ./populate_from_backup_manual.sh
   sudo -u ldbd ./populate_from_backup.sh
+  rm -rf  $tmp_dir
+fi
+if [ $host == "segments-backup" ]
+then
+# this part restores a backed-up segments DB
+  #mkdir /var/backup_of_dqsegdb/
+  tmp_dir=/backup/segdb/segments/install_support/tmp/segments-backup_restore
+  mkdir -p  $tmp_dir
+  cp /backup/segdb/reference/install_support/segments-backup/populate_from_backup_segments_backup.sh  $tmp_dir
+  cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir
+  cd $tmp_dir
+  tar xvzf *.tar.gz
+  sudo -u ldbd ./populate_from_backup_segments_backup.sh
+  rm -rf  $tmp_dir
+# this part restores a backed-up regression test DB
+  mkdir -p  $tmp_dir
+  cp /backup/segdb/reference/install_support/segments-backup/populate_from_backup_dqsegdb_regression_tests.sh  $tmp_dir
+  cp /backup/segdb/segments/regression_tests/dqsegdb_regression_tests_backup.tgz  $tmp_dir
+  cd $tmp_dir
+  tar xvzf dqsegdb_regression_tests_backup.tgz
+  sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests.sh
+  cd /root/
+  rm -rf  $tmp_dir
 fi
 
 
@@ -334,7 +361,6 @@ yum -y install glue lal lal-python python-pyRXP
 if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
   ln -s /etc/grid-security/$host.ligo.org.cert /etc/grid-security/robot.cert.pem 
   ln -s /etc/grid-security/$host.ligo.org.key /etc/grid-security/robot.key.pem
-  mkdir /root/bin/
   mkdir -p /dqxml/H1
   mkdir -p /dqxml/L1
   mkdir -p /dqxml/V1
@@ -395,6 +421,11 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
       systemctl start dqxml_pull_from_obs.service
     fi
   fi
+  # create some useful links
+  ln -s /root/bin/dqsegdb_September_11_2018   /root/bin/dqsegdb_current_code
+  ln -s /var/log/publishing/state/   /root/bin/state_files
+  ln -s /var/log/publishing/pid/   /root/bin/pid_files
+  ln -s /var/log/publishing/dev  /root/bin/publisher_log_files
 fi
 
 
@@ -412,7 +443,7 @@ then
     cp  `ls -1rt /backup/segdb/reference/ldbd_files/$host/crontab_-l_ldbd*all_lines_commented* | tail -n 1` /var/spool/cron/ldbd
   fi
   # create dir to hold files that are created by a cron job, then grabbed by Nagios, for use on monitor.ligo.org:
-  if [ $host == "segments"] && [ ! -d /var/www/nagios/ ]; then mkdir -p /var/www/nagios/ ; fi
+  if [ $host == "segments" ] && [ ! -d /var/www/nagios/ ]; then mkdir -p /var/www/nagios/ ; fi
 fi
 # Note that there are currently (Jan. 2019) no crontabs for any users on segments-web or segments-dev2, 
 #   and segments-s6 is likely to be decommissioned very soon, so it does not need to be handled.
@@ -421,35 +452,54 @@ fi
 # create some useful links
 # format reminder: 'ln -s [actual_file]   [link_name]'
 ln -s /var/log/httpd/   /root/bin/httpd_logs
-ln -s /root/bin/dqsegdb_September_11_2018   /root/bin/dqsegdb_current_code
-ln -s /var/log/publishing/state/   /root/bin/state_files
-ln -s /var/log/publishing/pid/   /root/bin/pid_files
-ln -s /var/log/publishing/dev  /root/bin/publisher_log_files
 ln -s /opt/dqsegdb/python_server/logs/ /root/bin/python_server_log_files
 
 
 # run some machine-specific items
 if [ $host == "segments" ]
 then
-  sudo -u ldbd mkdir -p /usr1/ldbd/
-  sudo -u ldbd mkdir -p /usr1/ldbd/bin
-  sudo -u ldbd cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
+  mkdir -p /usr1/ldbd/
+  mkdir -p /usr1/ldbd/bin
+  cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
+  chown -R ldbd:ldbd /usr1/ldbd
+  cp -rp  /backup/segdb/reference/install_support/segments/root_bin/*  /root/bin/
+  ### this source dir doesn't exist yet
   # what else?
 fi
 if [ $host == "segments-backup" ]
 then
-  sudo -u ldbd mkdir -p /usr1/ldbd/
-  sudo -u ldbd mkdir -p /usr1/ldbd/bin
-  sudo -u ldbd mkdir -p /usr1/ldbd/backup_logging
-  sudo -u ldbd cp -rp  /backup/segdb/segments/backup_logging/*  /usr1/ldbd/backup_logging/
-  sudo -u ldbd cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
+  mkdir -p /usr1/ldbd/
+  mkdir -p /usr1/ldbd/bin
+  mkdir -p /usr1/ldbd/backup_logging
+  cp -rp  /backup/segdb/segments/backup_logging/*  /usr1/ldbd/backup_logging/
+  cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
+  chown -R ldbd:ldbd /usr1/ldbd
+  cp -rp  /backup/segdb/reference/install_support/segments-backup/root_bin/*  /root/bin/
+  # Restore the saved regression tests DB
+  mkdir /var/backup_of_dqsegdb/
+  cp /backup/segdb/reference/install_support/segments/populate_from_backup.sh  /var/backup_of_dqsegdb/
+  cp /backup/segdb/segments/primary/*.tar.gz  /var/backup_of_dqsegdb/
+  cd /var/backup_of_dqsegdb/
+  tar xvzf *.tar.gz
+  #/bin/bash ./populate_from_backup.sh
+  #/bin/bash ./populate_from_backup_manual.sh
+  sudo -u ldbd ./populate_from_backup.sh
+# what else?
+fi
+if [ $host == "segments-web" ]
+then
+  cp -rp  /backup/segdb/reference/install_support/segments-web/root_bin/*  /root/bin/
+  ### this source dir doesn't exist yet
   # what else?
 fi
 if [ $host == "segments-dev" ]
 then
-  sudo -u ldbd mkdir -p /usr1/ldbd/
-  sudo -u ldbd mkdir -p /usr1/ldbd/bin
-  sudo -u ldbd cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
+  mkdir -p /usr1/ldbd/
+  mkdir -p /usr1/ldbd/bin
+  cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
+  chown -R ldbd:ldbd /usr1/ldbd
+  cp -rp  /backup/segdb/reference/install_support/segments-dev/root_bin/*  /root/bin/
+  ### this source dir doesn't exist yet
   # what else?
 fi
 # note: no user 'ldbd' used on segments-web; we aren't planning to ever restore segments-s6; segments-dev2 is done manually
@@ -464,12 +514,15 @@ fi
 # looks like there aren't any anymore...
 
 
+exit
+
+
 ### to do:
 ### * make sure that grid-mapfile gets created, and with proper ownership and permissions
 ### * Start a new dir for httpd, with contents selected from 
 ###     the line "rsync -avP /backup/segdb/segments/install_support/conf.d   /etc/httpd/", above
 ### * Set up files for /etc/httpd/conf.d/ for segments-web
-### * Figure out the issue with writing files to conf.d in more than one place in the script - see fixme01, fixme02
+### * 
 
 
 
