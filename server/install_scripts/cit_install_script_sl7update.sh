@@ -55,6 +55,8 @@ git config --global user.name "Robert Bruntz"
 # Set LGMM (LIGO Grid-Mapfile Manager) to run on reboot and start it now
 cp  /backup/segdb/reference/lgmm/whitelist  /etc/grid-security/
 touch /etc/grid-security/grid-mapfile
+touch /etc/grid-security/whitelist   ### just in case the config file looks for it; missing expected file crashes lgmm
+touch /etc/grid-security/blacklist   ### just in case the config file looks for it; missing expected file crashes lgmm
 chown nobody:nobody /etc/grid-security/grid-mapfile
 chmod 644 /etc/grid-security/grid-mapfile
 /sbin/chkconfig lgmm on
