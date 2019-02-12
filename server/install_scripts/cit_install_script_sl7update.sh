@@ -19,6 +19,12 @@ fi
 #       They will be started, no matter what.  We'll work on making that optional later.
 live=1
 
+# This variable set to 1 will output some messages to the screen and log file (or not, if set to 0).
+# These lines give some useful information, but also report checkpoints along the installation route (in case of trouble).
+verbose=1
+
+if [ $verbose -eq 1 ]; then \
+  echo -e "### Starting installation: $(date)  \n### hostname: $host  \n### Starting basic installation items"; fi
 
 # make backups of user root config files (if they exist) and then import new files
 cd /root/ 
@@ -63,6 +69,7 @@ chmod 644 /etc/grid-security/grid-mapfile
 systemctl restart lgmm
 
 
+if [ $verbose -eq 1 ]; then echo "### Starting Apache, DB, etc., installation"; fi
 # Install Apache, MariaDB (successor to MySQL), PHPMyAdmin, etc.
 # Install Apache server.
 yum -y install httpd
@@ -150,6 +157,7 @@ then
 fi
 
 
+if [ $verbose -eq 1 ]; then echo "### Starting configuration of Apache, etc."; fi
 # Configure application Apache:
 # Fix default httpd/conf and httpd/conf.d dirs
 ### fixme01 fix!!!
@@ -245,24 +253,14 @@ echo "OPENSSL_ALLOW_PROXY_CERTS=1" >> /etc/sysconfig/httpd
 echo 'PYTHONPATH="/opt/dqsegdb/python_server/src:${PYTHONPATH}"'>> /etc/sysconfig/httpd 
 
 
+if [ $verbose -eq 1 ]; then echo "### Starting DB customization and importing DB contents"; fi
 # Import data and create main database.
  
 # Create database users and give them privileges
 ### Note that the ‘empty_database.tgz’ and dqsegdb backups have users ‘dqsegdb_user’ and ‘admin’, 
 ###      but they don’t work right, so we create the users and give them permissions even before the DB is restored
-if [ 1 -eq 0 ]; then
-  ### this part probably won't be used again; maybe delete it in a future version
-  mysql -e "use dqsegdb"
-  mysql -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'dqsegdb_user'@'localhost'"
-  mysql -e "DROP USER 'dqsegdb_user'@'localhost'"
-  mysql -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'admin'@'localhost'"
-  mysql -e "DROP USER 'admin'@'localhost'"
-fi
-# this part IS done, and is done for all segments machines
-mysql -e "CREATE USER 'dqsegdb_user'@'localhost' IDENTIFIED BY 'Q6a6jS6L63RtqnDm'"
-mysql -e "GRANT SELECT, INSERT, UPDATE ON dqsegdb.* TO 'dqsegdb_user'@'localhost'"
-mysql -e "CREATE USER 'admin'@'localhost' IDENTIFIED BY 'lvdb_11v35'"
-mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'admin'@'localhost'"
+cp  /backup/segdb/reference/install_support/mysql_user_commands.sh  /root/
+/bin/bash  /root/mysql_user_commands.sh
 
 ### Restore an *empty* dqsegdb here
 ### Note that this will have tables, flags, etc., incl. users ‘dqsegdb_user’ and ‘admin’
@@ -296,6 +294,7 @@ fi
 if [ $host == "segments-backup" ]
 then
 # this part restores a backed-up segments DB
+### add notes as to why this is different from segments or segments-dev
   #mkdir /var/backup_of_dqsegdb/
   tmp_dir=/backup/segdb/segments/install_support/tmp/segments-backup_restore
   mkdir -p  $tmp_dir
@@ -305,6 +304,7 @@ then
   tar xvzf *.tar.gz
   sudo -u ldbd ./populate_from_backup_segments_backup.sh
   rm -rf  $tmp_dir
+### this stuff should be moved to the machine-specific section
 # this part restores a backed-up regression test DB
   mkdir -p  $tmp_dir
   cp /backup/segdb/reference/install_support/segments-backup/populate_from_backup_dqsegdb_regression_tests.sh  $tmp_dir
@@ -314,9 +314,22 @@ then
   sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests.sh
   cd /root/
   rm -rf  $tmp_dir
+# this part creates the dqsegdb_rts user, its permissions, and its password
+  cp  /backup/segdb/reference/install_support/segments-backup/mysql_rts_user_commands.sh  /root/
+  /bin/bash /root/mysql_rts_user_commands.sh
+# this part sets up the regression tests themselves
+  mkdir -p /opt/dqsegdb/regression_test_suite/
+  mkdir -p /opt/dqsegdb/logs/regression_test_suite/
+  cp -rp  /root/dqsegdb_git/dqsegdb/server/db/db_utils/component_interface_data_integrity_test_suite/src  /opt/dqsegdb/regression_test_suite/
+  yum install MySQL-python
+fi
+if [ $host == "segments-web" ]
+then
+sleep 0
+### this is where we would do DB-related stuff for just segments-web
 fi
 
-
+if [ $verbose -eq 1 ]; then echo "### Importing certificates and starting Apache"; fi
 # move certs to appropriate locations, as referenced by /etc/httpd/conf.d/dqsegdb.conf
 cp /etc/pki/tls/certs/localhost.crt /etc/pki/tls/certs/localhost.crt.old.$(date +%Y.%m.%d)
 cp /etc/pki/tls/private/localhost.key /etc/pki/tls/private/localhost.key.bck.$(date +%Y.%m.%d)
@@ -364,6 +377,7 @@ yum -y install glue lal lal-python python-pyRXP
 
 ### Publishing
 if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
+  if [ $verbose -eq 1 ]; then echo "### Installing publisher code"; fi
   ln -s /etc/grid-security/$host.ligo.org.cert /etc/grid-security/robot.cert.pem 
   ln -s /etc/grid-security/$host.ligo.org.key /etc/grid-security/robot.key.pem
   mkdir -p /dqxml/H1
@@ -434,6 +448,7 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
 fi
 
 
+if [ $verbose -eq 1 ]; then echo "### Handling crontabs, misc. links"; fi
 # create crontab files
 # first, backup any existing cron files that would be overwritten (though there shouldn't be any)
 if [ -e /var/spool/cron/root ]; then cp /var/spool/cron/root /root/cron_root_bak_$(date +%Y.%m.%d) ; fi
@@ -461,6 +476,7 @@ ln -s /opt/dqsegdb/python_server/logs/ /root/bin/python_server_log_files
 
 
 # run some machine-specific items
+if [ $verbose -eq 1 ]; then echo "### Handling machine-specific items (if any)"; fi
 if [ $host == "segments" ]
 then
   mkdir -p /usr1/ldbd/
@@ -518,6 +534,8 @@ fi
 ### User tasks to be performed manually:
 # looks like there aren't any anymore...
 
+
+if [ $verbose -eq 1 ]; then echo -e "### Finished installation:  $(date)"; fi
 
 exit
 
