@@ -27,7 +27,7 @@ except ImportError:
     import pyRXP
 
 from glue import ldbd
-from glue import segments
+from ligo import segments
 from glue.ligolw.utils import process
 
 try:

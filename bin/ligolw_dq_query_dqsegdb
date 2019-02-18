@@ -43,7 +43,7 @@ import sys
 import os
 import pwd
 
-from glue import segments
+from ligo import segments
 
 from glue import git_version
 
