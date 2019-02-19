@@ -13,7 +13,7 @@ License: GPLv3
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
-Requires: python, python-pyRXP, lscsoft-glue >= 1.55
+Requires: python, python-pyRXP, lscsoft-glue >= 1.55, python2-gwdatafind
 BuildRequires: python-setuptools, git
 BuildArch: noarch
 Vendor: Ryan Fisher <ryan.fisher@ligo.org>

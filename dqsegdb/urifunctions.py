@@ -28,6 +28,7 @@ from six.moves import http_client
 from six.moves.urllib import (request as urllib_request,
                               error as urllib_error)
 
+
 #
 # =============================================================================
 #
@@ -36,103 +37,41 @@ from six.moves.urllib import (request as urllib_request,
 # =============================================================================
 #
 
-class HTTPSClientAuthConnection(http_client.HTTPSConnection):
-  def __init__(self, host, timeout=None):
-      try:
-          certfile,keyfile=findCredential()
-      except:
-          warn("Warning:  No proxy found or other error encountered during check for authentication credentials, connections to https will not work.")
-          certfile=""
-          keyfile=""
-          ### Fix!!! This doesn't actually seem to work because someone thought sys.exit was good error handling... Beyond that:  What does HTTPSConnection expect in this case?  The connections will fail, but we might want to report that carefully...
-      http_client.HTTPSConnection.__init__(self, host, key_file=keyfile, cert_file=certfile)
-      self.timeout = timeout # Only valid in Python 2.6
+def getDataUrllib2(url, timeout=900, logger=None, warnings=True,
+                   **urlopen_kw):
+    """Return response from server
 
-class HTTPSClientAuthHandler(urllib_request.HTTPSHandler):
-  def https_open(self, req):
-      return self.do_open(HTTPSClientAuthConnection, req)
+    Parameters
+    ----------
+    url : `str`
+        remote URL to request (HTTP or HTTPS)
 
+    timeout : `float`
+        time (seconds) to wait for reponse
 
-def getDatahttp_client(url):
-    """
-    DEPRECATED!
-    Optional fall back in case of failure in getDataUrllib2
-    Takes a url such as:
-    url="http://segdb-test-internal/dq/H1/DMT-SCIENCE/1/active?s=10&e=20"
-    Returns JSON response from server
-    """
-    warn("Warning: using function that my not work any more!")
-    urlsplit=urlparse(url)
-    conn=http_client.HTTPConnection(urlsplit.netloc)
-    conn.request("GET",'?'.join([urlsplit.path,urlsplit.query]))
-    r1=conn.getresponse()
-    if r1.status!=200:
-        warn("Return status code: %s, %s; URL=%s" % (str(r1.status),str(r1.reason),url))
-        raise(urllib_error.URLError)
-    data1=r1.read()
-    return data1
+    logger : `logging.Logger`
+        logger to print to
 
-def getDataUrllib2(url,timeout=900,logger=None,warnings=True):
-    socket.setdefaulttimeout(timeout)
-    """
-    Takes a url such as:
-    url="http://segdb-test-internal/dq/dq/H1/DMT-SCIENCE/1/active?s=10&e=20"
-    Returns JSON response from server
-    Also handles https requests with grid certs (or proxy certs).
+    **urlopen_kw
+        other keywords are passed to :func:`urllib.request.urlopen`
+
+    Returns
+    -------
+    response : `str`
+        the text reponse from the server
     """
     if logger:
         logger.debug("Beginning url call: %s" % url)
-    try:
-        if urlparse(url).scheme == 'https':
-            #print("attempting to send https query")
-            #print(certfile)
-            #print(keyfile)
-            opener=urllib_request.build_opener(HTTPSClientAuthHandler)
-            #print(opener.handle_open.items())
-            request = urllib_request.Request(url)
-            output=opener.open(request)
-        else:
-            #print("attempting to send http query")
-            output=urllib_request.urlopen(url)
-    except urllib_error.HTTPError as e:
-        #print("Warnings setting FIX:")
-        #print(warnings)
-        if warnings:
-            handleHTTPError("GET",url,e)
-        else:
-            handleHTTPError("QUIET",url,e)
-
-        ##print(e.read())
-        #print("Warning: Issue accessing url: %s" % url)
-        #print("Code: ")
-        #print(e.code)
-        #print(e.msg)
-        ##import pdb
-        ##pdb.set_trace()
-        ##print(e.reason)
-        ##print(url)
-        #print("May be handled cleanly by calling instance: otherwise will result in an error.")
-        raise
-    except urllib_error.URLError as e:
-        #print(e.read())
-        warn("Issue accesing url: %s; Reason: %s" % (url,str(e.reason)))
-        try:
-            type, value, traceback_stack = sys.exc_info()
-            warnmsg="Trying custom URLError."
-            warnmsg+=" "
-            warnmsg+=str(type)
-            warnmsg+=str(value)
-            warn(warnmsg)
-            import traceback
-            traceback.print_tb(traceback_stack)
-            raise e
-
-        except:
-            warn(url)
-            raise
+    if urlparse(url).scheme == 'https' and 'context' not in urlopen_kw:
+        from ssl import create_default_context
+        from gwdatafind.utils import find_credential
+        urlopen_kw['context'] = context = create_default_context()
+        context.load_cert_chain(*find_credential())
+    output = urllib_request.urlopen(url, timeout=timeout, **urlopen_kw)
     if logger:
         logger.debug("Completed url call: %s" % url)
     return output.read()
+
 
 def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
     """
@@ -356,109 +295,3 @@ def handleHTTPError(method,url,e):
             warn("Message: %s" % str(e.msg))
             warn("May be handled cleanly by calling instance: otherwise will result in an error.")
         # If method == "QUIET" print nothing:  used for GET checks that don't need to toss info on a 404
-
-###################
-#
-# Functions copied from glue:
-# GLUE is free software: you can redistribute it and/or modify it under the
-# terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
-#
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-# details.
-#
-# You should have received a copy of the GNU General Public License along with
-# this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-#########################
-
-def findCredential():
-    """
-    Follow the usual path that GSI libraries would
-    follow to find a valid proxy credential but
-    also allow an end entity certificate to be used
-    along with an unencrypted private key if they
-    are pointed to by X509_USER_CERT and X509_USER_KEY
-    since we expect this will be the output from
-    the eventual ligo-login wrapper around
-    kinit and then myproxy-login.
-    """
-
-    # use X509_USER_PROXY from environment if set
-    if os.environ.has_key('X509_USER_PROXY'):
-        filePath = os.environ['X509_USER_PROXY']
-        if validateProxy(filePath):
-            return filePath, filePath
-
-    # use X509_USER_CERT and X509_USER_KEY if set
-    if os.environ.has_key('X509_USER_CERT'):
-        if os.environ.has_key('X509_USER_KEY'):
-            certFile = os.environ['X509_USER_CERT']
-            keyFile = os.environ['X509_USER_KEY']
-            return certFile, keyFile
-
-    # search for proxy file on disk
-    uid = os.getuid()
-    path = "/tmp/x509up_u%d" % uid
-
-    if os.access(path, os.R_OK):
-        if validateProxy(path):
-            return path, path
-
-    # if we get here could not find a credential
-    raise RuntimeError("Could not find a valid proxy credential")
-
-
-def validateProxy(path):
-    """Validate a proxy certificate as RFC3820 and not expired
-
-    Parameters
-    ----------
-    path : `str`
-        the path of the proxy certificate file
-
-    Returns
-    -------
-    True
-        if the proxy is validated
-
-    Raises
-    ------
-    IOError
-        if the proxy certificate file cannot be read
-    RuntimeError
-        if the proxy is found to be a legacy globus cert, or has expired
-    """
-    # load the proxy from path
-    try:
-        with open(path, 'rt') as f:
-            cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
-    except IOError as e:
-        e.args = ('Failed to load proxy certificate: %s' % str(e),)
-        raise
-
-    # try and read proxyCertInfo
-    rfc3820 = False
-    for i in range(cert.get_extension_count()):
-        if cert.get_extension(i).get_short_name() == 'proxyCertInfo':
-            rfc3820 = True
-            break
-
-    # otherwise test common name
-    if not rfc3820:
-        subject = cert.get_subject()
-        if subject.CN.startswith('proxy'):
-            raise RuntimeError('Could not find a valid proxy credential')
-
-    # check time remaining
-    expiry = cert.get_notAfter()
-    if isinstance(expiry, bytes):
-        expiry = expiry.decode('utf-8')
-    expiryu = calendar.timegm(time.strptime(expiry, "%Y%m%d%H%M%SZ"))
-    if expiryu < time.time():
-        raise RuntimeError('Required proxy credential has expired')
-
-    return True
