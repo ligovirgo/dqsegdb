@@ -12,27 +12,24 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import sys
-from dqsegdb import urifunctions
-from dqsegdb import clientutils
+
 import json
-import glue
-from dqsegdb.jsonhelper import InsertFlagVersion
-from dqsegdb.jsonhelper import InsertFlagVersionOld
-from six.moves.urllib.error import HTTPError
-import time
-import json
-from glue import ldbd
-from glue import segments
-from glue.ligolw.utils import process
 import os
+import sys
+import time
+from datetime import datetime, time as time2
+
+from six.moves.urllib.error import HTTPError
+
 try:
     import pyRXPU as pyRXP
 except ImportError:
     import pyRXP
-import time
-from datetime import datetime, time as time2
-from dqsegdb.urifunctions import *
+
+from glue import ldbd
+from glue import segments
+from glue.ligolw.utils import process
+
 try:
     from lal import UTCToGPS as _UTCToGPS
 except ImportError:
@@ -40,8 +37,13 @@ except ImportError:
     from glue import gpstime
     _UTCToGPS = lambda utc: int(gpstime.GpsSecondsFromPyUTC(time.mktime(utc)))
 
-programversion='0.1'
-author = "Ryan Fisher"
+from dqsegdb import urifunctions
+from dqsegdb import clientutils
+from dqsegdb.jsonhelper import InsertFlagVersion
+from dqsegdb.jsonhelper import InsertFlagVersionOld
+from dqsegdb.urifunctions import *
+
+__author__ = 'Ryan Fisher <ryan.fisher@ligo.org>'
 verbose=False
 
 def dqsegdbCheckVersion(protocol,server,ifo,name,version,warnings=True):
@@ -269,12 +271,12 @@ def coalesceResultDictionary(result_dict):
     """
     import copy
     out_result_dict=copy.deepcopy(result_dict)
-    active_seg_python_list=[glue.segments.segment(i[0],i[1]) for i in result_dict['active']]
-    active_seg_list=glue.segments.segmentlist(active_seg_python_list)
+    active_seg_python_list=[segments.segment(i[0],i[1]) for i in result_dict['active']]
+    active_seg_list=segments.segmentlist(active_seg_python_list)
     active_seg_list.coalesce()
     out_result_dict['active']=active_seg_list
-    known_seg_python_list=[glue.segments.segment(i[0],i[1]) for i in result_dict['known']]
-    known_seg_list=glue.segments.segmentlist(known_seg_python_list)
+    known_seg_python_list=[segments.segment(i[0],i[1]) for i in result_dict['known']]
+    known_seg_list=segments.segmentlist(known_seg_python_list)
     known_seg_list.coalesce()
     out_result_dict['known']=known_seg_list
     return out_result_dict
