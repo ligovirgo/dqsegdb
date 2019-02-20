@@ -720,7 +720,7 @@ def threadedPatchWithFailCases(q,server,debug,inputlogger=None):
             sys.exit(1)
         q.task_done()
 
-def setupSegment_md(filename,xmlparser,lwtparser,debug,eoCB_replacement=None):
+def setupSegment_md(filename,xmlparser,lwtparser,debug):
     """
     Helper function used to setup ligolw parser (S6 xml generation tool).
     """
@@ -731,26 +731,11 @@ def setupSegment_md(filename,xmlparser,lwtparser,debug,eoCB_replacement=None):
     fh=open(filename,'r')
     xmltext = fh.read()
     fh.close()
-    if eoCB_replacement == None:
-        segment_md.parse(xmltext)
-    else:
-        segment_md.parse(xmltext,eoCB=eoCB_replacement)
+    segment_md.parse(xmltext)
     if debug:
         #segment_md.table
         segment_md.table.keys()
     return segment_md
-
-def local_ligolw_eoCB(URI,local_dtd_file="/root/Publisher/etc/ligolw_dtd.txt"):
-    """
-    Callback function for pyRXP to open local dtd file path instead of remote path
-    Only returns pointer to local file if the basename of the URI matches the basename
-    of the local_dtd_file argument
-    """
-    if os.path.basename(URI)==os.path.basename(local_dtd_file):
-        return local_dtd_file
-    else:
-        return URI
-
 
 def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=False,debug=True,threads=1,testing_options={}):
     """
@@ -807,7 +792,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         raise ValueError
     for filename in filenames:
 
-        segment_md = setupSegment_md(filename,xmlparser,lwtparser,debug,eoCB_replacement=local_ligolw_eoCB)
+        segment_md = setupSegment_md(filename,xmlparser,lwtparser,debug)
 
         # segment_md, flag_versions, filename, server, hackDec11, debug are current variables
 
