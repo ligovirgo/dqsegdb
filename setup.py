@@ -133,7 +133,7 @@ setup(name=PACKAGENAME,
       packages=packagenames,
       ext_modules=[],
       scripts=scripts,
-      setup_requires=['setuptools>=8.0'],
+      setup_requires=['setuptools'],
       install_requires=[
           'pyRXP',
           'ligo-segments',
