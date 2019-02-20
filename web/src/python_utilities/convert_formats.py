@@ -2,7 +2,7 @@
 import argparse
 import json
 import shutil
-from glue import segments
+from ligo import segments
 
 ########### ########### ########### ###########
 #

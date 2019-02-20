@@ -44,8 +44,8 @@ import logging.handlers
 from optparse import OptionParser
 
 from glue import lal
-from glue import segments
-from glue import segmentsUtils
+from ligo import segments
+from ligo.segments import utils as segmentsUtils
 from glue import pidfile
 
 from glue.ligolw import ligolw

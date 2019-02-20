@@ -13,6 +13,7 @@ License: UNKNOWN
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
+Requires: python2-ligo-segments
 BuildArch: noarch
 Vendor: Ryan Fisher <ryan.fisher@ligo.org>
 

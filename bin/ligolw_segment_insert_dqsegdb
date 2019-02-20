@@ -51,7 +51,7 @@ You must have pyRXP installed and in your PYTHONPATH to run %s.
 try:
   from glue import gpstime
   from glue import ldbd
-  from glue import segments
+  from ligo import segments
   from glue import git_version
   #from glue.segmentdb import segmentdb_utils
   from glue.ligolw import lsctables

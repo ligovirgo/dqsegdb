@@ -45,7 +45,7 @@ import operator
 from six.moves.urllib.parse import urlparse
 from six.moves.urllib.request import urlopen
 
-import glue.segments
+from ligo import segments
 
 import time
 from glue import gpstime
@@ -306,8 +306,8 @@ if __name__ == '__main__':
     if file_location:
         segmentdb_utils.ensure_segment_table(veto_connection)
 
-    #cli_interval = glue.segments.segmentlist([glue.segments.segment(int(options.gps_start_time), int(options.gps_end_time))])
-    cli_interval = glue.segments.segmentlist([glue.segments.segment(min_start_time,max_end_time)])
+    #cli_interval = segments.segmentlist([segments.segment(int(options.gps_start_time), int(options.gps_end_time))])
+    cli_interval = segments.segmentlist([segments.segment(min_start_time,max_end_time)])
 
     #
     # Get the set of veto categories and ifos for which we have segments
@@ -352,7 +352,7 @@ if __name__ == '__main__':
                 if end_time == 0:
                     end_time = now
 
-                veto_interval  = glue.segments.segmentlist([glue.segments.segment(start_time, end_time)])
+                veto_interval  = segments.segmentlist([segments.segment(start_time, end_time)])
                 veto_interval.coalesce()
                 veto_interval &= cli_interval
 
@@ -388,11 +388,11 @@ if __name__ == '__main__':
                     print("Known for %s" % name)
                 #print(json_result['known'])
                 # NOTE: Adding startpad to match S6, even though it seems backwards!
-                cur_segment_summaries=glue.segments.segmentlist([glue.segments.segment(x[0]+startpad,x[1]+endpad) for x in json_result['known']])
+                cur_segment_summaries=segments.segmentlist([segments.segment(x[0]+startpad,x[1]+endpad) for x in json_result['known']])
                 cur_segment_summaries.coalesce()
                 if debug:
                     print(cur_segment_summaries)
-                cur_segment_summaries=cur_segment_summaries&glue.segments.segmentlist([glue.segments.segment(startTime,endTime)])
+                cur_segment_summaries=cur_segment_summaries&segments.segmentlist([segments.segment(startTime,endTime)])
                 if debug:
                     print("Resulting segment summaries:")
                     print(cur_segment_summaries)
@@ -401,12 +401,12 @@ if __name__ == '__main__':
                     print("Active for %s" % name)
                     #print(json_result['active'])
                 # NOTE: Adding startpad to match S6, even though it seems backwards!
-                cur_vetoed_segments=glue.segments.segmentlist([glue.segments.segment(x[0]+startpad,x[1]+endpad) for x in json_result['active']])
+                cur_vetoed_segments=segments.segmentlist([segments.segment(x[0]+startpad,x[1]+endpad) for x in json_result['active']])
                 #debug:
                 cur_vetoed_segments.coalesce()
                 if debug:
                     print(cur_vetoed_segments)
-                cur_vetoed_segments=cur_vetoed_segments&glue.segments.segmentlist([glue.segments.segment(startTime,endTime)])
+                cur_vetoed_segments=cur_vetoed_segments&segments.segmentlist([segments.segment(startTime,endTime)])
                 if debug:
                     print("Resulting segments:")
                     print(cur_vetoed_segments)

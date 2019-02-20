@@ -23,7 +23,7 @@ import tempfile
 
 from six.moves import reduce
 
-import glue.segments
+from ligo import segments
 
 from glue.ligolw import table
 from glue.ligolw import lsctables
@@ -33,7 +33,6 @@ from glue.segmentdb import segmentdb_utils
 
 from glue.ligolw.utils import ligolw_sqlite
 from glue.ligolw import dbtables
-from glue import segments
 
 from dqsegdb import jsonhelper
 
@@ -302,10 +301,10 @@ def run_show_types(doc, connection, engine, gps_start_time, gps_end_time, includ
         if key not in seg_dict:
             seg_dict[key] = []
 
-        seg_dict[key].append(glue.segments.segment(segment_summary_start_time, segment_summary_end_time))
+        seg_dict[key].append(segments.segment(segment_summary_start_time, segment_summary_end_time))
 
     for key, value in seg_dict.iteritems():
-        segmentlist = glue.segments.segmentlist(value)
+        segmentlist = segments.segmentlist(value)
         segmentlist.coalesce()
 
         for segment in segmentlist:
@@ -320,7 +319,7 @@ def run_show_types(doc, connection, engine, gps_start_time, gps_end_time, includ
 
 
 def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_time, included_segments):
-    query_segment = glue.segments.segmentlist([glue.segments.segment(gps_start_time, gps_end_time)])
+    query_segment = segments.segmentlist([segments.segment(gps_start_time, gps_end_time)])
 
     sql = """SELECT segment_definer.ifos, segment_definer.name,segment_definer.version,
            (CASE WHEN segment_definer.comment IS NULL THEN '-' WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),
@@ -343,8 +342,8 @@ def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_ti
         sd_ifo, sd_name, sd_vers, sd_comment, ss_start, ss_end, ss_comment = row
         key = (sd_ifo, sd_name, sd_vers, sd_comment, ss_comment)
         if key not in segment_types:
-            segment_types[key] = glue.segments.segmentlist([])
-        segment_types[key] |= glue.segments.segmentlist([glue.segments.segment(ss_start, ss_end)])
+            segment_types[key] = segments.segmentlist([])
+        segment_types[key] |= segments.segmentlist([segments.segment(ss_start, ss_end)])
 
     engine.close()
 

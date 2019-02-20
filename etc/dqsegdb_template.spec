@@ -16,6 +16,7 @@ Source:		%{name}-%{version}.tar.gz
 Url:		http://www.lsc-group.phys.uwm.edu/daswg/projects/dqsegdb.html
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 Requires:	python python-cjson glue 
+Requires:	python2-ligo-segments
 BuildRequires:  python-devel
 Prefix:         %{_dqsegdb_prefix}
 %description

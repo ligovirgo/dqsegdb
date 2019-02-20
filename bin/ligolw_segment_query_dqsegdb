@@ -58,7 +58,7 @@ from dqsegdb import apicalls
 from dqsegdb import urifunctions
 from dqsegdb import clientutils
 
-import glue.segments
+from ligo import segments
 
 from glue.ligolw import ligolw
 from glue.ligolw import table
@@ -314,10 +314,10 @@ def run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time, 
         if key not in seg_dict:
             seg_dict[key] = []
 
-        seg_dict[key].append(glue.segments.segment(segment_summary_start_time, segment_summary_end_time))
+        seg_dict[key].append(segments.segment(segment_summary_start_time, segment_summary_end_time))
 
     for key, value in seg_dict.iteritems():
-        segmentlist = glue.segments.segmentlist(value)
+        segmentlist = segments.segmentlist(value)
         segmentlist.coalesce()
 
         for segment in segmentlist:
@@ -339,7 +339,7 @@ def run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time, 
 def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, gps_end_time, include_segments):
 #def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_time, included_segments):
     warnings.warn("Warning: Currently only support unversioned include-segments strings!  Versioned queries will return incorrect results.")
-    query_segment = glue.segments.segmentlist([glue.segments.segment(gps_start_time, gps_end_time)])
+    query_segment = segments.segmentlist([segments.segment(gps_start_time, gps_end_time)])
 
     #sql = """SELECT segment_definer.ifos, segment_definer.name,segment_definer.version,
     #       (CASE WHEN segment_definer.comment IS NULL THEN '-' WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),
@@ -403,8 +403,8 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
         if [ifo,name,version] in segments_to_query:
             key=(ifo,name,version,segment_definer_comment,segment_summary_comment)
             if key not in segment_types:
-                segment_types[key] = glue.segments.segmentlist([])
-            segment_types[key] |= glue.segments.segmentlist([glue.segments.segment(segment_summary_start_time, segment_summary_end_time)])
+                segment_types[key] = segments.segmentlist([])
+            segment_types[key] |= segments.segmentlist([segments.segment(segment_summary_start_time, segment_summary_end_time)])
 
 
 #  old s6 query:
@@ -412,8 +412,8 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
 #        sd_ifo, sd_name, sd_vers, sd_comment, ss_start, ss_end, ss_comment = row
 #        key = (sd_ifo, sd_name, sd_vers, sd_comment, ss_comment)
 #        if key not in segment_types:
-#            segment_types[key] = glue.segments.segmentlist([])
-#        segment_types[key] |= glue.segments.segmentlist([glue.segments.segment(ss_start, ss_end)])
+#            segment_types[key] = segments.segmentlist([])
+#        segment_types[key] |= segments.segmentlist([segments.segment(ss_start, ss_end)])
 #
 #    engine.close()
 #
@@ -481,7 +481,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
     included_intermediate_JSON=[]
     excluded_JSON_results=[]
     excluded_intermediate_JSON=[]
-    #segment_summaries=glue.segments.segmentlist([])
+    #segment_summaries=segments.segmentlist([])
     segment_summaries=[]
 
     for included in include_segments.split(','):
@@ -515,8 +515,8 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
                 print(queryurl)
             included_JSON_results.append(json_result)
             segdefs.append((ifo, name, version, startTime, endTime, 0, 0))
-            known_segments=glue.segments.segmentlist([glue.segments.segment(x[0],x[1]) for x in json_result['known']])
-            segment_summaries.append(known_segments&glue.segments.segmentlist([glue.segments.segment(startTime,endTime)]))
+            known_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in json_result['known']])
+            segment_summaries.append(known_segments&segments.segmentlist([segments.segment(startTime,endTime)]))
         else:
             version = '*'
             # Trigger versionless call to return a JSON result here
@@ -539,8 +539,8 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
                     # Ok, so here the segment_summaries are paired with the affected_results from above:  the intersection of the affected results segments with each segment_summary for each version...
                     # First need to convert the known list to a segmentlist objet:
                     # Note that it appears I just need one segment summary that matches each segment definer above.
-                    known_segments=glue.segments.segmentlist([glue.segments.segment(x[0],x[1]) for x in i_result['known']])
-                    segment_summaries.append(known_segments&glue.segments.segmentlist([glue.segments.segment(seg[0],seg[1])]))
+                    known_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in i_result['known']])
+                    segment_summaries.append(known_segments&segments.segmentlist([segments.segment(seg[0],seg[1])]))
 
     #n found_segments = segmentdb_utils.query_segments(engine, 'segment', segdefs)
     #n found_segments = reduce(operator.or_, found_segments).coalesce()
@@ -563,7 +563,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
             print(segment_summaries)
         print(doc)
         print(process_id)
-    segment_summaries=[glue.segments.segmentlist(x) for x in segment_summaries]
+    segment_summaries=[segments.segmentlist(x) for x in segment_summaries]
     for x in segment_summaries:
         x.coalesce()
     clientutils.add_segment_info_ns(doc, process_id, segdefs, None, segment_summaries)
@@ -599,7 +599,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
                 json_result,queryurl=apicalls.dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
                 excluded_JSON_results.append(json_result)
                 ex_segdefs.append((ifo, name, version, startTime, endTime, 0, 0))
-                #segment_summaries += json_result['known']&glue.segments.segmentlist(glue.segments.segment(startTime,endTime))
+                #segment_summaries += json_result['known']&segments.segmentlist(segments.segment(startTime,endTime))
             else:
                 version = '*'
                 # Trigger versionless call to return a JSON result here
@@ -613,7 +613,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
                     for seg in affected_results[i_result['version']]:
                         ex_segdefs.append((ifo, name, i_result['version'], seg[0], seg[1], 0, 0))
                         # Ok, so here the segment_summaries are paired with the affected_results from above:  the intersection of the affected results segments with each segment_summary for each version...
-                        #segment_summaries += i_result['known']&glue.segments.segmentlist(glue.segments.segment(startTime,endTime))
+                        #segment_summaries += i_result['known']&segments.segmentlist(segments.segment(startTime,endTime))
 
     # Ok, now I have the included_JSON_results and the excluded_JSON_results, from which I can compute the equivalent of the old "found_segments" (included - excluded)
     if debug:
@@ -621,9 +621,9 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
         pdb.set_trace()
     combined_result=clientutils.calculate_combined_result(included_JSON_results,excluded_JSON_results,startTime,endTime,ifo)
     #found_segments=combined_result['active']
-    found_segments=glue.segments.segmentlist([glue.segments.segment(x[0],x[1]) for x in combined_result['active']])
+    found_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in combined_result['active']])
     if not options.strict_off:
-        found_segments=found_segments&glue.segments.segmentlist([glue.segments.segment(startTime,endTime)])
+        found_segments=found_segments&segments.segmentlist([segments.segment(startTime,endTime)])
 
     # Add the result type to the segment definer table
     seg_name   = result_name
