@@ -1,3 +1,9 @@
+dqsegdb (1.6.0-1) unstable; urgency=low
+
+  * 1.6 release to use new ligo-segments, needs testing
+
+ -- ryan fisher <ryan.fisher@ligo.org>  Wed, 20 Feb 2019 18:28:00 -0500
+
 dqsegdb (1.4.2-1) unstable; urgency=low
 
   * Small change release to depend on updated glue called lscsoft-glue
