@@ -2,11 +2,13 @@
 
 # This is a script to set up one of the data quality segments database (DQsegDB) machines.
 # Warning: This script assumes that it is being run by user root.  Installation by any other user will likely produce errors.
+# To both view and save the script's output, run it with somehting like:
+#   " ./cit_install_script_sl7update.sh  2>&1  |  tee  installation_output.txt "
 
 # set host; valid options: segments, segments-backup, segments-web, segments-dev, segments-dev2, segments-s6, segments-other
 host="segments-backup"
-if [ $host != "segments" ] && [ $host != "segments-backup" ] && [ $host != "segments-web ] && [ $host != "segments-dev" ] && [ $host != "segments-dev2 ] \
-    && [ $host != "segments-s6" ] && [ $host != "segments-other" ]
+if [ $host != "segments" ] && [ $host != "segments-backup" ] && [ $host != "segments-web ] && [ $host != "segments-dev" ] \
+    && [ $host != "segments-dev2" ] && [ $host != "segments-s6" ] && [ $host != "segments-other" ]
 then
   echo "### ERROR ### Variable 'host' is not set to a valid value.  Please fix this and run this script again."
   exit
@@ -345,10 +347,13 @@ if [ $host == "segments-web" ] then \
 if [ $host == "segments-dev" ] then \
    cp  /backup/segdb/reference/install_support/segments-dev/ldbd*pem  /etc/grid-security/; \
    cp  /backup/segdb/reference/install_support/segments-dev/segments-dev.ligo.org.*  /etc/grid-security/; fi
+if [ $host == "segments-dev2" ] then \
+   cp  /backup/segdb/reference/install_support/segments-dev/ldbd*pem  /etc/grid-security/; \
+   cp  /backup/segdb/reference/install_support/segments-dev2/segments-dev2.ligo.org.*  /etc/grid-security/; fi
 if [ $host == "segments-s6" ] then \
    cp  /backup/segdb/reference/install_support/segments-s6/segments-s6.ligo.org.*  /etc/grid-security/; fi
-cp /etc/grid-security/*.ligo.org.pem /etc/pki/tls/certs/localhost.crt 
-cp /etc/grid-security/*.ligo.org.key /etc/pki/tls/private/localhost.key
+cp /etc/grid-security/${host}.ligo.org.pem /etc/pki/tls/certs/localhost.crt 
+cp /etc/grid-security/${host}.ligo.org.key /etc/pki/tls/private/localhost.key
 
 # Get all cert identifier packages:
 yum -y install cilogon-ca-certs
