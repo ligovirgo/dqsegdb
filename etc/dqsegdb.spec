@@ -13,7 +13,7 @@ License: GPLv3
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
-Requires: python, python-pyRXP, lscsoft-glue >= 1.55, python2-gwdatafind
+Requires: python, python-pyRXP, glue >= 1.55, python2-gwdatafind
 Requires: python2-ligo-segments
 BuildRequires: python-setuptools, git
 BuildArch: noarch
