@@ -7,7 +7,7 @@
 
 # set host; valid options: segments, segments-backup, segments-web, segments-dev, segments-dev2, segments-s6, segments-other
 host="segments-backup"
-if [ $host != "segments" ] && [ $host != "segments-backup" ] && [ $host != "segments-web ] && [ $host != "segments-dev" ] \
+if [ $host != "segments" ] && [ $host != "segments-backup" ] && [ $host != "segments-web" ] && [ $host != "segments-dev" ] \
     && [ $host != "segments-dev2" ] && [ $host != "segments-s6" ] && [ $host != "segments-other" ]
 then
   echo "### ERROR ### Variable 'host' is not set to a valid value.  Please fix this and run this script again."
@@ -48,8 +48,14 @@ mkdir dqsegdb_git
 cd dqsegdb_git
 git clone https://github.com/ligovirgo/dqsegdb.git  
 cd dqsegdb/server/install_scripts
-cat cit_install_script_sl7update.sh
-echo "Installation script/instructions printed"
+if [ $verbose -eq 1 ]
+then
+  echo "### INFO ### Printing the installation script/instructions"
+  echo "##########################################################"
+  cat cit_install_script_sl7update.sh
+  echo "### INFO ### Finished printing the installation script/instructions"
+  echo "###################################################################"
+fi
 
 # used for connecting to git repositories with Kerberos (if this is still used)
 yum -y install ecp-cookie-init
@@ -61,12 +67,16 @@ git config --global user.name "Robert Bruntz"
 # these lines above might be changed to a different user later
 
 # Set LGMM (LIGO Grid-Mapfile Manager) to run on reboot and start it now
-cp  /backup/segdb/reference/lgmm/whitelist  /etc/grid-security/
-touch /etc/grid-security/grid-mapfile
 touch /etc/grid-security/whitelist   ### just in case the config file looks for it; missing expected file crashes lgmm
 touch /etc/grid-security/blacklist   ### just in case the config file looks for it; missing expected file crashes lgmm
+cp  /backup/segdb/reference/lgmm/whitelist  /etc/grid-security/
+cp  /etc/lgmm/lgmm_config.py  /etc/lgmm/lgmm_config.py_$(date +%Y.%m.%d).bak
+cp /backup/segdb/reference/install_support/lgmm_config.py  /etc/lgmm/
+touch /etc/grid-security/grid-mapfile
 chown nobody:nobody /etc/grid-security/grid-mapfile
 chmod 644 /etc/grid-security/grid-mapfile
+### not sure if the order is right for the next 3 lines; 'lgmm -f' seems to need to be run or the service won't stat on
+lgmm -f
 /sbin/chkconfig lgmm on
 systemctl restart lgmm
 
@@ -165,6 +175,8 @@ if [ $verbose -eq 1 ]; then echo "### Starting configuration of Apache, etc."; f
 ### fixme01 fix!!!
 mv /etc/httpd/conf     /etc/httpd/conf.bck.$(date +%Y.%m.%d)
 mv /etc/httpd/conf.d   /etc/httpd/conf.d.bck.$(date +%Y.%m.%d)
+mkdir /etc/httpd/conf
+mkdir /etc/httpd/conf.d
 if [ $host == "segments" ] || [ $host == "segments-dev" ]
 then
   rsync -avP /backup/segdb/segments/install_support/conf.d   /etc/httpd/
@@ -180,8 +192,8 @@ then
 fi
 if [ $host == "segments-backup" ]
 then
-  cp -r  /backup/segdb/reference/install_support/segments-backup/etc_httpd_conf    /etc/httpd/conf/
-  cp -r  /backup/segdb/reference/install_support/segments-backup/etc_httpd_conf.d  /etc/httpd/conf.d/
+  cp -r  /backup/segdb/reference/install_support/segments-backup/etc_httpd_conf/*    /etc/httpd/conf/
+  cp -r  /backup/segdb/reference/install_support/segments-backup/etc_httpd_conf.d/*  /etc/httpd/conf.d/
 fi
 if [ $host == "segments-web" ]
 then
@@ -261,8 +273,9 @@ if [ $verbose -eq 1 ]; then echo "### Starting DB customization and importing DB
 # Create database users and give them privileges
 ### Note that the ‘empty_database.tgz’ and dqsegdb backups have users ‘dqsegdb_user’ and ‘admin’, 
 ###      but they don’t work right, so we create the users and give them permissions even before the DB is restored
-cp  /backup/segdb/reference/install_support/mysql_user_commands.sh  /root/
-/bin/bash  /root/mysql_user_commands.sh
+cp  /backup/segdb/reference/install_support/mysql_user_commands.sh  /root/bin/
+/bin/bash  /root/bin/mysql_user_commands.sh
+rm  /root/bin/mysql_user_commands.sh
 
 ### Restore an *empty* dqsegdb here
 ### Note that this will have tables, flags, etc., incl. users ‘dqsegdb_user’ and ‘admin’
@@ -282,7 +295,8 @@ if [ $host == "segments" ]  || [ $host == "segments-dev" ]
 then
   # this part restores a backed-up segments DB
   #mkdir /var/backup_of_dqsegdb/
-  tmp_dir=/backup/segdb/segments/install_support/tmp/segments_restore
+  output_date=`date +%Y.%m.%d-%H.%M.%S`
+  tmp_dir=/backup/segdb/segments/install_support/tmp/segments_restore_${output_date}
   mkdir -p  $tmp_dir
   cp /backup/segdb/reference/install_support/segments/populate_from_backup.sh  $tmp_dir
   cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir
@@ -290,7 +304,7 @@ then
   tar xvzf *.tar.gz
   #/bin/bash ./populate_from_backup.sh
   #/bin/bash ./populate_from_backup_manual.sh
-  sudo -u ldbd ./populate_from_backup.sh
+  sudo -u ldbd ./populate_from_backup.sh  $tmp_dir  dqsegdb
   rm -rf  $tmp_dir
 fi
 if [ $host == "segments-backup" ]
@@ -335,22 +349,22 @@ if [ $verbose -eq 1 ]; then echo "### Importing certificates and starting Apache
 # move certs to appropriate locations, as referenced by /etc/httpd/conf.d/dqsegdb.conf
 cp /etc/pki/tls/certs/localhost.crt /etc/pki/tls/certs/localhost.crt.old.$(date +%Y.%m.%d)
 cp /etc/pki/tls/private/localhost.key /etc/pki/tls/private/localhost.key.bck.$(date +%Y.%m.%d)
-if [ $host == "segments" ] then \
+if [ $host == "segments" ]; then \
    cp  /backup/segdb/reference/install_support/segments/ldbd*pem  /etc/grid-security/; \
    cp  /backup/segdb/reference/install_support/segments/segments.ligo.org.*  /etc/grid-security/; fi
-if [ $host == "segments-backup" ] then \
+if [ $host == "segments-backup" ]; then \
    cp  /backup/segdb/reference/install_support/segments-backup/segments-backup.ligo.org.*  /etc/grid-security/; fi
-if [ $host == "segments-web" ] then \
-   cp  /backup/segdb/reference/install_support/segments-web/segments-web.ligo.org.*  /etc/grid-security/;
-   mkdir -p /etc/httpd/x509-certs/
+if [ $host == "segments-web" ]; then \
+   cp  /backup/segdb/reference/install_support/segments-web/segments-web.ligo.org.*  /etc/grid-security/; \
+   mkdir -p /etc/httpd/x509-certs/; \
    cp  /backup/segdb/reference/install_support/segments-web/segments-web.ligo.org.*  /etc/httpd/x509-certs/; fi
-if [ $host == "segments-dev" ] then \
+if [ $host == "segments-dev" ]; then \
    cp  /backup/segdb/reference/install_support/segments-dev/ldbd*pem  /etc/grid-security/; \
    cp  /backup/segdb/reference/install_support/segments-dev/segments-dev.ligo.org.*  /etc/grid-security/; fi
-if [ $host == "segments-dev2" ] then \
+if [ $host == "segments-dev2" ]; then \
    cp  /backup/segdb/reference/install_support/segments-dev/ldbd*pem  /etc/grid-security/; \
    cp  /backup/segdb/reference/install_support/segments-dev2/segments-dev2.ligo.org.*  /etc/grid-security/; fi
-if [ $host == "segments-s6" ] then \
+if [ $host == "segments-s6" ]; then \
    cp  /backup/segdb/reference/install_support/segments-s6/segments-s6.ligo.org.*  /etc/grid-security/; fi
 cp /etc/grid-security/${host}.ligo.org.pem /etc/pki/tls/certs/localhost.crt 
 cp /etc/grid-security/${host}.ligo.org.key /etc/pki/tls/private/localhost.key
@@ -398,6 +412,8 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
   tar xzf dqsegdb_September_11_2018.tgz
   if [ $host == "segments" ]
   then
+    cp  /backup/segdb/reference/install_support/etc_init.d_dir/dqxml_push_to_ifocache  /etc/init.d/
+    cp  /backup/segdb/reference/install_support/root_bin_dir/dqxml_push_to_ifocache  /root/bin/
     cd /root/bin/
     cp  /backup/segdb/reference/root_files/segments/bin/run_publishing_O3_segmentsligoorg.sh_new_2019.01.01  .
     ln -s  run_publishing_O3_segmentsligoorg.sh_new_2019.01.01  run_publishing_O3_segmentsligoorg.sh
@@ -442,11 +458,11 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
     if [ $host == "segments" ]
     then 
       /sbin/chkconfig  dqxml_push_to_ifocache  on 
-      systemctl start dqxml_pull_from_obs.service
+      systemctl start dqxml_push_to_ifocache.service
     fi
   fi
   # create some useful links
-  ln -s /root/bin/dqsegdb_September_11_2018   /root/bin/dqsegdb_current_code
+  ln -s /root/dqsegdb_September_11_2018   /root/bin/dqsegdb_current_code
   ln -s /var/log/publishing/state/   /root/bin/state_files
   ln -s /var/log/publishing/pid/   /root/bin/pid_files
   ln -s /var/log/publishing/dev  /root/bin/publisher_log_files
