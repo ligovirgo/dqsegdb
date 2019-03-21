@@ -188,7 +188,8 @@ then
 #  cp -r /backup/segdb/segments/install_support/conf_segments-dev_SL7/conf  /etc/httpd/
 #  cp -r /backup/segdb/segments/install_support/conf.d_segments-dev_SL7/conf.d  /etc/httpd/
   if [ -e /etc/httpd/conf.d/shib.conf ]; then mv /etc/httpd/conf.d/shib.conf /etc/httpd/conf.d/shib.conf_nameblocked; fi
-### the above are done in place of the rsync, to avoid the issue with shibboleth (b/c shibboleth is not installed on new systems by default)
+### the above are done in place of the rsync, to avoid the issue with shibboleth 
+###   (b/c shibboleth is not installed on new systems by default)
 fi
 if [ $host == "segments-backup" ]
 then
@@ -222,7 +223,8 @@ server_name=`hostname -f`
 echo "server name =  $server_name"
 
 # Replace the IP addresses and hostname in the dqsegdb config file
-### this would be a good place to have separate blocks for each server - segments, segments-backup, segments-web, segments-dev, segments-dev2, segments-s6
+### this would be a good place to have separate blocks for each server - 
+###   segments, segments-backup, segments-web, segments-dev, segments-dev2, segments-s6
 cp /etc/httpd/conf.d/dqsegdb.conf /etc/httpd/conf.d/dqsegdb.conf_$(date +%Y.%m.%d).bak
 if [ $host == "segments" ]
 then
@@ -347,25 +349,29 @@ fi
 
 if [ $verbose -eq 1 ]; then echo "### Importing certificates and starting Apache"; fi
 # move certs to appropriate locations, as referenced by /etc/httpd/conf.d/dqsegdb.conf
-cp /etc/pki/tls/certs/localhost.crt /etc/pki/tls/certs/localhost.crt.old.$(date +%Y.%m.%d)
-cp /etc/pki/tls/private/localhost.key /etc/pki/tls/private/localhost.key.bck.$(date +%Y.%m.%d)
 if [ $host == "segments" ]; then \
    cp  /backup/segdb/reference/install_support/segments/ldbd*pem  /etc/grid-security/; \
-   cp  /backup/segdb/reference/install_support/segments/segments.ligo.org.*  /etc/grid-security/; fi
+   cp  /backup/segdb/reference/install_support/segments/robot*pem  /etc/grid-security/; \
+   cp  /backup/segdb/reference/install_support/segments/segments.ligo.org.*  /etc/grid-security/; \
+   if [ ! -d /etc/httpd/x509-certs/ ]; then mkdir -p /etc/httpd/x509-certs/; fi; \
+   cp  /backup/segdb/reference/install_support/segments-web/segments.ligo.org.*  /etc/httpd/x509-certs/; fi
 if [ $host == "segments-backup" ]; then \
    cp  /backup/segdb/reference/install_support/segments-backup/segments-backup.ligo.org.*  /etc/grid-security/; fi
 if [ $host == "segments-web" ]; then \
    cp  /backup/segdb/reference/install_support/segments-web/segments-web.ligo.org.*  /etc/grid-security/; \
-   mkdir -p /etc/httpd/x509-certs/; \
+   if [ ! -d /etc/httpd/x509-certs/ ]; then mkdir -p /etc/httpd/x509-certs/; fi; \
    cp  /backup/segdb/reference/install_support/segments-web/segments-web.ligo.org.*  /etc/httpd/x509-certs/; fi
 if [ $host == "segments-dev" ]; then \
    cp  /backup/segdb/reference/install_support/segments-dev/ldbd*pem  /etc/grid-security/; \
+   cp  /backup/segdb/reference/install_support/segments-dev/robot*pem  /etc/grid-security/; \
    cp  /backup/segdb/reference/install_support/segments-dev/segments-dev.ligo.org.*  /etc/grid-security/; fi
 if [ $host == "segments-dev2" ]; then \
-   cp  /backup/segdb/reference/install_support/segments-dev/ldbd*pem  /etc/grid-security/; \
+#   cp  /backup/segdb/reference/install_support/segments-dev/ldbd*pem  /etc/grid-security/; \   ### do we need this?
    cp  /backup/segdb/reference/install_support/segments-dev2/segments-dev2.ligo.org.*  /etc/grid-security/; fi
 if [ $host == "segments-s6" ]; then \
    cp  /backup/segdb/reference/install_support/segments-s6/segments-s6.ligo.org.*  /etc/grid-security/; fi
+cp /etc/pki/tls/certs/localhost.crt /etc/pki/tls/certs/localhost.crt.old.$(date +%Y.%m.%d)
+cp /etc/pki/tls/private/localhost.key /etc/pki/tls/private/localhost.key.bck.$(date +%Y.%m.%d)
 cp /etc/grid-security/${host}.ligo.org.pem /etc/pki/tls/certs/localhost.crt 
 cp /etc/grid-security/${host}.ligo.org.key /etc/pki/tls/private/localhost.key
 
@@ -403,8 +409,8 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
   mkdir -p /dqxml/L1
   mkdir -p /dqxml/V1
   mkdir -p /dqxml/G1
-  cp  /backup/segdb/reference/install_support/etc_init.d_dir/dqxml_pull_from_obs  /etc/init.d/
-  cp  /backup/segdb/reference/install_support/root_bin_dir/dqxml_pull_from_obs  /root/bin/
+#  cp  /backup/segdb/reference/install_support/etc_init.d_dir/dqxml_pull_from_obs  /etc/init.d/
+#  cp  /backup/segdb/reference/install_support/root_bin_dir/dqxml_pull_from_obs  /root/bin/
   cp  /backup/segdb/reference/install_support/ligolw_dtd.txt  /root/bin/
   cp  /backup/segdb/reference/install_support/dqsegdb_September_11_2018.tgz  /root/
   ### should we be installing this from github, rather than a static file?
@@ -453,8 +459,8 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
 
   if [ $live -eq 1 ]
   then
-    /sbin/chkconfig  dqxml_pull_from_obs  on
-    systemctl start dqxml_pull_from_obs.service
+#    /sbin/chkconfig  dqxml_pull_from_obs  on
+#    systemctl start dqxml_pull_from_obs.service
     if [ $host == "segments" ]
     then 
       /sbin/chkconfig  dqxml_push_to_ifocache  on 
