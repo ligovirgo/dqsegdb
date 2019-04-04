@@ -30,9 +30,9 @@ if [ $verbose -eq 1 ]; then \
 
 # make backups of user root config files (if they exist) and then import new files
 cd /root/ 
-if [ -e ./.bashrc ]; then cp  ./.bashrc  ./.bashrc_$(date +%Y.%m.%d).bak ; fi
-if [ -e ./.vimrc ]; then cp  ./.vimrc  ./.vimrc_$(date +%Y.%m.%d).bak ; fi
-if [ -e ./.pythonrc ]; then cp  ./.pythonrc  ./.pythonrc_$(date +%Y.%m.%d).bak ; fi
+if [ -e ./.bashrc ]; then cp  ./.bashrc  ./.bashrc_$(date +%Y.%m.%d-%H.%M.%S).bak ; fi
+if [ -e ./.vimrc ]; then cp  ./.vimrc  ./.vimrc_$(date +%Y.%m.%d-%H.%M.%S).bak ; fi
+if [ -e ./.pythonrc ]; then cp  ./.pythonrc  ./.pythonrc_$(date +%Y.%m.%d-%H.%M.%S).bak ; fi
 #rsync -avP /backup/segdb/segments/install_support/.bashrc .
 #rsync -avP /backup/segdb/segments/install_support/.vimrc .
 #rsync -avP /backup/segdb/segments/install_support/.pythonrc .
@@ -43,11 +43,11 @@ chown  root:root  .bashrc  .pythonrc  .vimrc
 . ./.bashrc
 mkdir /root/bin/
 
-yum -y install git nano mlocate screen
-mkdir dqsegdb_git
-cd dqsegdb_git
+yum -y install git nano mlocate screen telnet
+mkdir /root/dqsegdb_git
+cd /root/dqsegdb_git
 git clone https://github.com/ligovirgo/dqsegdb.git  
-cd dqsegdb/server/install_scripts
+cd ./dqsegdb/server/install_scripts
 if [ $verbose -eq 1 ]
 then
   echo "### INFO ### Printing the installation script/instructions"
@@ -70,18 +70,18 @@ git config --global user.name "Robert Bruntz"
 touch /etc/grid-security/whitelist   ### just in case the config file looks for it; missing expected file crashes lgmm
 touch /etc/grid-security/blacklist   ### just in case the config file looks for it; missing expected file crashes lgmm
 cp  /backup/segdb/reference/lgmm/whitelist  /etc/grid-security/
-cp  /etc/lgmm/lgmm_config.py  /etc/lgmm/lgmm_config.py_$(date +%Y.%m.%d).bak
+cp  /etc/lgmm/lgmm_config.py  /etc/lgmm/lgmm_config.py_$(date +%Y.%m.%d-%H.%M.%S).bak
 cp /backup/segdb/reference/install_support/lgmm_config.py  /etc/lgmm/
 touch /etc/grid-security/grid-mapfile
 chown nobody:nobody /etc/grid-security/grid-mapfile
 chmod 644 /etc/grid-security/grid-mapfile
-### not sure if the order is right for the next 3 lines; 'lgmm -f' seems to need to be run or the service won't stat on
+### not sure if the order is right for the next 3 lines; 'lgmm -f' seems to need to be run or the service won't stay on
 lgmm -f
 /sbin/chkconfig lgmm on
 systemctl restart lgmm
 
 
-if [ $verbose -eq 1 ]; then echo "### Starting Apache, DB, etc., installation"; fi
+if [ $verbose -eq 1 ]; then echo "### Starting Apache, MariaDB, etc., installation"; fi
 # Install Apache, MariaDB (successor to MySQL), PHPMyAdmin, etc.
 # Install Apache server.
 yum -y install httpd
@@ -113,7 +113,8 @@ then
 else
   echo "innodb_buffer_pool_size = 40G" >> /etc/my.cnf
 fi
-### Note: 20 GB for segments-dev2 is b/c it has limited disk space; others should be fine.  (Maybe increase it for some/all others?)
+### Note: 20 GB for segments-dev2 is b/c it has limited disk space; others should be fine.  
+###   (Maybe increase it for some/all others?)
 
 #if [ $live -eq 1 ]
 #then
@@ -129,8 +130,8 @@ systemctl restart mariadb.service
 # Set up DQSegDB stuff
 # Make DQSEGDB server directories
 mkdir -p /opt/dqsegdb/python_server/logs
-# maybe at some point change the above to /opt/dqsegdb/logs/python_server/, and change python code to match (or create a symlink), 
-#    so that the code and logs are separate?
+# maybe at some point change the above to /opt/dqsegdb/logs/python_server/, and change python code to match 
+#  (or create a symlink), so that the code and logs are separate?
 chmod 777 /opt/dqsegdb/python_server/logs
 mkdir -p /opt/dqsegdb/python_server/src
 
@@ -154,7 +155,7 @@ yum -y install m2crypto
 # Setup ODBC Data Source Name (DSN)
 if [ $host == "segments" ] || [ $host == "segments-web" ] || [ $host == "segments-backup" ] || [ $host == "segments-dev" ]
 then
-  if [ -e /etc/odbc.ini ]; then mv  /etc/odbc.ini  /etc/odbc.ini_bak_$(date +%Y.%m.%d) ; fi
+  if [ -e /etc/odbc.ini ]; then mv  /etc/odbc.ini  /etc/odbc.ini_$(date +%Y.%m.%d-%H.%M.%S).bak ; fi
   cp  /backup/segdb/reference/root_files/$host/odbc.ini  /etc/
 fi
 
@@ -163,49 +164,44 @@ fi
 if [ $host == "segments" ] || [ $host == "segments-web" ] || [ $host == "segments-backup" ] || [ $host == "segments-dev" ]
 then
   yum -y install phpmyadmin
-  mv /etc/phpMyAdmin/config.inc.php   /etc/phpMyAdmin/config.inc.php.bck.$(date +%Y.%m.%d)
-  rsync -avP /backup/segdb/reference/install_support/config.inc.php   /etc/phpMyAdmin/
+  mv /etc/phpMyAdmin/config.inc.php   /etc/phpMyAdmin/config.inc.php_$(date +%Y.%m.%d-%H.%M.%S).bak
+  cp /backup/segdb/reference/install_support/config.inc.php   /etc/phpMyAdmin/
   chown root:apache /etc/phpMyAdmin/config.inc.php
 fi
 
 
 if [ $verbose -eq 1 ]; then echo "### Starting configuration of Apache, etc."; fi
 # Configure application Apache:
-# Fix default httpd/conf and httpd/conf.d dirs
-### fixme01 fix!!!
-mv /etc/httpd/conf     /etc/httpd/conf.bck.$(date +%Y.%m.%d)
-mv /etc/httpd/conf.d   /etc/httpd/conf.d.bck.$(date +%Y.%m.%d)
+# See 2019.02.12 work notes for comparisons of SL 6 and SL 7 versions of each file
+mv /etc/httpd/conf     /etc/httpd/conf_bak_$(date +%Y.%m.%d-%H.%M.%S)
+mv /etc/httpd/conf.d   /etc/httpd/conf.d_bak_$(date +%Y.%m.%d-%H.%M.%S)
 mkdir /etc/httpd/conf
 mkdir /etc/httpd/conf.d
-if [ $host == "segments" ] || [ $host == "segments-dev" ]
-then
-  rsync -avP /backup/segdb/segments/install_support/conf.d   /etc/httpd/
-  ### note: this part is probably wrong; it worked for segments-old, when it had Shibboleth installed, 
-  ###       but it probably won't work for systems without Shibboleth
-  ### we should start a new dir, with only the files that we need in it (from the files in the above dir)
-  ### there should also be something to create/populate /etc/httpd/conf/
-#  cp -r  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d  /etc/httpd/
-#  cp -r /backup/segdb/segments/install_support/conf_segments-dev_SL7/conf  /etc/httpd/
-#  cp -r /backup/segdb/segments/install_support/conf.d_segments-dev_SL7/conf.d  /etc/httpd/
-  if [ -e /etc/httpd/conf.d/shib.conf ]; then mv /etc/httpd/conf.d/shib.conf /etc/httpd/conf.d/shib.conf_nameblocked; fi
-### the above are done in place of the rsync, to avoid the issue with shibboleth 
-###   (b/c shibboleth is not installed on new systems by default)
-fi
-if [ $host == "segments-backup" ]
-then
-  cp -r  /backup/segdb/reference/install_support/segments-backup/etc_httpd_conf/*    /etc/httpd/conf/
-  cp -r  /backup/segdb/reference/install_support/segments-backup/etc_httpd_conf.d/*  /etc/httpd/conf.d/
-fi
-if [ $host == "segments-web" ]
-then
-#  cp -r  /backup/segdb/reference/install_support/segments-web/etc_httpd_conf.d  /etc/httpd/
-### note: this one isn't set up yet
-  sleep 0   ### have to do *something*, or bash gets cranky
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf_httpd.conf         /etc/httpd/httpd.conf
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf_magic              /etc/httpd/magic
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_autoindex.conf   /etc/httpd/conf.d/autoindex.conf
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_php.conf         /etc/httpd/conf.d/php.conf
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_phpMyAdmin.conf  /etc/httpd/conf.d/phpMyAdmin.conf
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_ssl.conf         /etc/httpd/conf.d/ssl.conf
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_userdir.conf     /etc/httpd/conf.d/userdir.conf
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_welcome.conf     /etc/httpd/conf.d/welcome.conf
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_wsgi.conf        /etc/httpd/conf.d/wsgi.conf
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_README           /etc/httpd/conf.d/README
+# not sure if the file copied in the following line even does anything:
+#cp /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_config.inc.php    /etc/httpd/conf.d/config.inc.php 
+#   segments.ligo.org has both /etc/phpMyAdmin/config.inc.php and /etc/httpd/conf.d/config.inc.php, and it works fine;
+#   segments-dev2.ligo.org has only /etc/phpMyAdmin/config.inc.php, and it works fine;
+#   leaving that line out for now (but the file it would copy is still there)
+if [ $host == "segments" ]
+then   # only segments uses /var/www/nagios/, so only segments gets dqsegdb.conf with that uncommented
+  cp /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_dqsegdb.conf      /etc/httpd/conf.d/dqsegdb.conf
+else
+  cp /backup/segdb/reference/install_support/segments-dev/etc_httpd_conf.d_dqsegdb.conf  /etc/httpd/conf.d/dqsegdb.conf
 fi
 chown -R root:root /etc/httpd/conf.d
 chown -R root:root /etc/httpd/conf
 
-# Get the IP addresses for (2 Ethernet ports? Are these special somehow?) and the hostname
+# Get the 2 IP addresses (internal network and external network) and the hostname
 #FIX!!! the Devices don't seem to have standard names on SL7?
 # issue: on different systems, eth0 = eno1 = ens10 (10.14.xx.xx address); eth1 = eno2 = ens3 (131.215.xx.xx address)
 # not all installations can use the following lines; the "grep "inet 10"" lines work on SL 7.5, but not 6.1 
@@ -222,10 +218,8 @@ echo "external network address =  $ext_addr"
 server_name=`hostname -f`
 echo "server name =  $server_name"
 
-# Replace the IP addresses and hostname in the dqsegdb config file
-### this would be a good place to have separate blocks for each server - 
-###   segments, segments-backup, segments-web, segments-dev, segments-dev2, segments-s6
-cp /etc/httpd/conf.d/dqsegdb.conf /etc/httpd/conf.d/dqsegdb.conf_$(date +%Y.%m.%d).bak
+# Replace the IP addresses and hostname in the dqsegdb config file (which has values for segments.ligo.org by default)
+cp /etc/httpd/conf.d/dqsegdb.conf /etc/httpd/conf.d/dqsegdb.conf_$(date +%Y.%m.%d-%H.%M.%S).bak
 if [ $host == "segments" ]
 then
   sed -i "s/segments\.ligo\.org/${server_name}/g"   /etc/httpd/conf.d/dqsegdb.conf
@@ -275,14 +269,18 @@ if [ $verbose -eq 1 ]; then echo "### Starting DB customization and importing DB
 # Create database users and give them privileges
 ### Note that the ‘empty_database.tgz’ and dqsegdb backups have users ‘dqsegdb_user’ and ‘admin’, 
 ###      but they don’t work right, so we create the users and give them permissions even before the DB is restored
-cp  /backup/segdb/reference/install_support/mysql_user_commands.sh  /root/bin/
-/bin/bash  /root/bin/mysql_user_commands.sh
-rm  /root/bin/mysql_user_commands.sh
+### old way of doing it here:
+#cp  /backup/segdb/reference/install_support/mysql_user_commands.sh  /root/bin/
+#/bin/bash  /root/bin/mysql_user_commands.sh
+#rm  /root/bin/mysql_user_commands.sh
+### new way of doing it here:
+if [ $host != "" ]; then mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants.sql
 
 ### Restore an *empty* dqsegdb here
 ### Note that this will have tables, flags, etc., incl. users ‘dqsegdb_user’ and ‘admin’
 if [ 1 -eq 0 ]; then
   ### this part is to restore a *blank* DB, not a backed-up DB
+  ### this part isn't currently an option; the code is parked here in case we ever want to make it an option
   mkdir /root/empty_database
   cp /backup/segdb/reference/install_support/empty_database.tgz  /root/empty_database/
   cp /backup/segdb/reference/install_support/segments/populate_from_backup.sh  /root/empty_database/
@@ -293,37 +291,29 @@ if [ 1 -eq 0 ]; then
 fi
 
 ### Restore a full backup of dqsegdb here
-if [ $host == "segments" ]  || [ $host == "segments-dev" ]
+if [ $host == "segments" ]  || [ $host == "segments-dev" ] || [ $host == "segments-backup" ]
 then
   # this part restores a backed-up segments DB
-  #mkdir /var/backup_of_dqsegdb/
   output_date=`date +%Y.%m.%d-%H.%M.%S`
-  tmp_dir=/backup/segdb/segments/install_support/tmp/segments_restore_${output_date}
+  tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
   mkdir -p  $tmp_dir
-  cp /backup/segdb/reference/install_support/segments/populate_from_backup.sh  $tmp_dir
-  cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir
+  cp /backup/segdb/reference/install_support/segments/populate_from_backup_for_installation_script.sh  $tmp_dir
+  cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir; fi
   cd $tmp_dir
   tar xvzf *.tar.gz
-  #/bin/bash ./populate_from_backup.sh
-  #/bin/bash ./populate_from_backup_manual.sh
-  sudo -u ldbd ./populate_from_backup.sh  $tmp_dir  dqsegdb
+  # in the script, first arg is the location of the DB files; second arg is the name of the DB to be restored
+  if [ $host == "segments-backup" ];
+  then sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  segments_backup;
+  else sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  dqsegdb; fi
+  cd ~
   rm -rf  $tmp_dir
 fi
 if [ $host == "segments-backup" ]
 then
-# this part restores a backed-up segments DB
-### add notes as to why this is different from segments or segments-dev
-  #mkdir /var/backup_of_dqsegdb/
-  tmp_dir=/backup/segdb/segments/install_support/tmp/segments-backup_restore
-  mkdir -p  $tmp_dir
-  cp /backup/segdb/reference/install_support/segments-backup/populate_from_backup_segments_backup.sh  $tmp_dir
-  cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir
-  cd $tmp_dir
-  tar xvzf *.tar.gz
-  sudo -u ldbd ./populate_from_backup_segments_backup.sh
-  rm -rf  $tmp_dir
 ### this stuff should be moved to the machine-specific section
 # this part restores a backed-up regression test DB
+  output_date=`date +%Y.%m.%d-%H.%M.%S`
+  tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
   mkdir -p  $tmp_dir
   cp /backup/segdb/reference/install_support/segments-backup/populate_from_backup_dqsegdb_regression_tests.sh  $tmp_dir
   cp /backup/segdb/segments/regression_tests/dqsegdb_regression_tests_backup.tgz  $tmp_dir
@@ -332,19 +322,22 @@ then
   sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests.sh
   cd /root/
   rm -rf  $tmp_dir
-# this part creates the dqsegdb_rts user, its permissions, and its password
-  cp  /backup/segdb/reference/install_support/segments-backup/mysql_rts_user_commands.sh  /root/
-  /bin/bash /root/mysql_rts_user_commands.sh
 # this part sets up the regression tests themselves
   mkdir -p /opt/dqsegdb/regression_test_suite/
   mkdir -p /opt/dqsegdb/logs/regression_test_suite/
-  cp -rp  /root/dqsegdb_git/dqsegdb/server/db/db_utils/component_interface_data_integrity_test_suite/src  /opt/dqsegdb/regression_test_suite/
+  cp -rp  /root/dqsegdb_git/dqsegdb/server/db/db_utils/component_interface_data_integrity_test_suite/src  \ 
+          /opt/dqsegdb/regression_test_suite/
+  # there is an issue with DAO.py and /usr/lib64/python2.7/site-packages/MySQLdb/cursors.py; this fixes it;
+  #   see work notes for 2019.02.20 for details and 2019.04.03 for the fix
+  cp /opt/dqsegdb/regression_test_suite/src/DAO.py  \
+     /opt/dqsegdb/regression_test_suite/src/DAO.py_$(date +%Y.%m.%d-%H.%M.%S).bak
+  sed -i 's/str(dataset_id))/["str(dataset_id)"]/g' /opt/dqsegdb/regression_test_suite/src/DAO.py
   yum install MySQL-python
 fi
 if [ $host == "segments-web" ]
 then
 sleep 0
-### this is where we would do DB-related stuff for just segments-web
+### this is where we would do DB-related stuff for just segments-web   ###segments-web
 fi
 
 if [ $verbose -eq 1 ]; then echo "### Importing certificates and starting Apache"; fi
@@ -353,9 +346,11 @@ if [ $host == "segments" ]; then \
    cp  /backup/segdb/reference/install_support/segments/ldbd*pem  /etc/grid-security/; \
    cp  /backup/segdb/reference/install_support/segments/robot*pem  /etc/grid-security/; \
    cp  /backup/segdb/reference/install_support/segments/segments.ligo.org.*  /etc/grid-security/; \
+   # what uses the files in this dir? can we skip it?
    if [ ! -d /etc/httpd/x509-certs/ ]; then mkdir -p /etc/httpd/x509-certs/; fi; \
-   cp  /backup/segdb/reference/install_support/segments-web/segments.ligo.org.*  /etc/httpd/x509-certs/; fi
+   cp  /backup/segdb/reference/install_support/segments/segments.ligo.org.*  /etc/httpd/x509-certs/; fi
 if [ $host == "segments-backup" ]; then \
+   cp  /backup/segdb/reference/install_support/segments/robot*pem  /etc/grid-security/; \
    cp  /backup/segdb/reference/install_support/segments-backup/segments-backup.ligo.org.*  /etc/grid-security/; fi
 if [ $host == "segments-web" ]; then \
    cp  /backup/segdb/reference/install_support/segments-web/segments-web.ligo.org.*  /etc/grid-security/; \
@@ -370,8 +365,8 @@ if [ $host == "segments-dev2" ]; then \
    cp  /backup/segdb/reference/install_support/segments-dev2/segments-dev2.ligo.org.*  /etc/grid-security/; fi
 if [ $host == "segments-s6" ]; then \
    cp  /backup/segdb/reference/install_support/segments-s6/segments-s6.ligo.org.*  /etc/grid-security/; fi
-cp /etc/pki/tls/certs/localhost.crt /etc/pki/tls/certs/localhost.crt.old.$(date +%Y.%m.%d)
-cp /etc/pki/tls/private/localhost.key /etc/pki/tls/private/localhost.key.bck.$(date +%Y.%m.%d)
+cp /etc/pki/tls/certs/localhost.crt /etc/pki/tls/certs/localhost.crt_$(date +%Y.%m.%d-%H.%M.%S).bak
+cp /etc/pki/tls/private/localhost.key /etc/pki/tls/private/localhost.key_$(date +%Y.%m.%d-%H.%M.%S).bak
 cp /etc/grid-security/${host}.ligo.org.pem /etc/pki/tls/certs/localhost.crt 
 cp /etc/grid-security/${host}.ligo.org.key /etc/pki/tls/private/localhost.key
 
@@ -386,7 +381,8 @@ systemctl enable httpd.service
 #chkconfig httpd on   ### old version
 systemctl restart httpd.service
 #/etc/init.d/httpd restart
-# trouble: where does '/usr/lib64/shibboleth/mod_shib_22.so' come from? (Wanted by /etc/httpd/conf.d/shib.conf)
+# (old version)
+#   trouble: where does '/usr/lib64/shibboleth/mod_shib_22.so' come from? (Wanted by /etc/httpd/conf.d/shib.conf)
 
 
 # Add Web Interface configuration.
@@ -401,14 +397,14 @@ yum -y install glue lal lal-python python-pyRXP
 
 
 ### Publishing
-if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
+if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segments-backup" ]; then
   if [ $verbose -eq 1 ]; then echo "### Installing publisher code"; fi
-  ln -s /etc/grid-security/$host.ligo.org.cert /etc/grid-security/robot.cert.pem 
-  ln -s /etc/grid-security/$host.ligo.org.key /etc/grid-security/robot.key.pem
   mkdir -p /dqxml/H1
   mkdir -p /dqxml/L1
   mkdir -p /dqxml/V1
   mkdir -p /dqxml/G1
+  chown dqxml:dqxml  /dqxml/H1
+  chown dqxml:dqxml  /dqxml/L1
 #  cp  /backup/segdb/reference/install_support/etc_init.d_dir/dqxml_pull_from_obs  /etc/init.d/
 #  cp  /backup/segdb/reference/install_support/root_bin_dir/dqxml_pull_from_obs  /root/bin/
   cp  /backup/segdb/reference/install_support/ligolw_dtd.txt  /root/bin/
@@ -416,11 +412,19 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
   ### should we be installing this from github, rather than a static file?
   cd /root/
   tar xzf dqsegdb_September_11_2018.tgz
+# 'glue' fix to publisher code; we should incorporate this into the code on github and use that at some point
+  mv  /root/dqsegdb_September_11_2018/dqsegdb/bin/ligolw_publish_threaded_dqxml_dqsegdb  \
+      /root/dqsegdb_September_11_2018/dqsegdb/bin/ligolw_publish_threaded_dqxml_dqsegdb_2019.03.05.bak
+  cp /backup/segdb/reference/install_support/ligolw_publish_threaded_dqxml_dqsegdb_2019.03.05_fix  \
+     /root/dqsegdb_September_11_2018/dqsegdb/bin/
+  ln -s /backup/segdb/reference/install_support/ligolw_publish_threaded_dqxml_dqsegdb_2019.03.05_fix  \
+        /root/dqsegdb_September_11_2018/dqsegdb/bin/ligolw_publish_threaded_dqxml_dqsegdb
   if [ $host == "segments" ]
   then
     cp  /backup/segdb/reference/install_support/etc_init.d_dir/dqxml_push_to_ifocache  /etc/init.d/
     cp  /backup/segdb/reference/install_support/root_bin_dir/dqxml_push_to_ifocache  /root/bin/
     cd /root/bin/
+    ### modify this to look for the newest version; probably in ~~/install_support/segments/
     cp  /backup/segdb/reference/root_files/segments/bin/run_publishing_O3_segmentsligoorg.sh_new_2019.01.01  .
     ln -s  run_publishing_O3_segmentsligoorg.sh_new_2019.01.01  run_publishing_O3_segmentsligoorg.sh
     cp /backup/segdb/reference/root_files/segments/bin/lstatus*  .
@@ -469,20 +473,23 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ]; then
   fi
   # create some useful links
   ln -s /root/dqsegdb_September_11_2018   /root/bin/dqsegdb_current_code
-  ln -s /var/log/publishing/state/   /root/bin/state_files
-  ln -s /var/log/publishing/pid/   /root/bin/pid_files
-  ln -s /var/log/publishing/dev  /root/bin/publisher_log_files
+#  ln -s /var/log/httpd/                   /root/bin/httpd_logs
+  ln -s /var/log/publishing/pid/          /root/bin/pid_files
+  ln -s /var/log/publishing/dev           /root/bin/publisher_log_files
+#  ln -s /opt/dqsegdb/python_server/logs/  /root/bin/python_server_log_files
+  ln -s /var/log/publishing/state/        /root/bin/state_files
 fi
 
 
 if [ $verbose -eq 1 ]; then echo "### Handling crontabs, misc. links"; fi
 # create crontab files
 # first, backup any existing cron files that would be overwritten (though there shouldn't be any)
-if [ -e /var/spool/cron/root ]; then cp /var/spool/cron/root /root/cron_root_bak_$(date +%Y.%m.%d) ; fi
-if [ -e /var/spool/cron/ldbd ]; then cp /var/spool/cron/ldbd /root/cron_ldbd_bak_$(date +%Y.%m.%d) ; fi
+if [ -e /var/spool/cron/root ]; then cp /var/spool/cron/root /root/cron_root_bak_$(date +%Y.%m.%d-%H.%M.%S) ; fi
+if [ -e /var/spool/cron/ldbd ]; then cp /var/spool/cron/ldbd /root/cron_ldbd_bak_$(date +%Y.%m.%d-%H.%M.%S) ; fi
 if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segments-backup" ]
 then
   if [ $live -eq 1 ]; then
+    ### change this to pull files from the server's installation dir, rather than ~~/root_files/[host]/
     cp  `ls -1rt /backup/segdb/reference/root_files/$host/crontab_-l_root* | tail -n 1` /var/spool/cron/root
     cp  `ls -1rt /backup/segdb/reference/ldbd_files/$host/crontab_-l_ldbd* | tail -n 1` /var/spool/cron/ldbd
   else
@@ -490,17 +497,26 @@ then
     cp  `ls -1rt /backup/segdb/reference/ldbd_files/$host/crontab_-l_ldbd*all_lines_commented* | tail -n 1` /var/spool/cron/ldbd
   fi
   # create dir to hold files that are created by a cron job, then grabbed by Nagios, for use on monitor.ligo.org:
-  if [ $host == "segments" ] && [ ! -d /var/www/nagios/ ]; then mkdir -p /var/www/nagios/ ; fi
+  if [ $host == "segments" ]
+  then
+    if [ ! -d /var/www/nagios/ ]; then mkdir -p /var/www/nagios/ ; fi
+    cp  /backup/segdb/reference/install_support/segments/root_bin/*  /root/bin/
+    if [ -e /root/bin/check_pending_files_2019.03.05.fix ] && [ ! -e /root/bin/check_pending_files ]
+    then
+      ln -sf  /root/bin/check_pending_files_2019.03.05.fix  /root/bin/check_pending_files
+    fi
+  fi
 fi
 # Note that there are currently (Jan. 2019) no crontabs for any users on segments-web or segments-dev2, 
 #   and segments-s6 is likely to be decommissioned very soon, so it does not need to be handled.
 
 
-# create some useful links
+# create some useful links for every machine
 # format reminder: 'ln -s [actual_file]   [link_name]'
-ln -s /var/log/httpd/   /root/bin/httpd_logs
+ln -s /var/log/httpd/                  /root/bin/httpd_logs
 ln -s /opt/dqsegdb/python_server/logs/ /root/bin/python_server_log_files
 
+###here
 
 # run some machine-specific items
 if [ $verbose -eq 1 ]; then echo "### Handling machine-specific items (if any)"; fi
@@ -568,11 +584,7 @@ exit
 
 
 ### to do:
-### * make sure that grid-mapfile gets created, and with proper ownership and permissions
-### * Start a new dir for httpd, with contents selected from 
-###     the line "rsync -avP /backup/segdb/segments/install_support/conf.d   /etc/httpd/", above
-### * Set up files for /etc/httpd/conf.d/ for segments-web
-### * 
+### * add stuff for segments-web (see ###segments-web)
 
 
 
