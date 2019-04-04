@@ -50,7 +50,7 @@ git clone https://github.com/ligovirgo/dqsegdb.git
 cd ./dqsegdb/server/install_scripts
 if [ $verbose -eq 1 ]
 then
-  echo "### INFO ### Printing the installation script/instructions"
+  echo "### INFO ### Printing the installation script/instructions;  $(date)"
   echo "##########################################################"
   cat cit_install_script_sl7update.sh
   echo "### INFO ### Finished printing the installation script/instructions"
@@ -81,7 +81,7 @@ lgmm -f
 systemctl restart lgmm
 
 
-if [ $verbose -eq 1 ]; then echo "### Starting Apache, MariaDB, etc., installation"; fi
+if [ $verbose -eq 1 ]; then echo "### Starting Apache, MariaDB, etc., installation;  $(date)"; fi
 # Install Apache, MariaDB (successor to MySQL), PHPMyAdmin, etc.
 # Install Apache server.
 yum -y install httpd
@@ -170,7 +170,7 @@ then
 fi
 
 
-if [ $verbose -eq 1 ]; then echo "### Starting configuration of Apache, etc."; fi
+if [ $verbose -eq 1 ]; then echo "### Starting configuration of Apache, etc.;  $(date)"; fi
 # Configure application Apache:
 # See 2019.02.12 work notes for comparisons of SL 6 and SL 7 versions of each file
 mv /etc/httpd/conf     /etc/httpd/conf_bak_$(date +%Y.%m.%d-%H.%M.%S)
@@ -263,8 +263,9 @@ echo "OPENSSL_ALLOW_PROXY_CERTS=1" >> /etc/sysconfig/httpd
 echo 'PYTHONPATH="/opt/dqsegdb/python_server/src:${PYTHONPATH}"'>> /etc/sysconfig/httpd 
 
 
-if [ $verbose -eq 1 ]; then echo "### Starting DB customization and importing DB contents"; fi
+if [ $verbose -eq 1 ]; then echo "### Starting DB configuration;  $(date)"; fi
 # Import data and create main database.
+### this is now done at the very end of the script, b/c it takes so long to restore the full dqsegdb
  
 # Create database users and give them privileges
 ### Note that the ‘empty_database.tgz’ and dqsegdb backups have users ‘dqsegdb_user’ and ‘admin’, 
@@ -290,57 +291,7 @@ if [ 1 -eq 0 ]; then
   sudo -u ldbd ./populate_from_backup.sh
 fi
 
-### Restore a full backup of dqsegdb here
-if [ $host == "segments" ]  || [ $host == "segments-dev" ] || [ $host == "segments-backup" ]
-then
-  # this part restores a backed-up segments DB
-  output_date=`date +%Y.%m.%d-%H.%M.%S`
-  tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
-  mkdir -p  $tmp_dir
-  cp /backup/segdb/reference/install_support/segments/populate_from_backup_for_installation_script.sh  $tmp_dir
-  cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir; fi
-  cd $tmp_dir
-  tar xvzf *.tar.gz
-  # in the script, first arg is the location of the DB files; second arg is the name of the DB to be restored
-  if [ $host == "segments-backup" ];
-  then sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  segments_backup;
-  else sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  dqsegdb; fi
-  cd ~
-  rm -rf  $tmp_dir
-fi
-if [ $host == "segments-backup" ]
-then
-### this stuff should be moved to the machine-specific section
-# this part restores a backed-up regression test DB
-  output_date=`date +%Y.%m.%d-%H.%M.%S`
-  tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
-  mkdir -p  $tmp_dir
-  cp /backup/segdb/reference/install_support/segments-backup/populate_from_backup_dqsegdb_regression_tests.sh  $tmp_dir
-  cp /backup/segdb/segments/regression_tests/dqsegdb_regression_tests_backup.tgz  $tmp_dir
-  cd $tmp_dir
-  tar xvzf dqsegdb_regression_tests_backup.tgz
-  sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests.sh
-  cd /root/
-  rm -rf  $tmp_dir
-# this part sets up the regression tests themselves
-  mkdir -p /opt/dqsegdb/regression_test_suite/
-  mkdir -p /opt/dqsegdb/logs/regression_test_suite/
-  cp -rp  /root/dqsegdb_git/dqsegdb/server/db/db_utils/component_interface_data_integrity_test_suite/src  \ 
-          /opt/dqsegdb/regression_test_suite/
-  # there is an issue with DAO.py and /usr/lib64/python2.7/site-packages/MySQLdb/cursors.py; this fixes it;
-  #   see work notes for 2019.02.20 for details and 2019.04.03 for the fix
-  cp /opt/dqsegdb/regression_test_suite/src/DAO.py  \
-     /opt/dqsegdb/regression_test_suite/src/DAO.py_$(date +%Y.%m.%d-%H.%M.%S).bak
-  sed -i 's/str(dataset_id))/["str(dataset_id)"]/g' /opt/dqsegdb/regression_test_suite/src/DAO.py
-  yum install MySQL-python
-fi
-if [ $host == "segments-web" ]
-then
-sleep 0
-### this is where we would do DB-related stuff for just segments-web   ###segments-web
-fi
-
-if [ $verbose -eq 1 ]; then echo "### Importing certificates and starting Apache"; fi
+if [ $verbose -eq 1 ]; then echo "### Importing certificates and starting Apache;  $(date)"; fi
 # move certs to appropriate locations, as referenced by /etc/httpd/conf.d/dqsegdb.conf
 if [ $host == "segments" ]; then \
    cp  /backup/segdb/reference/install_support/segments/ldbd*pem  /etc/grid-security/; \
@@ -398,7 +349,7 @@ yum -y install glue lal lal-python python-pyRXP
 
 ### Publishing
 if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segments-backup" ]; then
-  if [ $verbose -eq 1 ]; then echo "### Installing publisher code"; fi
+  if [ $verbose -eq 1 ]; then echo "### Installing publisher code;  $(date)"; fi
   mkdir -p /dqxml/H1
   mkdir -p /dqxml/L1
   mkdir -p /dqxml/V1
@@ -407,6 +358,10 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segment
   chown dqxml:dqxml  /dqxml/L1
 #  cp  /backup/segdb/reference/install_support/etc_init.d_dir/dqxml_pull_from_obs  /etc/init.d/
 #  cp  /backup/segdb/reference/install_support/root_bin_dir/dqxml_pull_from_obs  /root/bin/
+  cp  /backup/segdb/reference/install_support/segments/root_bin/manual_rsync_GEO.sh  /root/bin/
+  cp  /backup/segdb/reference/install_support/segments/root_bin/manual_rsync_LHO.sh  /root/bin/
+  cp  /backup/segdb/reference/install_support/segments/root_bin/manual_rsync_LLO.sh  /root/bin/
+  cp  /backup/segdb/reference/install_support/segments/root_bin/manual_rsync_VGO.sh  /root/bin/
   cp  /backup/segdb/reference/install_support/ligolw_dtd.txt  /root/bin/
   cp  /backup/segdb/reference/install_support/dqsegdb_September_11_2018.tgz  /root/
   ### should we be installing this from github, rather than a static file?
@@ -419,22 +374,19 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segment
      /root/dqsegdb_September_11_2018/dqsegdb/bin/
   ln -s /backup/segdb/reference/install_support/ligolw_publish_threaded_dqxml_dqsegdb_2019.03.05_fix  \
         /root/dqsegdb_September_11_2018/dqsegdb/bin/ligolw_publish_threaded_dqxml_dqsegdb
+# here is the actual publisher code
+  cp /backup/segdb/reference/install_support/segments/root_bin/run_publishing_O3_segmentsligoorg.sh_new_*    /root/bin/
+  cp /backup/segdb/reference/install_support/segments/root_bin/run_publishing_O3_segmentsligoorg_G1_test.sh  /root/bin/
+  cd /root/bin/
+  ln -s `ls -1rt run_publishing_O3_segmentsligoorg.sh_new_????.??.?? | tail -n 1`  run_publishing_O3_segmentsligoorg.sh
+  if [ $host == "segments-dev" ];    then sed -i 's/segments/segments-dev/g'    run_publishing_O3_segmentsligoorg.sh; fi 
+  if [ $host == "segments-backup" ]; then sed -i 's/segments/segments-backup/g' run_publishing_O3_segmentsligoorg.sh; fi 
+  cp /backup/segdb/reference/install_support/segments/root_bin/fix_3_commas.sh  /dqxml/
+  mkdir /root/bad_dqxml/
   if [ $host == "segments" ]
   then
     cp  /backup/segdb/reference/install_support/etc_init.d_dir/dqxml_push_to_ifocache  /etc/init.d/
     cp  /backup/segdb/reference/install_support/root_bin_dir/dqxml_push_to_ifocache  /root/bin/
-    cd /root/bin/
-    ### modify this to look for the newest version; probably in ~~/install_support/segments/
-    cp  /backup/segdb/reference/root_files/segments/bin/run_publishing_O3_segmentsligoorg.sh_new_2019.01.01  .
-    ln -s  run_publishing_O3_segmentsligoorg.sh_new_2019.01.01  run_publishing_O3_segmentsligoorg.sh
-    cp /backup/segdb/reference/root_files/segments/bin/lstatus*  .
-  fi
-  if [ $host == "segments-dev" ]
-  then
-    cd /root/bin/
-    cp  /backup/segdb/reference/root_files/segments-dev/bin/run_publishing_O3_segmentsdevligoorg.sh_new_2019.01.01  .
-    ln -s  run_publishing_O3_segmentsdevligoorg.sh_new_2019.01.01  run_publishing_O3_segmentsdevligoorg.sh
-    cp /backup/segdb/reference/root_files/segments-dev/bin/lstatus*  .
   fi
   mkdir -p /var/log/publishing/dev/
   mkdir -p /var/log/publishing/state/
@@ -465,6 +417,10 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segment
   then
 #    /sbin/chkconfig  dqxml_pull_from_obs  on
 #    systemctl start dqxml_pull_from_obs.service
+    echo 1 > /root/bin/start_manual_rsync_GEO.txt
+    echo 1 > /root/bin/start_manual_rsync_VGO.txt
+    nohup  /root/bin/manual_rsync_GEO.sh  >>  /root/bin/manual_rsync_GEO_log.txt  &
+    nohup  /root/bin/manual_rsync_VGO.sh  >>  /root/bin/manual_rsync_VGO_log.txt  &
     if [ $host == "segments" ]
     then 
       /sbin/chkconfig  dqxml_push_to_ifocache  on 
@@ -472,17 +428,103 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segment
     fi
   fi
   # create some useful links
-  ln -s /root/dqsegdb_September_11_2018   /root/bin/dqsegdb_current_code
-#  ln -s /var/log/httpd/                   /root/bin/httpd_logs
-  ln -s /var/log/publishing/pid/          /root/bin/pid_files
-  ln -s /var/log/publishing/dev           /root/bin/publisher_log_files
-#  ln -s /opt/dqsegdb/python_server/logs/  /root/bin/python_server_log_files
-  ln -s /var/log/publishing/state/        /root/bin/state_files
+  ln -s  /root/dqsegdb_September_11_2018   /root/bin/dqsegdb_current_code
+  ln -s  /var/log/publishing/pid/          /root/bin/pid_files
+  ln -s  /var/log/publishing/dev           /root/bin/publisher_log_files
+  ln -s  /var/log/publishing/state/        /root/bin/state_files
 fi
 
 
-if [ $verbose -eq 1 ]; then echo "### Handling crontabs, misc. links"; fi
-# create crontab files
+# run some machine-specific items
+if [ $verbose -eq 1 ]; then echo "### Handling remaining machine-specific items, including DB population;  $(date)"; fi
+if [ $host == "segments" ]
+then
+  mkdir -p /usr1/ldbd/
+  mkdir -p /usr1/ldbd/bin
+  cp -p  /backup/segdb/reference/install_support/segments/ldbd/backup_dqsegdb_mysqldatabase_newdir.sh    /usr1/ldbd/bin/
+  cp -p  /backup/segdb/reference/install_support/segments/ldbd/weekly_backup_rotate_newdir.py            /usr1/ldbd/bin/
+  cp -p  /backup/segdb/reference/install_support/segments/ldbd/monthly_backup_newdir.py                  /usr1/ldbd/bin/
+  cp -p  /backup/segdb/reference/install_support/segments/ldbd/daily_backup_rotate_newdir.py             /usr1/ldbd/bin/
+  cp -p  /backup/segdb/reference/install_support/segments/ldbd/log_backup.sh                             /usr1/ldbd/bin/
+  cp -p  /backup/segdb/reference/install_support/segments/ldbd/spool_backup.sh                           /usr1/ldbd/bin/
+  cp -p  /backup/segdb/reference/install_support/segments/ldbd/backup_opt_dqsegdb_python_server_logs.py  /usr1/ldbd/bin/
+  chown -R ldbd:ldbd /usr1/ldbd
+fi
+if [ $host == "segments-backup" ]
+then
+  mkdir -p /usr1/ldbd/
+  mkdir -p /usr1/ldbd/bin
+  mkdir -p /usr1/ldbd/backup_logging
+  cp  /backup/segdb/reference/install_support/segments-backup/ldbd/populate_from_backup.sh  /usr1/ldbd/bin/
+  cp  /backup/segdb/reference/install_support/segments-backup/ldbd/backup_dqsegdb_regression_tests_mysqldatabase.sh  \
+        /usr1/ldbd/bin/
+  cp  /backup/segdb/segments/backup_logging/import_time.log  /usr1/ldbd/backup_logging/
+  chown -R ldbd:ldbd /usr1/ldbd
+  cp  /backup/segdb/reference/install_support/segments-backup/root_bin/run_regression.sh  /root/bin/
+# this part sets up the regression tests themselves
+  mkdir -p /opt/dqsegdb/regression_test_suite/
+  mkdir -p /opt/dqsegdb/logs/regression_test_suite/
+  cp -rp  /root/dqsegdb_git/dqsegdb/server/db/db_utils/component_interface_data_integrity_test_suite/src  \ 
+          /opt/dqsegdb/regression_test_suite/
+  # there is an issue with DAO.py and /usr/lib64/python2.7/site-packages/MySQLdb/cursors.py; this fixes it;
+  #   see work notes for 2019.02.20 for details and 2019.04.03 for the fix
+  cp /opt/dqsegdb/regression_test_suite/src/DAO.py  \
+     /opt/dqsegdb/regression_test_suite/src/DAO.py_$(date +%Y.%m.%d-%H.%M.%S).bak
+  sed -i 's/str(dataset_id))/["str(dataset_id)"]/g' /opt/dqsegdb/regression_test_suite/src/DAO.py
+  yum install MySQL-python
+# this part restores a backed-up regression test DB (dqsegdb DB is restored later)
+  output_date=`date +%Y.%m.%d-%H.%M.%S`
+  tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
+  mkdir -p  $tmp_dir
+  cp /backup/segdb/reference/install_support/segments-backup/populate_from_backup_dqsegdb_regression_tests.sh  $tmp_dir
+  cp /backup/segdb/segments/regression_tests/dqsegdb_regression_tests_backup.tgz  $tmp_dir
+  cd $tmp_dir
+  tar xvzf dqsegdb_regression_tests_backup.tgz
+  sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests.sh
+  cd /root/
+  rm -rf  $tmp_dir
+fi
+if [ $host == "segments-web" ]
+then
+#  cp -rp  /backup/segdb/reference/install_support/segments-web/root_bin/*  /root/bin/
+  ### this source dir doesn't exist yet
+### this is where we would do DB-related stuff for just segments-web   ###segments-web
+# what else?
+# set up a system to backup the dqsegdb_web DB (cron job)
+# restore the dqsegdb_web DB here
+# install the segments-web website software here (/usr/share/dqsegdb_web/)
+fi
+if [ $host == "segments-dev" ]
+then
+  # segments-dev doesn't have any dedicated tasks that would need to be filled in here at the moment
+  mkdir -p /usr1/ldbd/
+  mkdir -p /usr1/ldbd/bin
+  chown -R ldbd:ldbd /usr1/ldbd
+fi
+# note: no user 'ldbd' used on segments-web; we aren't planning to ever restore segments-s6; segments-dev2 is done manually
+### Restore a full backup of dqsegdb here
+if [ $host == "segments" ]  || [ $host == "segments-dev" ] || [ $host == "segments-backup" ]
+then
+  if [ $verbose -eq 1 ]; then echo "### Starting restoring main DQSegDB DB;  $(date)"; fi
+  # this part restores a backed-up segments DB
+  output_date=`date +%Y.%m.%d-%H.%M.%S`
+  tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
+  mkdir -p  $tmp_dir
+  cp /backup/segdb/reference/install_support/segments/populate_from_backup_for_installation_script.sh  $tmp_dir
+  cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir; fi
+  cd $tmp_dir
+  tar xvzf *.tar.gz
+  # in the script, first arg is the location of the DB files; second arg is the name of the DB to be restored
+  if [ $host == "segments-backup" ];
+  then sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  segments_backup;
+  else sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  dqsegdb; fi
+  cd ~
+  rm -rf  $tmp_dir
+fi
+
+
+if [ $verbose -eq 1 ]; then echo "### Handling crontabs, misc. links;  $(date)"; fi
+# create crontab files; note that this must happen after the DBs are restored, since some cron jobs will write/publish to DBs
 # first, backup any existing cron files that would be overwritten (though there shouldn't be any)
 if [ -e /var/spool/cron/root ]; then cp /var/spool/cron/root /root/cron_root_bak_$(date +%Y.%m.%d-%H.%M.%S) ; fi
 if [ -e /var/spool/cron/ldbd ]; then cp /var/spool/cron/ldbd /root/cron_ldbd_bak_$(date +%Y.%m.%d-%H.%M.%S) ; fi
@@ -500,78 +542,25 @@ then
   if [ $host == "segments" ]
   then
     if [ ! -d /var/www/nagios/ ]; then mkdir -p /var/www/nagios/ ; fi
-    cp  /backup/segdb/reference/install_support/segments/root_bin/*  /root/bin/
-    if [ -e /root/bin/check_pending_files_2019.03.05.fix ] && [ ! -e /root/bin/check_pending_files ]
-    then
-      ln -sf  /root/bin/check_pending_files_2019.03.05.fix  /root/bin/check_pending_files
-    fi
+    ### these first lines fix the glue issue from March 2019; need to fix the original code, instead
+    cp /backup/segdb/reference/install_support/segments/root_bin/check_pending_files_2019.03.05.bak  /root/bin/
+    cp /backup/segdb/reference/install_support/segments/root_bin/check_pending_files_2019.03.05.fix  /root/bin/
+    ln -sf  /root/bin/check_pending_files_2019.03.05.fix  /root/bin/check_pending_files
+    cp /backup/segdb/reference/install_support/segments/root_bin/check_pending_files_wrapper_H.sh    /root/bin/
+    cp /backup/segdb/reference/install_support/segments/root_bin/check_pending_files_wrapper_L.sh    /root/bin/
+    cp /backup/segdb/reference/install_support/segments/root_bin/check_pending_files_wrapper_V.sh    /root/bin/
   fi
 fi
 # Note that there are currently (Jan. 2019) no crontabs for any users on segments-web or segments-dev2, 
 #   and segments-s6 is likely to be decommissioned very soon, so it does not need to be handled.
 
+cp  /backup/segdb/reference/root_files/${host}/bin/lstatus*  /root/bin/
 
 # create some useful links for every machine
 # format reminder: 'ln -s [actual_file]   [link_name]'
-ln -s /var/log/httpd/                  /root/bin/httpd_logs
-ln -s /opt/dqsegdb/python_server/logs/ /root/bin/python_server_log_files
+ln -s  /var/log/httpd/                   /root/bin/httpd_logs
+ln -s  /opt/dqsegdb/python_server/logs/  /root/bin/python_server_log_files
 
-###here
-
-# run some machine-specific items
-if [ $verbose -eq 1 ]; then echo "### Handling machine-specific items (if any)"; fi
-if [ $host == "segments" ]
-then
-  mkdir -p /usr1/ldbd/
-  mkdir -p /usr1/ldbd/bin
-  cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
-  chown -R ldbd:ldbd /usr1/ldbd
-  cp -rp  /backup/segdb/reference/install_support/segments/root_bin/*  /root/bin/
-  ### this source dir doesn't exist yet
-  # what else?
-fi
-if [ $host == "segments-backup" ]
-then
-  mkdir -p /usr1/ldbd/
-  mkdir -p /usr1/ldbd/bin
-  mkdir -p /usr1/ldbd/backup_logging
-  cp -rp  /backup/segdb/segments/backup_logging/*  /usr1/ldbd/backup_logging/
-  cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
-  chown -R ldbd:ldbd /usr1/ldbd
-  cp -rp  /backup/segdb/reference/install_support/segments-backup/root_bin/*  /root/bin/
-  # Restore the saved regression tests DB
-  mkdir /var/backup_of_dqsegdb/
-  cp /backup/segdb/reference/install_support/segments/populate_from_backup.sh  /var/backup_of_dqsegdb/
-  cp /backup/segdb/segments/primary/*.tar.gz  /var/backup_of_dqsegdb/
-  cd /var/backup_of_dqsegdb/
-  tar xvzf *.tar.gz
-  #/bin/bash ./populate_from_backup.sh
-  #/bin/bash ./populate_from_backup_manual.sh
-  sudo -u ldbd ./populate_from_backup.sh
-# what else?
-fi
-if [ $host == "segments-web" ]
-then
-  cp -rp  /backup/segdb/reference/install_support/segments-web/root_bin/*  /root/bin/
-  ### this source dir doesn't exist yet
-  # what else?
-fi
-if [ $host == "segments-dev" ]
-then
-  mkdir -p /usr1/ldbd/
-  mkdir -p /usr1/ldbd/bin
-  cp -rp  /backup/segdb/reference/ldbd_files/$host/bin/*  /usr1/ldbd/bin/
-  chown -R ldbd:ldbd /usr1/ldbd
-  cp -rp  /backup/segdb/reference/install_support/segments-dev/root_bin/*  /root/bin/
-  ### this source dir doesn't exist yet
-  # what else?
-fi
-# note: no user 'ldbd' used on segments-web; we aren't planning to ever restore segments-s6; segments-dev2 is done manually
-
-
-# something about adding the cert to grid-mapfile and grid-mapfile-insert in /etc/grid-security/
- 
-# something about backups
 
 
 ### User tasks to be performed manually:
