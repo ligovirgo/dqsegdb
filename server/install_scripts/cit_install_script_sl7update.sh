@@ -3,12 +3,11 @@
 # This is a script to set up one of the data quality segments database (DQsegDB) machines.
 # Warning: This script assumes that it is being run by user root.  Installation by any other user will likely produce errors.
 # To both view and save the script's output, run it with somehting like:
-#   " ./cit_install_script_sl7update.sh  2>&1  |  tee  installation_output.txt "
+#   " ./cit_install_script_sl7update.sh  2>&1  |  tee -a  installation_output.txt "
 # Here are the different sections:
 #   * basic installation items   #basic
 #   * Apache, MariaDB, etc., installation
-#   * configuration of Apache, etc.
-#   * DB configuration
+#   * configuration of Apache, DB, etc.
 #   * Importing certificates and starting Apache
 #   * Installing publisher code
 #   * Handling remaining machine-specific items
@@ -181,15 +180,15 @@ then
 fi
 
 
-if [ $verbose -eq 1 ]; then echo "### Starting configuration of Apache, etc.;  $(date)"; fi
+if [ $verbose -eq 1 ]; then echo "### Starting configuration of Apache, DB, etc.;  $(date)"; fi
 # Configure application Apache:
 # See 2019.02.12 work notes for comparisons of SL 6 and SL 7 versions of each file
 mv /etc/httpd/conf     /etc/httpd/conf_bak_$(date +%Y.%m.%d-%H.%M.%S)
 mv /etc/httpd/conf.d   /etc/httpd/conf.d_bak_$(date +%Y.%m.%d-%H.%M.%S)
 mkdir /etc/httpd/conf
 mkdir /etc/httpd/conf.d
-cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf_httpd.conf         /etc/httpd/httpd.conf
-cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf_magic              /etc/httpd/magic
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf_httpd.conf         /etc/httpd/conf/httpd.conf
+cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf_magic              /etc/httpd/conf/magic
 cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_autoindex.conf   /etc/httpd/conf.d/autoindex.conf
 cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_php.conf         /etc/httpd/conf.d/php.conf
 cp  /backup/segdb/reference/install_support/segments/etc_httpd_conf.d_phpMyAdmin.conf  /etc/httpd/conf.d/phpMyAdmin.conf
@@ -231,50 +230,13 @@ echo "server name =  $server_name"
 
 # Replace the IP addresses and hostname in the dqsegdb config file (which has values for segments.ligo.org by default)
 cp /etc/httpd/conf.d/dqsegdb.conf /etc/httpd/conf.d/dqsegdb.conf_$(date +%Y.%m.%d-%H.%M.%S).bak
-if [ $host == "segments" ]
-then
   sed -i "s/segments\.ligo\.org/${server_name}/g"   /etc/httpd/conf.d/dqsegdb.conf
   sed -i "s/131\.215\.113\.156/${ext_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
   sed -i "s/10\.14\.0\.101/${int_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-fi
-if [ $host == "segments-backup" ]
-then
-  sed -i "s/segments\-backup\.ligo\.org/${server_name}/g"   /etc/httpd/conf.d/dqsegdb.conf
-  sed -i "s/131\.215\.113\.158/${ext_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-  sed -i "s/10\.14\.0\.105/${int_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-fi
-if [ $host == "segments-web" ]
-then
-  sed -i "s/segments\-web\.ligo\.org/${server_name}/g"   /etc/httpd/conf.d/dqsegdb.conf
-  sed -i "s/131\.215\.125\.183/${ext_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-  sed -i "s/10\.14\.0\.99/${int_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-fi
-if [ $host == "segments-dev" ]
-then
-  sed -i "s/segments\-dev\.ligo\.org/${server_name}/g"   /etc/httpd/conf.d/dqsegdb.conf
-  sed -i "s/131\.215\.113\.159/${ext_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-  sed -i "s/10\.14\.0\.106/${int_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-fi
-if [ $host == "segments-dev2" ]
-then
-  sed -i "s/segments\-dev2\.ligo\.org/${server_name}/g"   /etc/httpd/conf.d/dqsegdb.conf
-  sed -i "s/131\.215\.125\.38/${ext_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-  sed -i "s/10\.14\.0\.83/${int_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-fi
-if [ $host == "segments-s6" ]
-then
-  sed -i "s/segments\-s6\.ligo\.org/${server_name}/g"   /etc/httpd/conf.d/dqsegdb.conf
-  sed -i "s/131\.215\.125\.182/${ext_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-  sed -i "s/10\.14\.0\.117/${int_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
-fi
-### Note that dqsegdb.conf will not be changed for segments-other (which doesn't exist; 
-###   it's there as a future 'unexpected other case' option)
 
 echo "OPENSSL_ALLOW_PROXY_CERTS=1" >> /etc/sysconfig/httpd 
 echo 'PYTHONPATH="/opt/dqsegdb/python_server/src:${PYTHONPATH}"'>> /etc/sysconfig/httpd 
 
-
-if [ $verbose -eq 1 ]; then echo "### Starting DB configuration;  $(date)"; fi
 # Import data and create main database.
 ### this is now done at the very end of the script, b/c it takes so long to restore the full dqsegdb
  
@@ -286,7 +248,7 @@ if [ $verbose -eq 1 ]; then echo "### Starting DB configuration;  $(date)"; fi
 #/bin/bash  /root/bin/mysql_user_commands.sh
 #rm  /root/bin/mysql_user_commands.sh
 ### new way of doing it here:
-if [ $host != "" ]; then mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants.sql
+if [ $host != "" ]; then mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants.sql; fi
 
 ### Restore an *empty* dqsegdb here
 ### Note that this will have tables, flags, etc., incl. users ‘dqsegdb_user’ and ‘admin’
@@ -301,6 +263,7 @@ if [ 1 -eq 0 ]; then
   #/bin/bash ./populate_from_backup.sh
   sudo -u ldbd ./populate_from_backup.sh
 fi
+
 
 if [ $verbose -eq 1 ]; then echo "### Importing certificates and starting Apache;  $(date)"; fi
 # move certs to appropriate locations, as referenced by /etc/httpd/conf.d/dqsegdb.conf
@@ -430,8 +393,8 @@ if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segment
 #    systemctl start dqxml_pull_from_obs.service
     echo 1 > /root/bin/start_manual_rsync_GEO.txt
     echo 1 > /root/bin/start_manual_rsync_VGO.txt
-    nohup  /root/bin/manual_rsync_GEO.sh  >>  /root/bin/manual_rsync_GEO_log.txt  &
-    nohup  /root/bin/manual_rsync_VGO.sh  >>  /root/bin/manual_rsync_VGO_log.txt  &
+#    nohup  /root/bin/manual_rsync_GEO.sh  >>  /root/bin/manual_rsync_GEO_log.txt  &
+#    nohup  /root/bin/manual_rsync_VGO.sh  >>  /root/bin/manual_rsync_VGO_log.txt  &
     if [ $host == "segments" ]
     then 
       /sbin/chkconfig  dqxml_push_to_ifocache  on 
@@ -475,14 +438,14 @@ then
 # this part sets up the regression tests themselves
   mkdir -p /opt/dqsegdb/regression_test_suite/
   mkdir -p /opt/dqsegdb/logs/regression_test_suite/
-  cp -rp  /root/dqsegdb_git/dqsegdb/server/db/db_utils/component_interface_data_integrity_test_suite/src  \ 
+  cp -rp  /root/dqsegdb_git/dqsegdb/server/db/db_utils/component_interface_data_integrity_test_suite/src  \
           /opt/dqsegdb/regression_test_suite/
   # there is an issue with DAO.py and /usr/lib64/python2.7/site-packages/MySQLdb/cursors.py; this fixes it;
   #   see work notes for 2019.02.20 for details and 2019.04.03 for the fix
   cp /opt/dqsegdb/regression_test_suite/src/DAO.py  \
      /opt/dqsegdb/regression_test_suite/src/DAO.py_$(date +%Y.%m.%d-%H.%M.%S).bak
   sed -i 's/str(dataset_id))/["str(dataset_id)"]/g' /opt/dqsegdb/regression_test_suite/src/DAO.py
-  yum install MySQL-python
+  yum -y install MySQL-python
 # this part restores a backed-up regression test DB (dqsegdb DB is restored later)
   output_date=`date +%Y.%m.%d-%H.%M.%S`
   tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
@@ -494,6 +457,8 @@ then
   sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests.sh
   cd /root/
   rm -rf  $tmp_dir
+  # create the users and privileges associated with the regression test DB
+  mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants_tables.sql
 fi
 if [ $host == "segments-web" ]
 then
@@ -522,13 +487,19 @@ then
   tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
   mkdir -p  $tmp_dir
   cp /backup/segdb/reference/install_support/segments/populate_from_backup_for_installation_script.sh  $tmp_dir
-  cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir; fi
+  cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir
   cd $tmp_dir
   tar xvzf *.tar.gz
   # in the script, first arg is the location of the DB files; second arg is the name of the DB to be restored
-  if [ $host == "segments-backup" ];
-  then sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  segments_backup;
-  else sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  dqsegdb; fi
+  if [ $host == "segments-backup" ]
+  then
+    # segments-backup has a different name for its DB
+    sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  segments_backup
+    # create the users and privileges associated with specific tables, after DB exists (only necessary on segments-backup)
+    mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants_tables.sql
+  else
+    sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  dqsegdb
+  fi
   cd ~
   rm -rf  $tmp_dir
 fi
@@ -575,8 +546,9 @@ ln -s  /opt/dqsegdb/python_server/logs/  /root/bin/python_server_log_files
 
 
 ### User tasks to be performed manually:
-# looks like there aren't any anymore...
-
+#  * on segments-backup: run these commands as root, if you want to start pulling DQ XML files from GEO and Virgo:
+#      nohup  /root/bin/manual_rsync_GEO.sh  >>  /root/bin/manual_rsync_GEO_log.txt  &
+#      nohup  /root/bin/manual_rsync_VGO.sh  >>  /root/bin/manual_rsync_VGO_log.txt  &
 
 if [ $verbose -eq 1 ]; then echo -e "### Finished installation:  $(date)"; fi
 
