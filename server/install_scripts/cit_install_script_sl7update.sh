@@ -4,6 +4,17 @@
 # Warning: This script assumes that it is being run by user root.  Installation by any other user will likely produce errors.
 # To both view and save the script's output, run it with somehting like:
 #   " ./cit_install_script_sl7update.sh  2>&1  |  tee  installation_output.txt "
+# Here are the different sections:
+#   * basic installation items   #basic
+#   * Apache, MariaDB, etc., installation
+#   * configuration of Apache, etc.
+#   * DB configuration
+#   * Importing certificates and starting Apache
+#   * Installing publisher code
+#   * Handling remaining machine-specific items
+#   * restoring main DQSegDB DB
+#   * Handling crontabs, misc. links
+
 
 # set host; valid options: segments, segments-backup, segments-web, segments-dev, segments-dev2, segments-s6, segments-other
 host="segments-backup"
@@ -26,7 +37,7 @@ live=1
 verbose=1
 
 if [ $verbose -eq 1 ]; then \
-  echo -e "### Starting installation: $(date)  \n### hostname: $host  \n### Starting basic installation items"; fi
+  echo -e "### Starting installation: $(date)  \n### hostname: $host  \n### Starting basic installation items"; fi #basic
 
 # make backups of user root config files (if they exist) and then import new files
 cd /root/ 
@@ -436,7 +447,7 @@ fi
 
 
 # run some machine-specific items
-if [ $verbose -eq 1 ]; then echo "### Handling remaining machine-specific items, including DB population;  $(date)"; fi
+if [ $verbose -eq 1 ]; then echo "### Handling remaining machine-specific items;  $(date)"; fi
 if [ $host == "segments" ]
 then
   mkdir -p /usr1/ldbd/
@@ -531,7 +542,7 @@ if [ -e /var/spool/cron/ldbd ]; then cp /var/spool/cron/ldbd /root/cron_ldbd_bak
 if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segments-backup" ]
 then
   if [ $live -eq 1 ]; then
-    ### change this to pull files from the server's installation dir, rather than ~~/root_files/[host]/
+    ### change this to pull files from the server's installation dir, rather than ~~/root_files/[host]/ ?
     cp  `ls -1rt /backup/segdb/reference/root_files/$host/crontab_-l_root* | tail -n 1` /var/spool/cron/root
     cp  `ls -1rt /backup/segdb/reference/ldbd_files/$host/crontab_-l_ldbd* | tail -n 1` /var/spool/cron/ldbd
   else
