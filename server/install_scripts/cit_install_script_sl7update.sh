@@ -259,7 +259,7 @@ if [ 1 -eq 0 ]; then
   cp /backup/segdb/reference/install_support/empty_database.tgz  /root/empty_database/
   cp /backup/segdb/reference/install_support/segments/populate_from_backup.sh  /root/empty_database/
   cd /root/empty_database/
-  tar xzf empty_database.tgz
+  tar xvzf empty_database.tgz
   #/bin/bash ./populate_from_backup.sh
   sudo -u ldbd ./populate_from_backup.sh
 fi
@@ -441,20 +441,23 @@ then
   cp -rp  /root/dqsegdb_git/dqsegdb/server/db/db_utils/component_interface_data_integrity_test_suite/src  \
           /opt/dqsegdb/regression_test_suite/
   # there is an issue with DAO.py and /usr/lib64/python2.7/site-packages/MySQLdb/cursors.py; this fixes it;
-  #   see work notes for 2019.02.20 for details and 2019.04.03 for the fix
+  #   see work notes for 2019.02.20 for details and 2019.04.03 for the (wrong) fix and 2019.04.05 for the kludge fix
   cp /opt/dqsegdb/regression_test_suite/src/DAO.py  \
      /opt/dqsegdb/regression_test_suite/src/DAO.py_$(date +%Y.%m.%d-%H.%M.%S).bak
-  sed -i 's/str(dataset_id))/["str(dataset_id)"]/g' /opt/dqsegdb/regression_test_suite/src/DAO.py
+  #sed -i 's/str(dataset_id))/["str(dataset_id)"]/g' /opt/dqsegdb/regression_test_suite/src/DAO.py
+  cp /backup/segdb/reference/install_support/segments-backup/DAO.py_2019.02.20_test.py  \
+     /opt/dqsegdb/regression_test_suite/src/
+  ln -s  /opt/dqsegdb/regression_test_suite/src/DAO.py_2019.02.20_test.py  /opt/dqsegdb/regression_test_suite/src/DAO.py
   yum -y install MySQL-python
 # this part restores a backed-up regression test DB (dqsegdb DB is restored later)
   output_date=`date +%Y.%m.%d-%H.%M.%S`
   tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
   mkdir -p  $tmp_dir
-  cp /backup/segdb/reference/install_support/segments-backup/populate_from_backup_dqsegdb_regression_tests.sh  $tmp_dir
+  cp /backup/segdb/reference/install_support/populate_from_backup_dqsegdb_regression_tests_for_installation_script.sh  $tmp_dir
   cp /backup/segdb/segments/regression_tests/dqsegdb_regression_tests_backup.tgz  $tmp_dir
   cd $tmp_dir
-  tar xvzf dqsegdb_regression_tests_backup.tgz
-  sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests.sh
+  tar xvzf --no-same-owner dqsegdb_regression_tests_backup.tgz
+  sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests_for_installation_script.sh  $tmp_dir  dqsegdb_regression_tests
   cd /root/
   rm -rf  $tmp_dir
   # create the users and privileges associated with the regression test DB
@@ -462,6 +465,7 @@ then
 fi
 if [ $host == "segments-web" ]
 then
+sleep 0
 #  cp -rp  /backup/segdb/reference/install_support/segments-web/root_bin/*  /root/bin/
   ### this source dir doesn't exist yet
 ### this is where we would do DB-related stuff for just segments-web   ###segments-web
@@ -486,10 +490,10 @@ then
   output_date=`date +%Y.%m.%d-%H.%M.%S`
   tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
   mkdir -p  $tmp_dir
-  cp /backup/segdb/reference/install_support/segments/populate_from_backup_for_installation_script.sh  $tmp_dir
+  cp /backup/segdb/reference/install_support/populate_from_backup_for_installation_script.sh  $tmp_dir
   cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir
   cd $tmp_dir
-  tar xvzf *.tar.gz
+  tar xvzf --no-same-owner *.tar.gz
   # in the script, first arg is the location of the DB files; second arg is the name of the DB to be restored
   if [ $host == "segments-backup" ]
   then
