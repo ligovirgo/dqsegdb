@@ -170,7 +170,8 @@ def constructFlagQueryURL(protocol,server,ifo):
     url2='/'.join([url1,ifo])
     return url2
 
-def putDataUrllib2(url,payload,timeout=900,logger=None):
+def putDataUrllib2(url,payload,timeout=900,logger=None,
+                   **urlopen_kw):
     """
     Wrapper method for urllib2 that supports PUTs to a url.
 
@@ -183,18 +184,23 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
 
     """
     socket.setdefaulttimeout(timeout)
+    if urlparse(url).scheme == 'https' and 'context' not in urlopen_kw:
+        from ssl import create_default_context
+        from gwdatafind.utils import find_credential
+        urlopen_kw['context'] = context = create_default_context()
+        context.load_cert_chain(*find_credential())
     #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
-    if urlparse(url).scheme == 'https':
-        opener=urllib_request.build_opener(HTTPSClientAuthHandler)
-    else:
-        opener = urllib_request.build_opener(urllib_request.HTTPHandler)
+    #if urlparse(url).scheme == 'https':
+    #    opener=urllib_request.build_opener(HTTPSClientAuthHandler)
+    #else:
+    #    opener = urllib_request.build_opener(urllib_request.HTTPHandler)
     request = urllib_request.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PUT'
     if logger:
         logger.debug("Beginning url call: %s" % url)
     try:
-        urlreturned = opener.open(request)
+        urlreturned = urllib_request.urlopen(request, timeout=timeout, **urlopen_kw)
     except urllib_error.HTTPError as e:
         handleHTTPError("PUT",url,e)
         ##print(e.read())
@@ -225,7 +231,8 @@ def putDataUrllib2(url,payload,timeout=900,logger=None):
         logger.debug("Completed url call: %s" % url)
     return url
 
-def patchDataUrllib2(url,payload,timeout=900,logger=None):
+def patchDataUrllib2(url,payload,timeout=900,logger=None,
+                   **urlopen_kw):
     """
     Wrapper method for urllib2 that supports PATCHs to a url.
 
@@ -239,10 +246,15 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
     """
     socket.setdefaulttimeout(timeout)
     #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
-    if urlparse(url).scheme == 'https':
-        opener=urllib_request.build_opener(HTTPSClientAuthHandler)
-    else:
-        opener = urllib_request.build_opener(urllib_request.HTTPHandler)
+    if urlparse(url).scheme == 'https' and 'context' not in urlopen_kw:
+        from ssl import create_default_context
+        from gwdatafind.utils import find_credential
+        urlopen_kw['context'] = context = create_default_context()
+        context.load_cert_chain(*find_credential())
+    #if urlparse(url).scheme == 'https':
+    #    opener=urllib_request.build_opener(HTTPSClientAuthHandler)
+    #else:
+    #    opener = urllib_request.build_opener(urllib_request.HTTPHandler)
     #print(opener.handle_open.items())
     request = urllib_request.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
@@ -250,7 +262,8 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None):
     if logger:
         logger.debug("Beginning url call: %s" % url)
     try:
-        urlreturned = opener.open(request)
+        #urlreturned = opener.open(request)
+        urlreturned = urllib_request.urlopen(request, timeout=timeout, **urlopen_kw)
     except urllib_error.HTTPError as e:
         handleHTTPError("PATCH",url,e)
         ##print(e.read())
