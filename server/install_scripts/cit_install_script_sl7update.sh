@@ -465,14 +465,18 @@ then
 fi
 if [ $host == "segments-web" ]
 then
-sleep 0
-#  cp -rp  /backup/segdb/reference/install_support/segments-web/root_bin/*  /root/bin/
-  ### this source dir doesn't exist yet
+  cp /backup/segdb/reference/install_support/segments-web/lstatus                /root/bin/
+  cp /backup/segdb/reference/install_support/segments-web/backup_dqsegdb_web.sh  /root/bin/
+  mkdir -p /usr/share/dqsegdb_web
+  cp -rp  /root/dqsegdb_git/dqsegdb/web/src/*  /usr/share/dqsegdb_web/
 ### this is where we would do DB-related stuff for just segments-web   ###segments-web
-# what else?
-# set up a system to backup the dqsegdb_web DB (cron job)
 # restore the dqsegdb_web DB here
 # install the segments-web website software here (/usr/share/dqsegdb_web/)
+# shibboleth
+# /etc/httpd/
+# what else?
+  ### change this to pull files from the server's installation dir, rather than ~~/root_files/[host]/ ?
+  cp  `ls -1rt /backup/segdb/reference/root_files/$host/crontab_-l_root* | tail -n 1` /var/spool/cron/root
 fi
 if [ $host == "segments-dev" ]
 then
