@@ -208,6 +208,14 @@ then   # only segments uses /var/www/nagios/, so only segments gets dqsegdb.conf
 else
   cp /backup/segdb/reference/install_support/segments-dev/etc_httpd_conf.d_dqsegdb.conf  /etc/httpd/conf.d/dqsegdb.conf
 fi
+if [ $host == "segments-web" ]
+then
+  mv /etc/httpd/conf.d/dqsegdb.conf /etc/httpd/conf.d/dqsegdb.conf_other_machines
+  cp -p  /backup/segdb/reference/install_support/segments-web/etc_httpd_conf.d_dqsegdb.conf  /etc/httpd/conf.d/dqsegdb.conf
+  cp -p  /backup/segdb/reference/install_support/segments-web/etc_httpd_conf.d_shib.conf     /etc/httpd/conf.d/shib.conf
+  cp -rp /backup/segdb/reference/install_support/segments-web/shib_self_cert                 /root/
+  yum -y install shibboleth   # is this all that we need to do to install Shibboleth? (does this work?)
+fi
 chown -R root:root /etc/httpd/conf.d
 chown -R root:root /etc/httpd/conf
 
