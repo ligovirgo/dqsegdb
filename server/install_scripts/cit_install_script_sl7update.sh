@@ -214,7 +214,14 @@ then
   cp -p  /backup/segdb/reference/install_support/segments-web/etc_httpd_conf.d_dqsegdb.conf  /etc/httpd/conf.d/dqsegdb.conf
   cp -p  /backup/segdb/reference/install_support/segments-web/etc_httpd_conf.d_shib.conf     /etc/httpd/conf.d/shib.conf
   cp -rp /backup/segdb/reference/install_support/segments-web/shib_self_cert                 /root/
-  yum -y install shibboleth   # is this all that we need to do to install Shibboleth? (does this work?)
+  chmod 0600 /root/shib_self_cert/selfsignedkey.pem
+#  yum -y install shibboleth   # is this all that we need to do to install Shibboleth? (does this work?)
+  yum install -y ligo-shibboleth-sp
+  cp -p /root/shib_self_cert/selfsignedcert.pem          /etc/shibboleth/sp-cert.pem
+  cp -p /root/shib_self_cert/selfsignedkey.pem           /etc/shibboleth/sp-key.pem
+  cp -p /etc/shibboleth/attribute-map-ligo.xml           /etc/shibboleth/attribute-map.xml
+  cp -p /etc/shibboleth/shibboleth2-ligo-template01.xml  /etc/shibboleth/shibboleth2.xml
+  sed -i 's/YOUR_ENTITY_ID/https\:\/\/segments-web.ligo.org\/shibboleth-sp/g'  /etc/shibboleth/shibboleth2.xml
 fi
 chown -R root:root /etc/httpd/conf.d
 chown -R root:root /etc/httpd/conf
@@ -477,8 +484,13 @@ then
   cp /backup/segdb/reference/install_support/segments-web/backup_dqsegdb_web.sh  /root/bin/
   mkdir -p /usr/share/dqsegdb_web
   cp -rp  /root/dqsegdb_git/dqsegdb/web/src/*  /usr/share/dqsegdb_web/
-### this is where we would do DB-related stuff for just segments-web   ###segments-web
-# restore the dqsegdb_web DB here
+  
+  # this part restores a backed-up dqsegdb_web DB (contains info on past segments-web queries)
+  backup_dir=/backup/segdb/reference/install_support/segments-web/dqsegdb_web_db/
+  /backup/segdb/reference/install_support/populate_from_backup_for_installation_script.sh  $backup_dir  dqsegdb_web
+  # create the users and privileges associated with the DB
+  mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants.sql
+###segments-web
 # install the segments-web website software here (/usr/share/dqsegdb_web/)
 # shibboleth
 # /etc/httpd/
