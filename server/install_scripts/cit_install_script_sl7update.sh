@@ -215,10 +215,16 @@ then
   cp -p  /backup/segdb/reference/install_support/segments-web/etc_httpd_conf.d_shib.conf     /etc/httpd/conf.d/shib.conf
   cp -rp /backup/segdb/reference/install_support/segments-web/shib_self_cert                 /root/
   chmod 0600 /root/shib_self_cert/selfsignedkey.pem
+  chmod 0644 /root/shib_self_cert/selfsignedcert.pem
 #  yum -y install shibboleth   # is this all that we need to do to install Shibboleth? (does this work?)
   yum install -y ligo-shibboleth-sp
+# which if the following do we need to do?
   cp -p /root/shib_self_cert/selfsignedcert.pem          /etc/shibboleth/sp-cert.pem
+  cp -p /root/shib_self_cert/selfsignedcert.pem          /etc/shibboleth/sp-signing-cert.pem
   cp -p /root/shib_self_cert/selfsignedkey.pem           /etc/shibboleth/sp-key.pem
+  cp -p /root/shib_self_cert/selfsignedkey.pem           /etc/shibboleth/sp-signing-key.pem
+  chown shibd:shibd /etc/shibboleth/sp-signing-cert.pem   # do we need to do this?
+  chown shibd:shibd /etc/shibboleth/sp-signing-key.pem
   cp -p /etc/shibboleth/attribute-map-ligo.xml           /etc/shibboleth/attribute-map.xml
   cp -p /etc/shibboleth/shibboleth2-ligo-template01.xml  /etc/shibboleth/shibboleth2.xml
   sed -i 's/YOUR_ENTITY_ID/https\:\/\/segments-web.ligo.org\/shibboleth-sp/g'  /etc/shibboleth/shibboleth2.xml
