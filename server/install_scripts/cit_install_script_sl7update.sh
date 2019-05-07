@@ -247,25 +247,37 @@ if [ $run_block_3 -eq 1 ]; then   # * configuration of Apache, DB, etc.
     chown shibd:shibd /etc/shibboleth/sp*key.pem
     cd /etc/shibboleth
     wget https://wiki.ligo.org/pub/AuthProject/DeployLIGOShibbolethSL7/login.ligo.org.cert.LIGOCA.pem
-    # cp -p /backup/segdb/reference/install_support/segments-web/login.ligo.org.cert.LIGOCA.pem   ### secondary option
     wget https://wiki.ligo.org/pub/AuthProject/DeployLIGOShibbolethSL7/shibboleth2.xml
     wget https://wiki.ligo.org/pub/AuthProject/DeployLIGOShibbolethSL7/attribute-map.xml
+    # the above are the main way to get those 3 files; below are a secondary option (which might not be equivalent)
+    #cp -p /backup/segdb/reference/install_support/segments-web/login.ligo.org.cert.LIGOCA.pem
     #cp -p /etc/shibboleth/attribute-map-ligo.xml           /etc/shibboleth/attribute-map.xml
     #cp -p /etc/shibboleth/shibboleth2-ligo-template01.xml  /etc/shibboleth/shibboleth2.xml
-    sed -i 's/YOUR_ENTITY_ID/https\:\/\/segments-web.ligo.org\/shibboleth-sp/g'  /etc/shibboleth/shibboleth2.xml
-
+    #sed -i 's/YOUR_ENTITY_ID/https\:\/\/segments-web.ligo.org\/shibboleth-sp/g'  /etc/shibboleth/shibboleth2.xml
+    # the following line replaces 'entityID=""' with 'entityID="https://login.ligo.org/idp/shibboleth"'
+    sed -i 's/entityID\=\"\"/entityID\=\"https\:\/\/segments-web.ligo.org\/shibboleth-sp\"/g'  /etc/shibboleth/shibboleth2.xml
+    # the following probably duplicates (and adds to) a section within shib.conf, but that's *probably* OK
+    echo "<Location /secure>"  >>  /etc/httpd/conf.d/shib.conf
+    echo " AuthType shibboleth"  >>  /etc/httpd/conf.d/shib.conf
+    echo " ShibRequestSetting requireSession 1"  >>  /etc/httpd/conf.d/shib.conf
+    echo " <RequireAll>"  >>  /etc/httpd/conf.d/shib.conf
+    echo " require shib-session"  >>  /etc/httpd/conf.d/shib.conf
+    echo " require shib-attr isMemberOf Communities:LSCVirgoLIGOGroupMembers"  >>  /etc/httpd/conf.d/shib.conf
+    echo " </RequireAll>"  >>  /etc/httpd/conf.d/shib.conf
+    echo "</Location>"  >>  /etc/httpd/conf.d/shib.conf
   fi
   chown -R root:root /etc/httpd/conf.d
   chown -R root:root /etc/httpd/conf
 
   # Get the 2 IP addresses (internal network and external network) and the hostname
-  #FIX!!! the Devices don't seem to have standard names on SL7?
   # issue: on different systems, eth0 = eno1 = ens10 (10.14.xx.xx address); eth1 = eno2 = ens3 (131.215.xx.xx address)
-  # not all installations can use the following lines; the "grep "inet 10"" lines work on SL 7.5, but not 6.1 
+  # not all installations can use the following lines; the "grep "inet 10""-type lines work on SL 7.5, but not 6.1 
+  # on SL7, the line looks like "inet 10.14.0.106  netmask 255.255.0.0  broadcast 10.14.255.255"
   int_addr=`ifconfig | grep "inet 10" | awk '{print $2}'`
   #int_addr=`ifconfig ens10 | grep "inet " | awk '{print $2}'`
   #int_addr=`ifconfig ens10 |sed -n 's/.*inet \([0-9\.]*\).*/\1/p'`
   #int_addr=`ifconfig eno1 |sed -n 's/.*inet addr:\([0-9\.]*\).*/\1/p'`
+  # on SL7, the line looks like "inet 131.215.113.159  netmask 255.255.255.0  broadcast 131.215.113.255"
   ext_addr=`ifconfig | grep "inet 131" | awk '{print $2}'`
   #ext_addr=`ifconfig ens3 | grep "inet " | awk '{print $2}'`
   #ext_addr=`ifconfig ens3 |sed -n 's/.*inet \([0-9\.]*\).*/\1/p'`
@@ -320,7 +332,7 @@ if [ $run_block_4 -eq 1 ]; then   # * Importing certificates and starting Apache
     cp  /backup/segdb/reference/install_support/segments/ldbd*pem  /etc/grid-security/; \
     cp  /backup/segdb/reference/install_support/segments/robot*pem  /etc/grid-security/; \
     cp  /backup/segdb/reference/install_support/segments/segments.ligo.org.*  /etc/grid-security/; \
-    # what uses the files in this dir? can we skip it?
+    # what uses the files in this next dir? can we skip it?
     if [ ! -d /etc/httpd/x509-certs/ ]; then mkdir -p /etc/httpd/x509-certs/; fi; \
     cp  /backup/segdb/reference/install_support/segments/segments.ligo.org.*  /etc/httpd/x509-certs/; fi
   if [ $host == "segments-backup" ]; then \
@@ -328,6 +340,7 @@ if [ $run_block_4 -eq 1 ]; then   # * Importing certificates and starting Apache
     cp  /backup/segdb/reference/install_support/segments-backup/segments-backup.ligo.org.*  /etc/grid-security/; fi
   if [ $host == "segments-web" ]; then \
     cp  /backup/segdb/reference/install_support/segments-web/segments-web.ligo.org.*  /etc/grid-security/; \
+    # what uses the files in this next dir? can we skip it?
     if [ ! -d /etc/httpd/x509-certs/ ]; then mkdir -p /etc/httpd/x509-certs/; fi; \
     cp  /backup/segdb/reference/install_support/segments-web/segments-web.ligo.org.*  /etc/httpd/x509-certs/; fi
   if [ $host == "segments-dev" ]; then \
@@ -354,14 +367,12 @@ if [ $run_block_4 -eq 1 ]; then   # * Importing certificates and starting Apache
   systemctl enable httpd.service
   #chkconfig httpd on   ### old version
   systemctl restart httpd.service
-  #/etc/init.d/httpd restart
-  # (old version)
-  #   trouble: where does '/usr/lib64/shibboleth/mod_shib_22.so' come from? (Wanted by /etc/httpd/conf.d/shib.conf)
+  #/etc/init.d/httpd restart   ### old version
 
   # Add Web Interface configuration.
   ### which machine(s) use(s) this? create a targeted if-then block for that/those machine(s)
   ### this was probably from the old segments.ligo.org/web (or whatever it was called) interface)
-  ### nothing should need this anymore; kept just in case
+  ### nothing should need this anymore; kept it for reference, just in case
   #echo "Alias /dqsegdb_web /usr/share/dqsegdb_web" >> /etc/httpd/conf.d/dqsegdb_web.conf
 
   # more stuff
@@ -369,7 +380,7 @@ if [ $run_block_4 -eq 1 ]; then   # * Importing certificates and starting Apache
 fi   # run_block_4
 
 
-if [ $run_block_5 -eq 1 ]; then   # * Installing segments publisher code   ### Publishing
+if [ $run_block_5 -eq 1 ]; then   # * Installing segments publisher code   ### Publishing   #publishing
   if [ $host == "segments" ] || [ $host == "segments-dev" ] || [ $host == "segments-backup" ]; then
     if [ $verbose -eq 1 ]; then echo "### Installing publisher code;  $(date)"; fi
     mkdir -p /dqxml/H1
@@ -378,8 +389,9 @@ if [ $run_block_5 -eq 1 ]; then   # * Installing segments publisher code   ### P
     mkdir -p /dqxml/G1
     chown dqxml:dqxml  /dqxml/H1
     chown dqxml:dqxml  /dqxml/L1
-  #  cp  /backup/segdb/reference/install_support/etc_init.d_dir/dqxml_pull_from_obs  /etc/init.d/
-  #  cp  /backup/segdb/reference/install_support/root_bin_dir/dqxml_pull_from_obs  /root/bin/
+    #cp  /backup/segdb/reference/install_support/etc_init.d_dir/dqxml_pull_from_obs  /etc/init.d/
+    #cp  /backup/segdb/reference/install_support/root_bin_dir/dqxml_pull_from_obs  /root/bin/
+    # note that the manual rsyncs scripts for LHO and LLO are just there for backup, not regular use
     cp  /backup/segdb/reference/install_support/segments/root_bin/manual_rsync_GEO.sh  /root/bin/
     cp  /backup/segdb/reference/install_support/segments/root_bin/manual_rsync_LHO.sh  /root/bin/
     cp  /backup/segdb/reference/install_support/segments/root_bin/manual_rsync_LLO.sh  /root/bin/
@@ -437,8 +449,8 @@ if [ $run_block_5 -eq 1 ]; then   # * Installing segments publisher code   ### P
 
     if [ $live -eq 1 ]
     then
-  #    /sbin/chkconfig  dqxml_pull_from_obs  on
-  #    systemctl start dqxml_pull_from_obs.service
+      #/sbin/chkconfig  dqxml_pull_from_obs  on
+      #systemctl start dqxml_pull_from_obs.service
       echo 1 > /root/bin/start_manual_rsync_GEO.txt
       echo 1 > /root/bin/start_manual_rsync_VGO.txt
   #    nohup  /root/bin/manual_rsync_GEO.sh  >>  /root/bin/manual_rsync_GEO_log.txt  &
@@ -505,7 +517,7 @@ if [ $run_block_6 -eq 1 ]; then   # * Handling remaining machine-specific items
     cp /backup/segdb/reference/install_support/populate_from_backup_dqsegdb_regression_tests_for_installation_script.sh  $tmp_dir
     cp /backup/segdb/segments/regression_tests/dqsegdb_regression_tests_backup.tgz  $tmp_dir
     cd $tmp_dir
-    tar xvzf --no-same-owner dqsegdb_regression_tests_backup.tgz
+    tar xvzf dqsegdb_regression_tests_backup.tgz --no-same-owner   # "--no-same-owner" avoids errors
     sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests_for_installation_script.sh  $tmp_dir  dqsegdb_regression_tests
     cd /root/
     rm -rf  $tmp_dir
@@ -514,21 +526,36 @@ if [ $run_block_6 -eq 1 ]; then   # * Handling remaining machine-specific items
   fi
   if [ $host == "segments-web" ]
   then
+    systemctl enable shibd.service
+    systemctl restart shibd.service
     cp /backup/segdb/reference/install_support/segments-web/lstatus                /root/bin/
     cp /backup/segdb/reference/install_support/segments-web/backup_dqsegdb_web.sh  /root/bin/
     mkdir -p /usr/share/dqsegdb_web
     cp -rp  /root/dqsegdb_git/dqsegdb/web/src/*  /usr/share/dqsegdb_web/
-  
+    mv  /usr/share/dqsegdb_web/classes/GetContent.php  /usr/share/dqsegdb_web/classes/GetContent.php_$(date +%Y.%m.%d-%H.%M.%S).bak
+    cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_GetContent.php  \
+             /usr/share/dqsegdb_web/classes/
+    mv  /usr/share/dqsegdb_web/classes/InitVar.php  /usr/share/dqsegdb_web/classes/InitVar.php_$(date +%Y.%m.%d-%H.%M.%S).bak
+    cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_InitVar.php  \
+             /usr/share/dqsegdb_web/classes/
+    mv  /usr/share/dqsegdb_web/classes/JSActions.php  /usr/share/dqsegdb_web/classes/JSActions.php_$(date +%Y.%m.%d-%H.%M.%S).bak
+    cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_JSActions.php  \
+             /usr/share/dqsegdb_web/classes/
+    mv  /usr/share/dqsegdb_web/python_utilities/convert_formats.py  \
+        /usr/share/dqsegdb_web/python_utilities/convert_formats.py_$(date +%Y.%m.%d-%H.%M.%S).bak
+    cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_python_utilities_convert_formats.py  \
+             /usr/share/dqsegdb_web/python_utilities/
+    #mkdir /usr/share/dqsegdb_web/downloads
+    cd /usr/share/dqsegdb_web/
+    tar xzf  /backup/segdb/reference/install_support/segments-web/downloads.tgz   # this will make the dir downloads itself
+### ownership and permissions for files in /usr/share/dqsegdb_web ??
   # this part restores a backed-up dqsegdb_web DB (contains info on past segments-web queries)
     backup_dir=/backup/segdb/reference/install_support/segments-web/dqsegdb_web_db/
     /backup/segdb/reference/install_support/populate_from_backup_for_installation_script.sh  $backup_dir  dqsegdb_web
   # create the users and privileges associated with the DB
     mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants.sql
   ###segments-web
-  # install the segments-web website software here (/usr/share/dqsegdb_web/)
-  # shibboleth
   # /etc/httpd/
-  # what else?
     ### change this to pull files from the server's installation dir, rather than ~~/root_files/[host]/ ?
     cp  `ls -1rt /backup/segdb/reference/root_files/$host/crontab_-l_root* | tail -n 1` /var/spool/cron/root
   fi
@@ -554,7 +581,7 @@ if [ $run_block_7 -eq 1 ]; then   # * restoring main DQSegDB DB
     cp /backup/segdb/reference/install_support/populate_from_backup_for_installation_script.sh  $tmp_dir
     cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir
     cd $tmp_dir
-    tar xvzf --no-same-owner *.tar.gz
+    tar xvzf *.tar.gz --no-same-owner   # "--no-same-owner" flag avoids some errors
     # in the script, first arg is the location of the DB files; second arg is the name of the DB to be restored
     if [ $host == "segments-backup" ]
     then
@@ -600,7 +627,7 @@ if [ $run_block_8 -eq 1 ]; then   # * Handling crontabs, misc. links
       cp /backup/segdb/reference/install_support/segments/root_bin/check_pending_files_wrapper_V.sh    /root/bin/
     fi
   fi
-  # Note that there are currently (Jan. 2019) no crontabs for any users on segments-web or segments-dev2, 
+  # Note that there are currently (May 2019) no crontabs for any users on segments-dev2, 
   #   and segments-s6 is likely to be decommissioned very soon, so it does not need to be handled.
 
   cp  /backup/segdb/reference/root_files/${host}/bin/lstatus*  /root/bin/
@@ -612,8 +639,8 @@ if [ $run_block_8 -eq 1 ]; then   # * Handling crontabs, misc. links
 fi   # run_block_8
 
 
-if [ $run_block_8 -eq 1 ]; then   # * Unspecified additional commands (probably added by hand at run time)
-  sleep 0
+if [ $run_block_9 -eq 1 ]; then   # * Unspecified additional commands (probably added by hand at run time)
+  sleep 0   # have to do *something* or Bash gets cranky
 fi   # run_block_9
 
 ### User tasks to be performed manually:
@@ -626,13 +653,24 @@ if [ $verbose -eq 1 ]; then echo -e "### Finished installation:  $(date)"; fi
 exit
 
 
-### to do:      next: read through run_block_3
-### * add stuff for segments-web (see ###segments-web)
+### to do:
+### * add stuff for segments-web (see ###segments-web) - httpd; go through bash_history
+### * do ownership and permissions for files in /usr/share/dqsegdb_web matter??
+### * what is/are ldbd*pem used for? does segments-backup now need that? what about /etc/httpd/x509-certs/?
 ### * which shib certificate names do we use?
 ### * verify that the shib installation instructions work
 ### * install python3?
 ### * should we increase the "innodb buffer pool size" for non-dev2 systems?
 ### * question about "set max_connections to 256 here? - do in /etc/my.cnf ?"
+### * modify and use code on github, rather than copying 'dqsegdb_September_11_2018.tgz' over and using that
+### * incorporate 'glue' fix to publisher code into github code; use that, rather than the patch here
+### * fix the 'state files saved after backup' issue
+### * where does the 'check_pending_files' script live? fix it there and use that, rather than doing the glue fix here
+### * come up with an actual fix for the DAO.py issue; implement it here
+### * does anything use /root/Publisher/etc/ligolw_dtd.txt ? if not, get rid of it
+### * should "/dqxml/V1" and "/dqxml/G1" also be owned by user dqxml? (change code on the publisher machine, too)
+### * do segments and segments-web actually need /etc/httpd/x509-certs/?
+### * can we get rid of the "cilogon-ca-certs" line? (or should we replace it?)
 ### * figure out /etc/phpMyAdmin/config.inc.php vs. /etc/httpd/conf.d/config.inc.php - just diff. loc's. for same file?
 ### * do we still need the "connecting to git repositories with Kerberos" part?
 ### * figure out the m2crypto/"Replace with openssl" part - what do we need to do? can we do it?
