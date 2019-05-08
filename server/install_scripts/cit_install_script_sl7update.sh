@@ -265,6 +265,7 @@ if [ $run_block_3 -eq 1 ]; then   # * configuration of Apache, DB, etc.
     echo " require shib-attr isMemberOf Communities:LSCVirgoLIGOGroupMembers"  >>  /etc/httpd/conf.d/shib.conf
     echo " </RequireAll>"  >>  /etc/httpd/conf.d/shib.conf
     echo "</Location>"  >>  /etc/httpd/conf.d/shib.conf
+    cp -p  /backup/segdb/reference/install_support/segments-web/lsc-logo.jpg  /etc/shibboleth/
   fi
   chown -R root:root /etc/httpd/conf.d
   chown -R root:root /etc/httpd/conf
@@ -558,6 +559,9 @@ if [ $run_block_6 -eq 1 ]; then   # * Handling remaining machine-specific items
   # /etc/httpd/
     ### change this to pull files from the server's installation dir, rather than ~~/root_files/[host]/ ?
     cp  `ls -1rt /backup/segdb/reference/root_files/$host/crontab_-l_root* | tail -n 1` /var/spool/cron/root
+    # if there's trouble with iptables, these files might help:
+    # /backup/segdb/reference/install_support/segments-web/etc_sysconfig_iptables__segments-web_old
+    # /backup/segdb/reference/install_support/segments-web/etc_sysconfig_iptables-config__segments-web_old
   fi
   if [ $host == "segments-dev" ]
   then
@@ -654,8 +658,8 @@ exit
 
 
 ### to do:
-### * add stuff for segments-web (see ###segments-web) - httpd; go through bash_history
 ### * do ownership and permissions for files in /usr/share/dqsegdb_web matter??
+### * make sure duplicate section in shib.conf won't be an issue (added by the multiple echo >> shib.conf lines)
 ### * what is/are ldbd*pem used for? does segments-backup now need that? what about /etc/httpd/x509-certs/?
 ### * which shib certificate names do we use?
 ### * verify that the shib installation instructions work
