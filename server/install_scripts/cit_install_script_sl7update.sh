@@ -31,6 +31,12 @@ if [ $run_block_0 -eq 1 ]; then   # * setup variables, used in other sections
     echo "### ERROR ### Variable 'host' is not set to a valid value.  Please fix this and run this script again."
     exit
   fi
+  if [ "$host" != `uname -n` ]
+  then
+    echo "### WARNING ### Hostname is `uname -n`, but 'host' variable is set to $host."
+    echo "            ### If this is a mistake, you have 10 seconds to stop this script; after that, installation will continue."
+    sleep 10
+  fi
 
   # The default is to create a 'live' system, with all services, cron jobs, etc. ready to run immediately;
   #    if you don't want that, change the 'live' variable to 0 before running this script.
@@ -49,6 +55,13 @@ fi   # run_block_0
 
 if [ $run_block_1 -eq 1 ]; then   # * basic installation items   #basic
   if [ $verbose -eq 1 ]; then echo -e "### Starting basic installation items"; fi   #basic
+  # first, make sure that we can get to the installation directories that we need
+  if [ ! -d /backup/segdb/reference/install_support/ ]
+  then
+    echo "### ERROR ### The backup dir with installation files ( /backup/segdb/reference/install_support/ ) is not available."
+    echo "          ### Installation cannot be completed properly without the files in that dir.  Exiting."
+    exit
+  fi
   # make backups of user root config files (if they exist) and then import new files
   cd /root/ 
   if [ -e ./.bashrc ]; then cp  ./.bashrc  ./.bashrc_$(date +%Y.%m.%d-%H.%M.%S).bak ; fi
