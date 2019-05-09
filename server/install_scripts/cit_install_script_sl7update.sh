@@ -34,7 +34,13 @@ if [ $run_block_0 -eq 1 ]; then   # * setup variables, used in other sections
   if [ "$host" != `uname -n` ]
   then
     echo "### WARNING ### Hostname is `uname -n`, but 'host' variable is set to $host."
-    echo "            ### If this is a mistake, you have 10 seconds to stop this script; after that, installation will continue."
+    echo "            ### If this is a mistake, you have 10 seconds to stop this script; after that, installation will continue anyway."
+    sleep 10
+  fi
+  if [ `id -un` != "root" ]
+  then
+    echo "### WARNING ### User should be 'root' but is actually '`id -un`'.  This script will probably not run correctly."
+    echo "            ### You have 10 seconds to stop this script; after that, installation will continue anyway."
     sleep 10
   fi
 
