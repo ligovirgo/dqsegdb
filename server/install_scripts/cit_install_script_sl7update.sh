@@ -150,13 +150,22 @@ if [ $run_block_2 -eq 1 ]; then   # * Apache, MariaDB, etc., installation
   echo "[mysqld]" >> /etc/my.cnf
   # set max_connections to 256 here? - do in /etc/my.cnf ?
   if [ $host == "segments-dev2" ]
-  then
+  then   # this is only for segments-dev2
     echo "innodb_buffer_pool_size = 20G" >> /etc/my.cnf
   else
-    echo "innodb_buffer_pool_size = 40G" >> /etc/my.cnf
+    if [ $host == "segments-web" ]  ||  [ $host == "segments-web2" ]
+    then   # this is only for segments-web or segments-web2
+      echo "innodb_buffer_pool_size = 3G" >> /etc/my.cnf
+    else   # this is for anything other than -dev2, -web, or -web2
+      echo "innodb_buffer_pool_size = 40G" >> /etc/my.cnf
+    fi
   fi
   ### Note: 20 GB for segments-dev2 is b/c it has limited disk space; others should be fine.  
   ###   (Maybe increase it for some/all others?)
+  ### Also: segments-web with SL6 and MySQL only had 6 GB of RAM + swap and would start fine with the 40G setting,
+  ###       even though it wasn't using (couldn't use) 40 GB;
+  ###       segments-web2 (which will be renamed segments-web), with SL7 and MariaDB and 3.8 GB of RAM + swap
+  ###       crashes with "innodb_buffer_pool_size = 4G" or higher; might be able to go up to 3.8, but didn't try
 
   #if [ $live -eq 1 ]
   #then
@@ -167,6 +176,15 @@ if [ $run_block_2 -eq 1 ]; then   # * Apache, MariaDB, etc., installation
   #fi
   systemctl enable mariadb.service
   systemctl restart mariadb.service
+  if [ -e /var/lib/mysql/mysql.sock ]
+  then
+    echo "### INFO ### MariaDB was successfully started."
+  else
+    echo "### WARNING ### MariaDB does not seem to be running, which will probably have significant effects \
+    on the rest of the installation."
+    echo "            ### This installation script will pause for 30 seconds, in case you want to kill it now."
+    sleep 30
+  fi  
 
   # Set up DQSegDB stuff
   # Make DQSEGDB server directories
@@ -308,6 +326,7 @@ if [ $run_block_3 -eq 1 ]; then   # * configuration of Apache, DB, etc.
   echo "server name =  $server_name"
 
   # Replace the IP addresses and hostname in the dqsegdb config file (which has values for segments.ligo.org by default)
+  #   Note that segments-web already had its dqsegdb.conf replaced, so these lines (intentionally) have no effect
   cp /etc/httpd/conf.d/dqsegdb.conf /etc/httpd/conf.d/dqsegdb.conf_$(date +%Y.%m.%d-%H.%M.%S).bak
     sed -i "s/segments\.ligo\.org/${server_name}/g"   /etc/httpd/conf.d/dqsegdb.conf
     sed -i "s/131\.215\.113\.156/${ext_addr}/g"   /etc/httpd/conf.d/dqsegdb.conf
@@ -327,7 +346,15 @@ if [ $run_block_3 -eq 1 ]; then   # * configuration of Apache, DB, etc.
   #/bin/bash  /root/bin/mysql_user_commands.sh
   #rm  /root/bin/mysql_user_commands.sh
   ### new way of doing it here:
-  if [ $host != "" ]; then mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants.sql; fi
+  if [ -e /var/lib/mysql/mysql.sock ]
+  then
+    if [ $host != "" ]; then mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants.sql; fi
+  else
+    echo "### WARNING ### MariaDB does not seem to be running, so we cannot install the DB users and permissions."
+    echo "            ### You should probably fix MariaDB, then re-run this block of code (and maybe the blocks after it.)"
+    echo "            ### This installation script will pause for 20 seconds, in case you want to kill it now."
+    sleep 20
+  fi  
 
   ### Restore an *empty* dqsegdb here
   ### Note that this will have tables, flags, etc., incl. users ‘dqsegdb_user’ and ‘admin’
@@ -388,6 +415,15 @@ if [ $run_block_4 -eq 1 ]; then   # * Importing certificates and starting Apache
   #chkconfig httpd on   ### old version
   systemctl restart httpd.service
   #/etc/init.d/httpd restart   ### old version
+  systemctl status httpd.service &> /dev/null
+  if [ "$?" -eq 0 ]
+  then
+    echo "### INFO ### httpd was successfully started."
+  else
+    echo "### WARNING ### http was not successfully started."
+    echo "            ### 'systemctl status httpd.service':"
+    systemctl status httpd.service
+  fi
 
   # Add Web Interface configuration.
   ### which machine(s) use(s) this? create a targeted if-then block for that/those machine(s)
@@ -531,18 +567,26 @@ if [ $run_block_6 -eq 1 ]; then   # * Handling remaining machine-specific items
     ln -s  /opt/dqsegdb/regression_test_suite/src/DAO.py_2019.02.20_test.py  /opt/dqsegdb/regression_test_suite/src/DAO.py
     yum -y install MySQL-python
   # this part restores a backed-up regression test DB (dqsegdb DB is restored later)
-    output_date=`date +%Y.%m.%d-%H.%M.%S`
-    tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
-    mkdir -p  $tmp_dir
-    cp /backup/segdb/reference/install_support/populate_from_backup_dqsegdb_regression_tests_for_installation_script.sh  $tmp_dir
-    cp /backup/segdb/segments/regression_tests/dqsegdb_regression_tests_backup.tgz  $tmp_dir
-    cd $tmp_dir
-    tar xvzf dqsegdb_regression_tests_backup.tgz --no-same-owner   # "--no-same-owner" avoids errors
-    sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests_for_installation_script.sh  $tmp_dir  dqsegdb_regression_tests
-    cd /root/
-    rm -rf  $tmp_dir
-    # create the users and privileges associated with the regression test DB
-    mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants_tables.sql
+    if [ -e /var/lib/mysql/mysql.sock ]
+    then
+      output_date=`date +%Y.%m.%d-%H.%M.%S`
+      tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
+      mkdir -p  $tmp_dir
+      cp /backup/segdb/reference/install_support/populate_from_backup_dqsegdb_regression_tests_for_installation_script.sh  $tmp_dir
+      cp /backup/segdb/segments/regression_tests/dqsegdb_regression_tests_backup.tgz  $tmp_dir
+      cd $tmp_dir
+      tar xvzf dqsegdb_regression_tests_backup.tgz --no-same-owner   # "--no-same-owner" avoids errors
+      sudo -u ldbd ./populate_from_backup_dqsegdb_regression_tests_for_installation_script.sh  $tmp_dir  dqsegdb_regression_tests
+      cd /root/
+      rm -rf  $tmp_dir
+      # create the users and privileges associated with the regression test DB
+      mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants_tables.sql
+    else
+      echo "### WARNING ### MariaDB does not seem to be running, so we cannot install the regression test DB or users."
+      echo "            ### You should probably fix MariaDB, then re-run this block of code (and maybe the blocks after it.)"
+      echo "            ### This installation script will pause for 20 seconds, in case you want to kill it now."
+      sleep 20
+    fi
   fi
   if [ $host == "segments-web" ]
   then
@@ -573,8 +617,16 @@ if [ $run_block_6 -eq 1 ]; then   # * Handling remaining machine-specific items
     backup_dir=/backup/segdb/reference/install_support/segments-web/dqsegdb_web_db/
     /backup/segdb/reference/install_support/populate_from_backup_for_installation_script.sh  $backup_dir  dqsegdb_web
   # create the users and privileges associated with the DB
+  if [ -e /var/lib/mysql/mysql.sock ]
+  then
     mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants.sql
-  ###segments-web
+  else
+    echo "### WARNING ### MariaDB does not seem to be running, so we cannot install the segments-web users."
+    echo "            ### You should probably fix MariaDB, then re-run this block of code (and maybe the blocks after it.)"
+    echo "            ### This installation script will pause for 20 seconds, in case you want to kill it now."
+    sleep 20
+  fi
+###segments-web
   # /etc/httpd/
     ### change this to pull files from the server's installation dir, rather than ~~/root_files/[host]/ ?
     cp  `ls -1rt /backup/segdb/reference/root_files/$host/crontab_-l_root* | tail -n 1` /var/spool/cron/root
@@ -598,26 +650,34 @@ if [ $run_block_7 -eq 1 ]; then   # * restoring main DQSegDB DB
   then
     if [ $verbose -eq 1 ]; then echo "### Starting restoring main DQSegDB DB;  $(date)"; fi
     # this part restores a backed-up segments DB
-    output_date=`date +%Y.%m.%d-%H.%M.%S`
-    tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
-    mkdir -p  $tmp_dir
-    cp /backup/segdb/reference/install_support/populate_from_backup_for_installation_script.sh  $tmp_dir
-    cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir
-    cd $tmp_dir
-    tar xvzf *.tar.gz --no-same-owner   # "--no-same-owner" flag avoids some errors
-    # in the script, first arg is the location of the DB files; second arg is the name of the DB to be restored
-    if [ $host == "segments-backup" ]
+    if [ -e /var/lib/mysql/mysql.sock ]
     then
-      # segments-backup has a different name for its DB
-      sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  segments_backup
-      # create the users and privileges associated with specific tables, after DB exists (only necessary on segments-backup)
-      mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants_tables.sql
+      output_date=`date +%Y.%m.%d-%H.%M.%S`
+      tmp_dir=/backup/segdb/segments/install_support/tmp/${host}_restore_${output_date}
+      mkdir -p  $tmp_dir
+      cp /backup/segdb/reference/install_support/populate_from_backup_for_installation_script.sh  $tmp_dir
+      cp /backup/segdb/segments/primary/*.tar.gz  $tmp_dir
+      cd $tmp_dir
+      tar xvzf *.tar.gz --no-same-owner   # "--no-same-owner" flag avoids some errors
+      # in the script, first arg is the location of the DB files; second arg is the name of the DB to be restored
+      if [ $host == "segments-backup" ]
+      then
+        # segments-backup has a different name for its DB
+        sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  segments_backup
+        # create the users and privileges associated with specific tables, after DB exists (only necessary on segments-backup)
+        mysql -uroot -A < /backup/segdb/reference/install_support/${host}/MySQLUserGrants_tables.sql
+      else
+        sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  dqsegdb
+      fi   # [ $host == "segments-backup" ]
+      cd ~
+      rm -rf  $tmp_dir
     else
-      sudo -u ldbd ./populate_from_backup_for_installation_script.sh  $tmp_dir  dqsegdb
-    fi
-    cd ~
-    rm -rf  $tmp_dir
-  fi
+      echo "### WARNING ### MariaDB does not seem to be running, so we cannot install the segments DB or users."
+      echo "            ### You should probably fix MariaDB, then re-run this block of code (and maybe the blocks after it.)"
+      echo "            ### This installation script will pause for 20 seconds, in case you want to kill it now."
+      sleep 20
+    fi   # [ "$?" -eq 0 ]
+  fi   # [ $host == "segments" ]  ||  ...
 fi   # run_block_7
 
 
@@ -657,8 +717,9 @@ if [ $run_block_8 -eq 1 ]; then   # * Handling crontabs, misc. links
 
   # create some useful links for every machine
   # format reminder: 'ln -s [actual_file]   [link_name]'
-  ln -s  /var/log/httpd/                   /root/bin/httpd_logs
-  ln -s  /opt/dqsegdb/python_server/logs/  /root/bin/python_server_log_files
+  if [ ! -e /root/bin/httpd_logs ]; then ln -s  /var/log/httpd/  /root/bin/httpd_logs; fi
+  if [ ! -e /root/bin/python_server_log_files ]; 
+     then ln -s  /opt/dqsegdb/python_server/logs/  /root/bin/python_server_log_files; fi
 fi   # run_block_8
 
 
