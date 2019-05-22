@@ -613,24 +613,25 @@ if [ $run_block_6 -eq 1 ]; then   # * Handling remaining machine-specific items
     cp -rp  /root/dqsegdb_git/dqsegdb/web/src/*  /usr/share/dqsegdb_web/
     mv  /usr/share/dqsegdb_web/classes/GetContent.php  /usr/share/dqsegdb_web/classes/GetContent.php_$(date +%Y.%m.%d-%H.%M.%S).bak
     cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_GetContent.php  \
-             /usr/share/dqsegdb_web/classes/
+             /usr/share/dqsegdb_web/classes/GetContent.php
     mv  /usr/share/dqsegdb_web/classes/InitVar.php  /usr/share/dqsegdb_web/classes/InitVar.php_$(date +%Y.%m.%d-%H.%M.%S).bak
     cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_InitVar.php  \
-             /usr/share/dqsegdb_web/classes/
+             /usr/share/dqsegdb_web/classes/InitVar.php
     mv  /usr/share/dqsegdb_web/classes/JSActions.php  /usr/share/dqsegdb_web/classes/JSActions.php_$(date +%Y.%m.%d-%H.%M.%S).bak
     cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_JSActions.php  \
-             /usr/share/dqsegdb_web/classes/
+             /usr/share/dqsegdb_web/classes/JSActions.php
     mv  /usr/share/dqsegdb_web/python_utilities/convert_formats.py  \
         /usr/share/dqsegdb_web/python_utilities/convert_formats.py_$(date +%Y.%m.%d-%H.%M.%S).bak
     cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_python_utilities_convert_formats.py  \
-             /usr/share/dqsegdb_web/python_utilities/
+             /usr/share/dqsegdb_web/python_utilities/convert_formats.py
     #mkdir /usr/share/dqsegdb_web/downloads
     cd /usr/share/dqsegdb_web/
     tar xzf  /backup/segdb/reference/install_support/segments-web/downloads.tgz   # this will make the dir downloads itself
 ### ownership and permissions for files in /usr/share/dqsegdb_web ??
   # this part restores a backed-up dqsegdb_web DB (contains info on past segments-web queries)
     backup_dir=/backup/segdb/reference/install_support/segments-web/dqsegdb_web_db/
-    /backup/segdb/reference/install_support/populate_from_backup_for_installation_script.sh  $backup_dir  dqsegdb_web
+    /backup/segdb/reference/install_support/populate_from_backup_dqsegdb_web_for_installation_script.sh  \
+        $backup_dir  dqsegdb_web
   # create the users and privileges associated with the DB
   if [ -e /var/lib/mysql/mysql.sock ]
   then
@@ -766,6 +767,7 @@ exit
 ### * fix the 'state files saved after backup' issue
 ### * where does the 'check_pending_files' script live? fix it there and use that, rather than doing the glue fix here
 ### * come up with an actual fix for the DAO.py issue; implement it here
+### * should segments-web have all of the python_server stuff done? (if not, put it all in if-then blocks that don't run for -web)
 ### * does anything use /root/Publisher/etc/ligolw_dtd.txt ? if not, get rid of it
 ### * should "/dqxml/V1" and "/dqxml/G1" also be owned by user dqxml? (change code on the publisher machine, too)
 ### * do segments and segments-web actually need /etc/httpd/x509-certs/?
