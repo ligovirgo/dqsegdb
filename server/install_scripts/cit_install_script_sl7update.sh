@@ -283,15 +283,30 @@ if [ $run_block_3 -eq 1 ]; then   # * configuration of Apache, DB, etc.
     chown shibd:shibd /etc/shibboleth/sp*cert.pem   # do we need to do this?
     chown shibd:shibd /etc/shibboleth/sp*key.pem
     cd /etc/shibboleth
+    # for the following 3 files, we rename extant copies (if any), then download new copies
+    if [ -e login.ligo.org.cert.LIGOCA.pem ]; 
+      then mv  login.ligo.org.cert.LIGOCA.pem  login.ligo.org.cert.LIGOCA.pem_$(date +%Y.%m.%d-%H.%M.%S).bak; fi
     wget https://wiki.ligo.org/pub/AuthProject/DeployLIGOShibbolethSL7/login.ligo.org.cert.LIGOCA.pem
+    if [ -e shibboleth2.xml ]; 
+      then mv  shibboleth2.xml  shibboleth2.xml_$(date +%Y.%m.%d-%H.%M.%S).bak; fi
     wget https://wiki.ligo.org/pub/AuthProject/DeployLIGOShibbolethSL7/shibboleth2.xml
+    if [ -e attribute-map.xml ]; 
+      then mv  attribute-map.xml  attribute-map.xml_$(date +%Y.%m.%d-%H.%M.%S).bak; fi
     wget https://wiki.ligo.org/pub/AuthProject/DeployLIGOShibbolethSL7/attribute-map.xml
-    # the above are the main way to get those 3 files; below are a secondary option (which might not be equivalent)
-    #cp -p /backup/segdb/reference/install_support/segments-web/login.ligo.org.cert.LIGOCA.pem
-    #cp -p /etc/shibboleth/attribute-map-ligo.xml           /etc/shibboleth/attribute-map.xml
-    #cp -p /etc/shibboleth/shibboleth2-ligo-template01.xml  /etc/shibboleth/shibboleth2.xml
-    #sed -i 's/YOUR_ENTITY_ID/https\:\/\/segments-web.ligo.org\/shibboleth-sp/g'  /etc/shibboleth/shibboleth2.xml
-    # the following line replaces 'entityID=""' with 'entityID="https://login.ligo.org/idp/shibboleth"'
+    # if the downloads didn't work, then grab local copies (and let the installer know)
+    if [ ! -e login.ligo.org.cert.LIGOCA.pem ]; then 
+      echo "### WARNING ### The file 'login.ligo.org.cert.LIGOCA.pem' could not be downloaded; \
+      using the copy '/backup/segdb/reference/install_support/segments-web/login.ligo.org.cert.LIGOCA.pem' instead."
+      cp -p /backup/segdb/reference/install_support/segments-web/login.ligo.org.cert.LIGOCA.pem  .; fi
+    if [ ! -e shibboleth2.xml ]; then 
+      echo "### WARNING ### The file 'shibboleth2.xml' could not be downloaded; \
+      using the copy '/backup/segdb/reference/install_support/segments-web/shibboleth2.xml' instead." 
+      cp -p /backup/segdb/reference/install_support/segments-web/shibboleth2.xml  .; fi
+    if [ ! -e attribute-map.xml ]; then 
+      echo "### WARNING ### The file 'attribute-map.xml' could not be downloaded; \
+      using the copy '/backup/segdb/reference/install_support/segments-web/attribute-map.xml' instead." 
+      cp -p /backup/segdb/reference/install_support/segments-web/attribute-map.xml  .; fi
+    # the following line replaces 'entityID=""' with 'entityID="https://segments-web.ligo.org/shibboleth-sp"'
     sed -i 's/entityID\=\"\"/entityID\=\"https\:\/\/segments-web.ligo.org\/shibboleth-sp\"/g'  /etc/shibboleth/shibboleth2.xml
     # the following probably duplicates (and adds to) a section within shib.conf, but that's *probably* OK
     echo "<Location /secure>"  >>  /etc/httpd/conf.d/shib.conf
