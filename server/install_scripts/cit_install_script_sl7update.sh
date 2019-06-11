@@ -420,8 +420,6 @@ if [ $run_block_4 -eq 1 ]; then   # * Importing certificates and starting Apache
   cp /etc/grid-security/${host}.ligo.org.key /etc/pki/tls/private/localhost.key
 
   # Get all cert identifier packages:
-  yum -y install cilogon-ca-certs
-  ### the above package is no longer available; do we need it (I.e., its replacement) anymore?
   yum -y install osg-ca-certs
   yum -y install ligo-ca-certs
 
@@ -607,26 +605,29 @@ if [ $run_block_6 -eq 1 ]; then   # * Handling remaining machine-specific items
   then
     systemctl enable shibd.service
     systemctl restart shibd.service
-    cp /backup/segdb/reference/install_support/segments-web/lstatus                /root/bin/
-    cp /backup/segdb/reference/install_support/segments-web/backup_dqsegdb_web.sh  /root/bin/
+    cp -p /backup/segdb/reference/install_support/segments-web/lstatus                          /root/bin/
+    cp -p /backup/segdb/reference/install_support/segments-web/backup_dqsegdb_web.sh            /root/bin/
+    cp -p /backup/segdb/reference/install_support/segments-web/backup_dqsegdb_web_downloads.sh  /root/bin/
     mkdir -p /usr/share/dqsegdb_web
     cp -rp  /root/dqsegdb_git/dqsegdb/web/src/*  /usr/share/dqsegdb_web/
     mv  /usr/share/dqsegdb_web/classes/GetContent.php  /usr/share/dqsegdb_web/classes/GetContent.php_$(date +%Y.%m.%d-%H.%M.%S).bak
-    cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_GetContent.php  \
+    cp -p  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_GetContent.php  \
              /usr/share/dqsegdb_web/classes/GetContent.php
     mv  /usr/share/dqsegdb_web/classes/InitVar.php  /usr/share/dqsegdb_web/classes/InitVar.php_$(date +%Y.%m.%d-%H.%M.%S).bak
-    cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_InitVar.php  \
+    cp -p  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_InitVar.php  \
              /usr/share/dqsegdb_web/classes/InitVar.php
     mv  /usr/share/dqsegdb_web/classes/JSActions.php  /usr/share/dqsegdb_web/classes/JSActions.php_$(date +%Y.%m.%d-%H.%M.%S).bak
-    cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_JSActions.php  \
+    cp -p  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_classes_JSActions.php  \
              /usr/share/dqsegdb_web/classes/JSActions.php
-    mv  /usr/share/dqsegdb_web/python_utilities/convert_formats.py  \
-        /usr/share/dqsegdb_web/python_utilities/convert_formats.py_$(date +%Y.%m.%d-%H.%M.%S).bak
-    cp -r  /backup/segdb/reference/install_support/segments-web/usr_share_dqsegdb_web_python_utilities_convert_formats.py  \
-             /usr/share/dqsegdb_web/python_utilities/convert_formats.py
     #mkdir /usr/share/dqsegdb_web/downloads
     cd /usr/share/dqsegdb_web/
-    tar xzf  /backup/segdb/reference/install_support/segments-web/downloads.tgz   # this will make the dir downloads itself
+    tar xzf  /backup/segdb/reference/install_support/segments-web/downloads.tgz   # this will make the 'downloads' dir itself
+    if [ -e /usr/share/dqsegdb_web ]; then ln -s /usr/share/dqsegdb_web/ /root/bin/web_files ;
+      else echo "### WARNING ### Directory /usr/share/dqsegdb_web/ does not exist, so we can't link to it.  \
+      (But it should exist.)"; fi
+    if [ -e /usr/share/dqsegdb_web/downloads ]; then ln -s /usr/share/dqsegdb_web/downloads/ /root/bin/json_payloads ;
+      else echo "### WARNING ### Directory /usr/share/dqsegdb_web/downloads/ does not exist, so we can't link to it.  \
+      (But it should exist.)"; fi
 ### ownership and permissions for files in /usr/share/dqsegdb_web ??
   # this part restores a backed-up dqsegdb_web DB (contains info on past segments-web queries)
     backup_dir=/backup/segdb/reference/install_support/segments-web/dqsegdb_web_db/
@@ -771,7 +772,6 @@ exit
 ### * does anything use /root/Publisher/etc/ligolw_dtd.txt ? if not, get rid of it
 ### * should "/dqxml/V1" and "/dqxml/G1" also be owned by user dqxml? (change code on the publisher machine, too)
 ### * do segments and segments-web actually need /etc/httpd/x509-certs/?
-### * can we get rid of the "cilogon-ca-certs" line? (or should we replace it?)
 ### * figure out /etc/phpMyAdmin/config.inc.php vs. /etc/httpd/conf.d/config.inc.php - just diff. loc's. for same file?
 ### * do we still need the "connecting to git repositories with Kerberos" part?
 ### * figure out the m2crypto/"Replace with openssl" part - what do we need to do? can we do it?
