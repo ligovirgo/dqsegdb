@@ -317,7 +317,8 @@ class Homepage {
 	        $this->choose_flag_option .= "	</select>\n";
 	        // If no flags available.
 	        if($flag_count == 0) {
-	            $this->choose_flag_option .= "	<p><i class=\"fas fa-exclamation-circle\"></i> No flags are available for the current selection.</p>\n";
+	            // Re-write the created variable.
+	            $this->choose_flag_option = "	<p><i class=\"fas fa-exclamation-circle\"></i> No flags are available for the current selection.</p>\n";
 	        }
 	    }
 	    // Otherwise, if textarea.
