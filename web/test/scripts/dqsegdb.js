@@ -145,7 +145,7 @@ function switch_choose_flag_option() {
 /* Select/Deselect an IFO. */
 function deselect_ifo(ifo) {
 	$.get("scripts/actions.php?action=deselect_ifo&ifo=" + ifo, function(r) {
-		// If IFO in deselected array.
+		// If IFO is deselected.
 		if(r == 1) {
 			$("#div_ifo_" + ifo).removeClass('w3-blue');
 			$("#div_ifo_" + ifo).addClass('w3-white');
