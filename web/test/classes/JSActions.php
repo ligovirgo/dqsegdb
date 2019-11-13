@@ -16,6 +16,7 @@ require_once 'APIRequests.php';
 require_once 'Constants.php';
 require_once 'Files.php';
 require_once 'Homepage.php';
+require_once 'Logger.php';
 require_once 'SessionManager.php';
 
 //////////////////////////////
@@ -42,6 +43,7 @@ class JSAction {
 		$constants = new Constants();
 		$file = new Files();
 		$home = new Homepage();
+		$log = new Logger();
 		$session = new SessionManager();
 		
 		////////////////
@@ -127,6 +129,7 @@ class JSAction {
 		            $this->document = $constants->download_dir.$unix_ts.'.'.str_replace('_', '.', $_GET['format']);
 		        }
 		    }
+		    $log->write_to_log_file(0, 'Data returned: '.$data);
 		}
 		    
 		// Output response.
