@@ -57,8 +57,8 @@ class Constants {
         $this->max_selectable_flags = 10;
 	}
 	
-	// Set file-related variables.
-	public function get_file_related_variables() {
+	/* Set file-related constants. */
+	public function get_file_constants() {
 	    $this->doc_root = '/usr/share/dqsegdb/web/test/';
 	    $this->download_dir = 'downloads/';
 	    $this->python_utilities_dir = 'python_utilities/';

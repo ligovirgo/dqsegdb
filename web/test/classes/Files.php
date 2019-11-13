@@ -26,7 +26,7 @@ class Files {
 		$constants = new Constants();
 		$dao = new DAO();
 		// Get file-related variables.
-		$constants->get_file_related_variables();
+		$constants->get_file_constants();
 		// If put to file successful.
 		if(file_put_contents($constants->doc_root.$constants->download_dir.$in_file, $data)) {
 			// Insert file metadata to database.
@@ -47,7 +47,7 @@ class Files {
 		    $constants = new Constants();
 		    $dao = new DAO();
 			// Get file-related variables.
-		    $constants->get_file_related_variables();
+		    $constants->get_file_constants();
 			// Convert file to different format, too.
 		    shell_exec($constants->doc_root.$constants->python_utilities_dir.'convert_formats.py '.$variable->doc_root.$variable->download_dir.$in_file." -o ".$constants->doc_root.$constants->download_dir.$out_file." -t ".$format);
 			// Insert file metadata to database.

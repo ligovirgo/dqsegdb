@@ -46,6 +46,9 @@ class JSAction {
 		$log = new Logger();
 		$session = new SessionManager();
 		
+		// Constant calls.
+		$constants->get_file_constants();
+		
 		////////////////
 		// HOST CALLS //
 		////////////////
