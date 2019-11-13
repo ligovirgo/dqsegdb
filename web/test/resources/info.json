@@ -1,0 +1,26 @@
+{
+	"ifo" : {
+		"title" : "Interferometers",
+		"text" : "The interferometers that have data-quality flags available in DQSEGDB."
+	},
+	"flags" : {
+		"title" : "Data-Quality Flags",
+		"text" : "Flags available for the currently selected IFO. A maximum of <strong>[MAX_FLAGS]</strong> flags can be selected at any one time. When flags are selected the versions available for them are pulled from the database and made available for selection."
+	},
+	"flag_versions" : {
+		"title" : "Data-Quality Flag Versions",
+		"text" : "<em>i</em> Versions can be associated to each flag. This section provides all of the flags that are available for each of the flags that have been selected."
+	},
+	"gps_times" : {
+		"title" : "GPS Times",
+		"text" : "The GPS range boundaries used to filter the segments. Start and/or Stop can be provided."
+	},
+	"include_history" : {
+		"title" : "Include history?",
+		"text" : "Sets whether or not to include the insert_history dictionary for the flag in the returned payload."
+	},
+	"output_formats" : {
+		"title" : "Output formats",
+		"text" : "Results returned from the server can be provided in the following formats. All formats - except 'JSON' - return coalesced segments."
+	}
+}
