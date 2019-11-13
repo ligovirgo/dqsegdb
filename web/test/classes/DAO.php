@@ -170,10 +170,6 @@ class DAO {
 	    return $a;
 	}
 	
-	/////////////////////////////
-	// USER-RELATED FUNCTIONS //
-	///////////////////////////
-	
 	/* Get the ID for an output-format. */
 	public function get_output_format_id($of) {
 	    // Init.
@@ -301,12 +297,12 @@ class DAO {
 	                $log->write_to_log_file(0, "User ID: ".$uid);
 	                $log->write_to_log_file(0, "host_fk: ".$_SESSION['host_id']);
 	            }
-            }
-            else {
-                // Write to log.
-                $log->write_to_log_file(3, "Problem inserting metadata file: ".$f.". Statement not executed.");
-                // Write verbose.
-                $log->write_verbose_to_error_stack(NULL, $stmt->errorInfo());
+	            else {
+	                // Write to log.
+	                $log->write_to_log_file(3, "Problem inserting metadata file: ".$f.". Statement not executed.");
+	                // Write verbose.
+	                $log->write_verbose_to_error_stack(NULL, $stmt->errorInfo());
+	            }
             }
 	    }
     	// Return.
@@ -405,12 +401,12 @@ class DAO {
 	                // Set.
 	                $r = TRUE;
 	            }
-	        }
-	        else {
+	            else {
 	                // Write to log.
-	            $log->write_to_log_file(3, "Problem inserting user: ".$u.". Statement not executed.");
-	            // Write verbose.
-	            $log->write_verbose_to_error_stack(NULL, $stmt->errorInfo());
+	                $log->write_to_log_file(3, "Problem inserting user: ".$u.". Statement not executed.");
+	                // Write verbose.
+	                $log->write_verbose_to_error_stack(NULL, $stmt->errorInfo());
+	            }
 	        }
 	    }
 	    // Return.
