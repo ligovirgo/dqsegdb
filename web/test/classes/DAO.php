@@ -184,9 +184,9 @@ class DAO {
 	    // Create PDO object
 	    $this->db_connect();
 	    // Build prepared statement.
-	    if(($stmt = $this->pdo->prepare("SELECT output_format_id
+	    if($stmt = $this->pdo->prepare("SELECT output_format_id
 							 		     FROM tbl_output_formats
-							 			 WHERE output_format=:of"))) {
+							 			 WHERE output_format=:of")) {
 			// Execute.
     	    if($stmt->execute(array(':of' => $of))) {
     	        // Bind by column name.
@@ -282,25 +282,25 @@ class DAO {
             // Create PDO object
             $this->db_connect();
             // Build prepared statement.
-            if(($stmt = $this->pdo->prepare("INSERT INTO tbl_file_metadata
+            if($stmt = $this->pdo->prepare("INSERT INTO tbl_file_metadata
 			 		 					    (file_name, file_size, file_uri_used,
                                              file_format_fk, user_fk, host_fk)
 								 			VALUES
 											(:f, :fs, :fu,
-                                            :format_id, :uid, :h)"))) {
+                                            :format_id, :uid, :h)")) {
 				// Execute.
 	            if($stmt->execute(array(':f' => $f, ':fs' => $fs, ':fu' => $fu,
 	                                    ':format_id' => $of_id, ':uid' => $uid,
 	                                    ':h' => $_SESSION['host_id']))) {
 	                // Set.
 	                $r = TRUE;
+	                $log->write_to_log_file(0, "Filename: ".$f);
+	                $log->write_to_log_file(0, "Filesize: ".$fs);
+	                $log->write_to_log_file(0, "URI: ".$fu);
+	                $log->write_to_log_file(0, "Format: ".$of_id);
+	                $log->write_to_log_file(0, "User ID: ".$uid);
+	                $log->write_to_log_file(0, "host_fk: ".$_SESSION['host_id']);
 	            }
-	            $log->write_to_log_file(0, "Filename: ".$f);
-	            $log->write_to_log_file(0, "Filesize: ".$fs);
-	            $log->write_to_log_file(0, "URI: ".$fu);
-	            $log->write_to_log_file(0, "Format: ".$of_id);
-	            $log->write_to_log_file(0, "User ID: ".$uid);
-	            $log->write_to_log_file(0, "host_fk: ".$_SESSION['host_id']);
             }
             else {
                 // Write to log.
@@ -327,9 +327,9 @@ class DAO {
         // Create PDO object
         $this->db_connect();
         // Build prepared statement.
-        if(($stmt = $this->pdo->prepare("SELECT user_id
+        if($stmt = $this->pdo->prepare("SELECT user_id
 							 		     FROM tbl_users
-							 			 WHERE user_name=:u"))) {
+							 			 WHERE user_name=:u")) {
 		    // Execute.
 	        if($stmt->execute(array(':u' => $u))) {
 	            // Bind by column name.
@@ -361,9 +361,9 @@ class DAO {
 	    // Create PDO object
 	    $this->db_connect();
 	    // Build prepared statement.
-	    if(($stmt = $this->pdo->prepare("SELECT user_name
+	    if($stmt = $this->pdo->prepare("SELECT user_name
 							 		     FROM tbl_users
-							 			 WHERE user_id=:u"))) {
+							 			 WHERE user_id=:u")) {
 			// Execute.
     	    if($stmt->execute(array(':u' => $u))) {
     	        // Bind by column name.
@@ -396,10 +396,10 @@ class DAO {
 	        // Create PDO object
 	        $this->db_connect();
 	        // Build prepared statement.
-	        if(($stmt = $this->pdo->prepare("INSERT INTO tbl_users
+	        if($stmt = $this->pdo->prepare("INSERT INTO tbl_users
 						 					 (user_name)
 							 				 VALUES
-											 (:u)"))) {
+											 (:u)")) {
 				// Execute.
 	            if($stmt->execute(array(':u' => $u))) {
 	                // Set.
