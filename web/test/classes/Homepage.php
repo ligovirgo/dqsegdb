@@ -95,7 +95,9 @@ class Homepage {
 	    $this->get_segments_form .= "      </select>\n";
 	    $this->get_segments_form .= "  </div>\n";
 	    $this->get_segments_form .= "</div>\n";
-	    // IFO.
+/*	    // IFO.
+ * 2019-11-13 - Select-drop-down list, used in first version of DQSEGDB WUI
+ * to filter the flag list. Replaced with possibility to de-select IFO options.
 	    $this->get_segments_form .= "<div class=\"w3-container w3-border-top\">\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-quarter w3-padding-0 w3-padding-top w3-padding-bottom w3-padding-right\">IFO <i class=\"far fa-question-circle cursor\" onclick=\"open_info_modal('ifo')\"></i></div>\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-threequarter w3-padding-0\">\n";
@@ -127,6 +129,7 @@ class Homepage {
 	    $this->get_segments_form .= "      </select>\n";
 	    $this->get_segments_form .= "  </div>\n";
 	    $this->get_segments_form .= "</div>\n";
+*/
 	    // Flags.
 	    $this->get_segments_form .= "<div class=\"w3-container w3-padding w3-border-top\">\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-quarter w3-padding-0 w3-padding-top w3-padding-bottom w3-padding-right\">Flags <i class=\"far fa-question-circle cursor\" onclick=\"open_info_modal('flags')\"></i><br>";
