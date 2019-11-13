@@ -73,6 +73,10 @@ class JSAction {
 		}
 		elseif($_GET['action'] == 'update_flags') {
 		    $_SESSION['ifo'] = $_GET['ifo'];
+		    $home->build_choose_flag_option_multiple_ifo();
+		    $this->document = $home->choose_flag_option;
+		}
+		elseif($_GET['action'] == 'update_flags_multiple_ifo') {
 		    $home->build_choose_flag_option();
 		    $this->document = $home->choose_flag_option;
 		}

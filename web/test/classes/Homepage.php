@@ -195,6 +195,7 @@ class Homepage {
 	    $this->get_segments_form .= "</form>\n";
 	}
 	
+	/* Build the choose-flag option. */
 	public function build_choose_flag_option() {
 	    // Init.
 	    $this->choose_flag_option = NULL;
@@ -239,6 +240,59 @@ class Homepage {
 	                    // Reset URI.
 	                    $uri = '/dq/'.$_SESSION['ifo'].'/'.$uri;
 	                }
+	                // If the DQ Flag session exists, set selected.
+	                $sel = NULL;
+	                if(isset($_SESSION['dq_flag'])) {
+	                    // Explode flags.
+	                    $fa = explode(',',$_SESSION['dq_flag']);
+	                    // If URI is in array.
+	                    if(in_array($uri, $fa)) {
+	                        $sel = " selected=\"selected\"";
+	                    }
+	                }
+	                // Set.
+	                $this->choose_flag_option .= "		<option value=\"".$uri."\"".$sel.">".$flag_uri_txt."</option>\n";
+	            }
+	        }
+	        // Close select.
+	        $this->choose_flag_option .= "	</select>\n";
+	    }
+	    // Otherwise, if textarea.
+	    elseif($_SESSION['choose_flag_option'] == 1) {
+	        // Get textarea.
+	        $this->choose_flag_option = "	<textarea id=\"ta_dq_flag\" onchange=\"update_flag_versions_from_ta(".$constants->max_selectable_flags.")\"></textarea>\n";
+	    }
+	}
+	
+	/* Build the choose-flag option when using multiple IFO. */
+	public function build_choose_flag_option_multiple_ifo() {
+	    // Init.
+	    $this->choose_flag_option = NULL;
+	    // Instantiate.
+	    $api = new APIRequests();
+	    $constants = new Constants();
+	    // General constants.
+	    $constants->general_constants();
+	    // If using select.
+	    if($_SESSION['choose_flag_option'] == 0) {
+	        // Open select.
+	        $this->choose_flag_option .= "	<select multiple size=\"8\" id=\"dq_flag\" onchange=\"update_flag_versions(".$constants->max_selectable_flags.")\">\n";
+	        // Get all flags.
+            $a = $api->get_all_flags();
+	        // If array has been returned.
+	        if(isset($a['results']) && is_array($a['results'])) {
+	            // Loop URI array.
+	            foreach($a['results'] as $k => $uri) {
+                    // Explode to array.
+                    $u = explode('/',$uri);
+                    // If actually at the Use_all_Flags key.
+                    if($u[2] == 'IFO') {
+                        $flag_uri_txt = str_replace('_',' ',$u[3]);
+                        $flag_uri_txt = str_replace('IFO/',' ',$flag_uri_txt);
+                    }
+                    if($u[2] != 'IFO') {
+                        $flag_uri_txt = $u[2].' - '.$u[3];
+                    }
 	                // If the DQ Flag session exists, set selected.
 	                $sel = NULL;
 	                if(isset($_SESSION['dq_flag'])) {

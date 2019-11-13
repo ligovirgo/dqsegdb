@@ -154,9 +154,17 @@ function deselect_ifo(ifo) {
 			$("#div_ifo_" + ifo).addClass('w3-blue');
 			$("#div_ifo_" + ifo).removeClass('w3-white');
 		}
+		update_flags_multiple_ifo();
 	});
 }
-
+/* Update the flags. */
+function update_flags_multiple_ifo() {
+	// Update.
+	$.get("scripts/actions.php?action=update_flags_multiple_ifo", function(r) {
+		// Re-write form.
+		$('#div_choose_flag_option').html(r);
+	});
+}
 /* Update the flags. */
 function update_flags() {
 	// Get currently selected IFO.
