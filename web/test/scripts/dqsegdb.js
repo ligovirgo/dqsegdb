@@ -232,6 +232,7 @@ function get_segments() {
 	// Update version div.
 	$.get("scripts/actions.php?action=get_segments&s=" + s + "&e=" + e + "&format=" + f + "&history=" + h, function(r) {
 	    console.log('B');
+	    console.log(r);
 		// If result retrieved
 		if(r != 0) {
 		    console.log('C');
