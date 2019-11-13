@@ -11,6 +11,7 @@ DMS-WUI uses the following open source software:
 */
 
 require_once 'DAO.php';
+require_once 'Logger.php';
 
 class APIRequests {
 	
@@ -102,15 +103,23 @@ class APIRequests {
     public function get_segments($s, $e, $history) {
         // Init.
         $r = NULL;
-        
+        // Instantiate.
+        $dao = new DAO();
+        $log = new Logger();
+        // Set the arguments to be passed.
         $args = $this->get_uri_args($s, $e);
         if($history == 0) {
             $args = $args.'&include=metadata,active,known';
         }
+        // Get details for this host.
+        $a = $dao->get_host_details($_SESSION['host_id']);
+        // Get file contents.
+        //$a = json_decode(file_get_contents($a[0]['host_ip'].'/dq/'.$_SESSION['ifo']), true);
         // Loop through each flag.
-        foreach($_SESSION['uri_deselected'] as $i => $uri) {
+        foreach($_SESSION['uri_selected'] as $i => $uri) {
+            $log->write_to_log_file(0, $uri);
             // Get resultant array.
-            $r .= file_get_contents($_SESSION['default_host'].$uri.$args);
+            $r .= file_get_contents($a[0]['host_ip'].$uri.$args);
         }
         // Return.
         return $r;
