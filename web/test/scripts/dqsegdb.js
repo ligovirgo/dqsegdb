@@ -230,7 +230,7 @@ function get_segments() {
     h = $('input[name=include_history]:checked').val();
     console.log('A');
 	// Update version div.
-	$.get("scripts/actions.php?action=get_segments&s=" + s + "&e=" + e + "&format=" + format + "&history=" + $history, function(r) {
+	$.get("scripts/actions.php?action=get_segments&s=" + s + "&e=" + e + "&format=" + f + "&history=" + $h, function(r) {
 	    console.log('B');
 		// If result retrieved
 		if(r != 0) {
