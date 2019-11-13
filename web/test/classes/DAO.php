@@ -280,7 +280,7 @@ class DAO {
             // Build prepared statement.
             if($stmt = $this->pdo->prepare("INSERT INTO tbl_file_metadata
 			 		 					    (file_name, file_size, file_uri_used,
-                                             file_format_fk, user_fk, host_fk)
+                                             file_format_fk, file_user_fk, file_host_fk)
 								 			VALUES
 											(:f, :fs, :fu,
                                             :format_id, :uid, :h)")) {
