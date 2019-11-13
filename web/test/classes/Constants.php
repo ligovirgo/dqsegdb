@@ -36,9 +36,9 @@ class Constants {
 	/* DB & server connection constants. */
 	public function db_connection_constants() {
 	    $this->db_host = "localhost";
-	    $this->db = "dqsegdb_wui";
-		$this->db_user = "root";
-		$this->db_pass = "";
+	    $this->db = "dqsegdb_web_new";
+	    $this->db_user = "root";
+	    $this->db_pass = "";
 	}
 	
 	/* General constants. */

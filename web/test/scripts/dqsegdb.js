@@ -249,7 +249,7 @@ $(document).ready(function(){
 	/* Check the connection to the server and output the Get-Segments form if available. */
 	$.get("scripts/actions.php?action=check_host_connection", function(status) {
 		// If connection established.
-		if(status == 0) {
+		if(status == 1) {
 			$("#p_get_segments").html("<i class=\"fas fa-check-circle\"></i> Connection to host established");
 			build_get_segments_form();
 		}
