@@ -129,7 +129,6 @@ class JSAction {
 		            $this->document = $constants->download_dir.$unix_ts.'.'.str_replace('_', '.', $_GET['format']);
 		        }
 		    }
-		    $log->write_to_log_file(0, 'Data returned: '.$data);
 		}
 		    
 		// Output response.

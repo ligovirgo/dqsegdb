@@ -226,7 +226,7 @@ function get_segments() {
 	s = $("#gps_start_time").val();
 	e = $("#gps_stop_time").val();
 	// Get file format ID.
-	f = $('input[name=output_format]:checked', '#frm_query_server').val();
+	f = $('input[name=output_format]:checked').val();
     h = $('input[name=include_history]:checked').val();
     console.log('A');
 	// Update version div.
