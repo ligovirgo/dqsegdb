@@ -228,10 +228,13 @@ function get_segments() {
 	// Get file format ID.
 	f = $('input[name=output_format]:checked', '#frm_query_server').val();
     h = $('input[name=include_history]:checked').val();
+    console.log('A');
 	// Update version div.
 	$.get("scripts/actions.php?action=get_segments&s=" + s + "&e=" + e + "&format=" + format + "&history=" + $history, function(r) {
+	    console.log('B');
 		// If result retrieved
 		if(r != 0) {
+		    console.log('C');
 			// Re-direct.
 			window.open(r, '_self');
 		}
