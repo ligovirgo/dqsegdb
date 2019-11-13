@@ -260,53 +260,51 @@ class DAO {
 	    $user = new User();
 	    // Get file-related variables.
 	    $constants->get_file_constants();
-	    // If arg passed.
-	    if(isset($f)) {
-	        // Get user ID for this user.
-	        $uid = $user->get_valid_user_id();
-	        // If valid UID is returned.
-	        if($uid != 0) {
-	            // Explode filename backwards.
-	            $exp = explode('.', $f);
-	            // Get file format ID.
-	            $of_id = $this->get_output_format_id($exp[1]);
-	            // Set args.
-	            $args = $api->get_uri_args($_SESSION['gps_start'], $_SESSION['gps_stop']);
-	            // Get filesize.
-                $fs = filesize($constants->doc_root.$constants->download_dir.str_replace("_", ".", $f));
-                // Loop through URI used in file creation and add to history.
-                foreach($_SESSION['uri_selected'] as $i => $uri) {
-                    // Build string.
-                    $fu .= ', '.$uri.$args;
-                }
-                // Remove first two characters from URI string.
-                $fu = substr($fu, 2);
-                // Create PDO object
-                $this->db_connect();
-                // Build prepared statement.
-                if(($stmt = $this->pdo->prepare("INSERT INTO tbl_file_metadata
-							 					 (file_name, file_size, file_uri_used,
-                                                  file_format_fk, user_fk, host_fk)
-								 				 VALUES
-												 (:f, :fs, :fu,
-                                                  :format_id, :uid, :h)"))) {
-					// Execute.
-	                if($stmt->execute(array(':f' => $f, ':fs' => $fs, ':fu' => $fu,
-	                                        ':format_id' => $of_id, ':uid' => $uid,
-	                                        ':h' => $_SESSION['host_id']))) {
-	                    // Set.
-	                    $r = TRUE;
-	                }
-                }
-                else {
-                    // Write to log.
-                    $log->write_to_log_file(3, "Problem inserting metadata file: ".$f.". Statement not executed.");
-                    // Write verbose.
-                    $log->write_verbose_to_error_stack(NULL, $stmt->errorInfo());
-                }
-	        }
-        }
-	    // Return.
+        // Get user ID for this user.
+        $uid = $user->get_valid_user_id();
+        $log->write_to_log_file(0, "User ID: ".$uid);
+        // If valid UID is returned.
+        if($uid != 0) {
+            // Explode filename backwards.
+            $exp = explode('.', $f);
+            // Get file format ID.
+            $of_id = $this->get_output_format_id($exp[1]);
+            // Set args.
+            $args = $api->get_uri_args($_SESSION['gps_start'], $_SESSION['gps_stop']);
+            // Get filesize.
+            $fs = filesize($constants->doc_root.$constants->download_dir.str_replace("_", ".", $f));
+            // Loop through URI used in file creation and add to history.
+            foreach($_SESSION['uri_selected'] as $i => $uri) {
+                // Build string.
+                $fu .= ', '.$uri.$args;
+            }
+            // Remove first two characters from URI string.
+            $fu = substr($fu, 2);
+            // Create PDO object
+            $this->db_connect();
+            // Build prepared statement.
+            if(($stmt = $this->pdo->prepare("INSERT INTO tbl_file_metadata
+			 		 					    (file_name, file_size, file_uri_used,
+                                             file_format_fk, user_fk, host_fk)
+								 			VALUES
+											(:f, :fs, :fu,
+                                            :format_id, :uid, :h)"))) {
+				// Execute.
+	            if($stmt->execute(array(':f' => $f, ':fs' => $fs, ':fu' => $fu,
+	                                    ':format_id' => $of_id, ':uid' => $uid,
+	                                    ':h' => $_SESSION['host_id']))) {
+	                // Set.
+	                $r = TRUE;
+	            }
+            }
+            else {
+                // Write to log.
+                $log->write_to_log_file(3, "Problem inserting metadata file: ".$f.". Statement not executed.");
+                // Write verbose.
+                $log->write_verbose_to_error_stack(NULL, $stmt->errorInfo());
+            }
+	    }
+    	// Return.
 	    return $r;
 	}
 

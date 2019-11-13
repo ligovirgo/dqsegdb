@@ -30,10 +30,10 @@ class Files {
 		// If put to file successful.
 		if(file_put_contents($constants->doc_root.$constants->download_dir.$in_file, $data)) {
 			// Insert file metadata to database.
-			//if($dao->insert_file_metadata($in_file, 'json')) {
+			if($dao->insert_file_metadata($in_file, 'json')) {
 				// Set.
 				$r = TRUE;
-				//}
+			}
 		}
 		// Return.
 		return $r;
