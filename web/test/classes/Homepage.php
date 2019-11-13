@@ -264,10 +264,11 @@ class Homepage {
 	                    // Get row.
 	                    $this->version_div .= "    <tr>\n";
 	                    $this->version_div .= "        <td id=\"flag_".$flag_name."\">".$flag_name."</td>\n";
-	                    $this->version_div .= "        <td id=\"flag_".$flag_name."_versions\"></td>\n";
+	                    $this->version_div .= "        <td id=\"flag_".$flag_name."_versions\">\n";
 	                    // Add version information after flag name.
 	                    $this->get_flag_version_span_contents($uri);
 	                    $this->version_div .= "<span id=\"span_".$span_name."\" class=\"span_versions\">".$this->version_span."</span>";
+	                    $this->version_div .= "</td>\n";
 	                    // Close row.
 	                    $this->version_div .= "    </tr>\n";
 	                }

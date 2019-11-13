@@ -156,19 +156,13 @@ function update_flags() {
 function update_flag_versions(max) {
 	// Get currently selected flag.
 	var dq_flag = $("#dq_flag").val();
-	console.log('Updating versions...');
 	// If number of elements in list is less than or equal to 10.
 	if(dq_flag.length <= 10) {
-		console.log('Inside flag-length...');
 		// Update version div.
 		$.get("scripts/actions.php?action=update_version_div&dq_flag=" + dq_flag, function(r) {
-			console.log('Inside get...');
 			// If result retrieved
 			if(r != 0) {
-				console.log('Inside r...');
-				// Show retrieve segment button.
-				$("#div_get_segments_button").removeClass("w3-hide");
-				// Re-write form.
+				// Show versions container.
 				$('#div_versions').removeClass('w3-hide');
 				// Re-write form.
 				$('#div_versions').html(r);

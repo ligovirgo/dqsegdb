@@ -74,10 +74,7 @@ class JSAction {
 		    $this->document = $home->choose_flag_option;
 		}
 		elseif($_GET['action'] == 'update_version_div') {
-		    // If flag passed.
-		    if(isset($_GET['dq_flag'])) {
-		        $_SESSION['dq_flag'] = $_GET['dq_flag'];
-		    }
+	        $_SESSION['dq_flag'] = $_GET['dq_flag'];
 		    $home->get_versions();
 		    $this->document = $home->version_div;
 		}
