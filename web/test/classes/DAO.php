@@ -182,7 +182,7 @@ class DAO {
 	    // Instantiate.
 	    $log = new Logger();
 	    // Create PDO object
-	    $this->dbConnect();
+	    $this->db_connect();
 	    // Build prepared statement.
 	    if(($stmt = $this->pdo->prepare("SELECT output_format_id
 							 		     FROM tbl_output_formats
@@ -282,7 +282,7 @@ class DAO {
                 // Remove first two characters from URI string.
                 $fu = substr($fu, 2);
                 // Create PDO object
-                $this->dbConnect();
+                $this->db_connect();
                 // Build prepared statement.
                 if(($stmt = $this->pdo->prepare("INSERT INTO tbl_file_metadata
 							 					 (file_name, file_size, file_uri_used,
@@ -322,7 +322,7 @@ class DAO {
 	    // Instantiate.
 	    $log = new Logger();
         // Create PDO object
-        $this->dbConnect();
+        $this->db_connect();
         // Build prepared statement.
         if(($stmt = $this->pdo->prepare("SELECT user_id
 							 		     FROM tbl_users
@@ -356,7 +356,7 @@ class DAO {
 	    // Instantiate.
 	    $log = new Logger();
 	    // Create PDO object
-	    $this->dbConnect();
+	    $this->db_connect();
 	    // Build prepared statement.
 	    if(($stmt = $this->pdo->prepare("SELECT user_name
 							 		     FROM tbl_users
@@ -391,7 +391,7 @@ class DAO {
 	        // Instantiate.
 	        $log = new Logger();
 	        // Create PDO object
-	        $this->dbConnect();
+	        $this->db_connect();
 	        // Build prepared statement.
 	        if(($stmt = $this->pdo->prepare("INSERT INTO tbl_users
 						 					 (user_name)
