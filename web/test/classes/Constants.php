@@ -67,7 +67,7 @@ class Constants {
 	/* Logger constants. */
 	public function logger_constants() {
 		// Set.
-		$this->log_dir = '/var/log/dqsegdb_wui';
+		$this->log_dir = '/var/log/dqsegdb_web';
 		$this->log_levels = array('INFO', 'DEBUG', 'WARNING', 'ERROR', 'CRITICAL');
 		$this->log_current_level = 0;
 		$this->log_verbose = TRUE;
