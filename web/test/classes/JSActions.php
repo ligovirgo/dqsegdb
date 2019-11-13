@@ -62,7 +62,7 @@ class JSAction {
 		    $this->document = $home->get_segments_form;
 		}
 		elseif($_GET['action'] == 'deselect_ifo') {
-		    if(!key_exist($_GET['ifo'], $_SESSION['deselected_ifo'])) {
+		    if(!key_exists($_GET['ifo'], $_SESSION['deselected_ifo'])) {
 		        $_SESSION['deselected_ifo'][$_GET['ifo']] = $_GET['ifo'];
 		        $this->document = 1;
 		    }
