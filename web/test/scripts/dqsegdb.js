@@ -142,6 +142,16 @@ function switch_choose_flag_option() {
 		$("#div_choose_flag_option").html(r);
 	});
 }
+/* Update the flags. */
+function update_flags() {
+	// Get currently selected IFO.
+	var ifo = $("#ifo").val();
+	// Update.
+	$.get("scripts/actions.php?action=update_flags&ifo=" +  ifo, function(r) {
+		// Re-write form.
+		$('#div_choose_flag_option').html(r);
+	});
+}
 /* Update the flag versions. */
 function update_flag_versions(max) {
 	// Get currently selected flag.

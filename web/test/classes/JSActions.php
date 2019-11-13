@@ -52,6 +52,11 @@ class JSAction {
 		    $home->build_get_segments_form();
 		    $this->document = $home->get_segments_form;
 		}
+		elseif($_GET['action'] == 'update_flags') {
+		    $_SESSION['ifo'] = $_GET['ifo'];
+		    $home->build_choose_flag_option();
+		    $this->document = $home->choose_flag_option;
+		}
 		elseif($_GET['action'] == 'set_output_format') {
 		    $_SESSION['output_format'] = $_GET['f'];
 		}
