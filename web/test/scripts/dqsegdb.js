@@ -154,7 +154,7 @@ function deselect_ifo(ifo) {
 			$("#div_ifo_" + ifo).addClass('w3-blue');
 			$("#div_ifo_" + ifo).removeClass('w3-white');
 		}
-	}
+	)};
 }
 
 /* Update the flags. */
