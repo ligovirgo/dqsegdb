@@ -262,7 +262,6 @@ class DAO {
 	    $constants->get_file_constants();
         // Get user ID for this user.
         $uid = $user->get_valid_user_id();
-        $log->write_to_log_file(0, "User ID: ".$uid);
         // If valid UID is returned.
         if($uid != 0) {
             // Explode filename backwards.
@@ -296,6 +295,12 @@ class DAO {
 	                // Set.
 	                $r = TRUE;
 	            }
+	            $log->write_to_log_file(0, "Filename: ".$f);
+	            $log->write_to_log_file(0, "Filesize: ".$fs);
+	            $log->write_to_log_file(0, "URI: ".$fu);
+	            $log->write_to_log_file(0, "Format: ".$of_id);
+	            $log->write_to_log_file(0, "User ID: ".$uid);
+	            $log->write_to_log_file(0, "host_fk: ".$_SESSION['host_id']);
             }
             else {
                 // Write to log.
