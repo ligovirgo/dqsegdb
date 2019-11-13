@@ -40,6 +40,10 @@ class SessionManager {
 		if(!isset($_SESSION['ifo'])) {
 		    $_SESSION['ifo'] = NULL;
 		}
+		// De-selected IFOs.
+		if(!isset($_SESSION['deselected_ifo'])) {
+		    $_SESSION['deselected_ifo'] = array();
+		}
 		// DQ Flag.
 		if(!isset($_SESSION['dq_flag'])) {
 		    $_SESSION['dq_flag'] = NULL;

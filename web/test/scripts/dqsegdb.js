@@ -144,7 +144,17 @@ function switch_choose_flag_option() {
 }
 /* Select/Deselect an IFO. */
 function deselect_ifo(ifo) {
-	$("#div_ifo_" + ifo).removeClass('w3-blue');
+	$.get("scripts/actions.php?action=deselect_ifo&ifo=" + ifo, function(r) {
+		// If IFO in deselected array.
+		if(r == 1) {
+			$("#div_ifo_" + ifo).removeClass('w3-blue');
+			$("#div_ifo_" + ifo).addClass('w3-white');
+		}
+		else {
+			$("#div_ifo_" + ifo).addClass('w3-blue');
+			$("#div_ifo_" + ifo).removeClass('w3-white');
+		}
+	}
 }
 
 /* Update the flags. */
