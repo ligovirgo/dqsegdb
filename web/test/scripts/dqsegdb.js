@@ -164,8 +164,8 @@ function update_flag_versions(max) {
 			if(r != 0) {
 				// Show versions container.
 				$('#div_versions').removeClass('w3-hide');
-				// Re-write form.
-				$('#div_versions').html(r);
+				// Re-write versions field.
+				$('#div_versions_field').html(r);
 			}
 		});
 	}

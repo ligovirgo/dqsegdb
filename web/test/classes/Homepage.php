@@ -119,7 +119,7 @@ class Homepage {
 	    // Versions.
 	    $this->get_segments_form .= "<div id=\"div_versions\" class=\"w3-container w3-padding w3-border-top w3-hide\">\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-quarter w3-padding-0 w3-padding-top w3-padding-bottom w3-padding-right\">Versions <i class=\"far fa-question-circle cursor\" onclick=\"open_info_modal('flag_versions')\"></i></div>\n";
-	    $this->get_segments_form .= "  <div class=\"w3-container w3-threequarter w3-padding-0\"></div>\n";
+	    $this->get_segments_form .= "  <div id=\"div_versions_field\" class=\"w3-container w3-threequarter w3-padding-0\"></div>\n";
 	    $this->get_segments_form .= "</div>\n";
 	    // GPS times.
 	    $this->get_segments_form .= "<div class=\"w3-container w3-padding w3-border-top\">\n";
@@ -246,7 +246,7 @@ class Homepage {
 	        // If number of selected flags within maximum allowable value.
 	        if(count($da) <= $constant->max_selectable_flags) {
 	            // Open table.
-	            $this->version_div .= "<table class=\"w3-table-all\">\n";
+	            $this->version_div .= "<table class=\"w3-table-all w3-margin-0\">\n";
 	            // Loop through selected URI.
 	            foreach($da as $k => $uri) {
 	                // Explode to get flag.
