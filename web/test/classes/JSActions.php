@@ -116,22 +116,7 @@ class JSAction {
 		elseif($_GET['action'] == 'get_segments') {
 		    // Get segment JSON.
 		    $data = $api->get_segments($_GET['s'], $_GET['e'], $_GET['history']);
-		    // If JSON passed.
-		    if(!empty($data)) {
-		        // Get UNIX timestamp.
-		        $unix_ts = time();
-		        // Set in-file filename.
-		        $in_file = $unix_ts.'.json';
-		        // Make JSON file.
-		        if($file->make_json_file($in_file, $data)) {
-		            // Set out-file filename.
-		            $out_file = $unix_ts.'.'.$_GET['format'];
-		            // Make non-JSON file.
-		            $file->make_non_json_file($in_file, $out_file, $data, $_GET['format']);
-		            // Set file to open automatically, replacing underscre with point, so as to enable JSON data to to be formatted in browser.
-		            $this->document = $constants->download_dir.$unix_ts.'.'.str_replace('_', '.', $_GET['format']);
-		        }
-		    }
+		    $this->document = $file->build_output_payload($data, $_GET['format']);
 		}
 		    
 		// Output response.

@@ -30,10 +30,10 @@ class Files {
 		// If put to file successful.
 		if(file_put_contents($constants->doc_root.$constants->download_dir.$in_file, $data)) {
 			// Insert file metadata to database.
-			//if($dao->insert_file_metadata($in_file, 'json')) {
+			if($dao->insert_file_metadata($in_file, 'json')) {
 				// Set.
 				$r = TRUE;
-				//}
+			}
 		}
 		// Return.
 		return $r;
@@ -54,6 +54,35 @@ class Files {
 			//$dao->insert_file_metadata($out_file, $format);
 		}
 	}
+	
+	/* Build an output payload. */
+	public function build_output_payload($data, $f) {
+	    // Init.
+	    $r = NULL;
+	    // Instantiate.
+	    $constants = new Constants();
+	    // Get file-related variables.
+	    $constants->get_file_constants();
+    	// If JSON passed.
+    	if(!empty($data)) {
+    	    // Get UNIX timestamp.
+    	    $unix_ts = time();
+    	    // Set in-file filename.
+    	    $in_file = $unix_ts.'.json';
+    	    // Make JSON file.
+    	    if($this->make_json_file($in_file, $data)) {
+    	        // Set out-file filename.
+    	        $out_file = $unix_ts.'.'.$f;
+    	        // Make non-JSON file.
+    	        $this->make_non_json_file($in_file, $out_file, $data, $f);
+    	        // Set file to open automatically, replacing underscre with point, so as to enable JSON data to to be formatted in browser.
+    	        $r = $constants->download_dir.$unix_ts.'.'.str_replace('_', '.', $f);
+    	    }
+    	}
+    	// Return payload.
+    	return $r;
+	}
+	
 }
 
 ?>
