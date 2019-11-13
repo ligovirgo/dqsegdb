@@ -62,12 +62,12 @@ class JSAction {
 		    $this->document = $home->get_segments_form;
 		}
 		elseif($_GET['action'] == 'deselect_ifo') {
-		    if(!in_array($_GET['ifo'], $_SESSION['deselected_ifo'])) {
-		        array_push($_SESSION['deselected_ifo'], $_GET['ifo']);
+		    if(!key_exist($_GET['ifo'], $_SESSION['deselected_ifo'])) {
+		        $_SESSION['deselected_ifo'][$_GET['ifo']] = $_GET['ifo'];
 		        $this->document = 1;
 		    }
-		    elseif(($k = array_search($_GET['ifo'], $_SESSION['deselected_ifo'])) !== false) {
-		        unset($_SESSION['deselected_ifo'][$k]);
+		    else {
+		        unset($_SESSION['deselected_ifo'][$_GET['ifo']]);
 		        $this->document = 0;
 		    }
 		}
