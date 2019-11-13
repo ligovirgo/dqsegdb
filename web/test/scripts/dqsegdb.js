@@ -169,6 +169,8 @@ function update_flag_versions(max) {
 				// Show retrieve segment button.
 				$("#div_get_segments_button").removeClass("w3-hide");
 				// Re-write form.
+				$('#div_versions').removeClass('w3-hide');
+				// Re-write form.
 				$('#div_versions').html(r);
 			}
 		});
