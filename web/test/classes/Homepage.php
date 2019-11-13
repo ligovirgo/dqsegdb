@@ -306,6 +306,7 @@ class Homepage {
                         // If the flag filter is not empty or matches with the name of the field.
                         if(empty($_SESSION['flag_filter'])
                         || preg_match('/'.$_SESSION['flag_filter'].'/i', $u[3])) {
+                            $log->write_to_log_file(0, 'Flag filter: '.$_SESSION['flag_filter']);
                             // Set the flag name as it appears.
                             $flag_uri_txt = $u[2].' - '.$u[3];
         	                // If the DQ Flag session exists, set selected.
