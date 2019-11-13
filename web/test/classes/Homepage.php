@@ -135,9 +135,14 @@ class Homepage {
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-quarter w3-padding-0 w3-padding-top w3-padding-bottom w3-padding-right\">Flags <i class=\"far fa-question-circle cursor\" onclick=\"open_info_modal('flags')\"></i><br>";
 	    $this->get_segments_form .= "  <a onclick=\"switch_choose_flag_option()\" class=\"link\">Switch flag-select view</a>\n";
 	    $this->get_segments_form .= "  </div>\n";
-	    $this->get_segments_form .= "  <div id=\"div_choose_flag_option\" class=\"w3-container w3-threequarter w3-padding-0\">\n";
+	    $this->get_segments_form .= "  <div class=\"w3-container w3-threequarter w3-padding-0\">\n";
+	    $this->get_segments_form .= "      <div class=\"w3-container w3-padding-0 w3-margin-0\">\n";
+	    $this->get_segments_form .= "          <input class=\"w3-input w3-margin-0\" id=\"flag_filter\" value=\"".$_SESSION['flag_filter']."\" type=\"text\" placeholder=\"Filter the flag list.\" />\n";
+	    $this->get_segments_form .= "      </div>\n";
+	    $this->get_segments_form .= "      <div id=\"div_choose_flag_option\" class=\"w3-container w3-padding-0 w3-margin-0\">\n";
 	    $this->build_choose_flag_option_multiple_ifo();
 	    $this->get_segments_form .= $this->choose_flag_option;
+	    $this->get_segments_form .= "      </div>\n";
 	    $this->get_segments_form .= "  </div>\n";
 	    $this->get_segments_form .= "</div>\n";
 	    // Versions.
