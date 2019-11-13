@@ -236,8 +236,8 @@ function get_segments() {
 			window.open(r, '_self');
 		}
 		// Show button and hide message.
-		$("#btn_get_segments").removeClass("w3-hide");
 		$("#span_getting_segments").addClass("w3-hide");
+		$("#btn_get_segments").removeClass("w3-hide");
 	});
 }
 

@@ -78,6 +78,22 @@ class Homepage {
 	    $this->get_segments_form .= "<div class=\"w3-container w3-border-top\">\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-quarter w3-padding-0 w3-padding-top w3-padding-bottom w3-padding-right\">IFO <i class=\"far fa-question-circle cursor\" onclick=\"open_info_modal('ifo')\"></i></div>\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-threequarter w3-padding-0\">\n";
+	    // Get IFO.
+	    $ai = $api->get_ifo_array();
+	    // If IFO array has been returned.
+	    if(is_array($ai)) {
+	        // Loop IFO.
+	        foreach($ai['Ifos'] as $k => $ifo) {
+	            $this->get_segments_form .= "<div class=\"w3-tag w3-round w3-margin-right cursor\" onclick=\"select_ifo('".$ifo."')\">".str_replace('_', ' ', $ifo)."</div>";
+	        }
+	    }
+	    $this->get_segments_form .= "      </select>\n";
+	    $this->get_segments_form .= "  </div>\n";
+	    $this->get_segments_form .= "</div>\n";
+	    // IFO.
+	    $this->get_segments_form .= "<div class=\"w3-container w3-border-top\">\n";
+	    $this->get_segments_form .= "  <div class=\"w3-container w3-quarter w3-padding-0 w3-padding-top w3-padding-bottom w3-padding-right\">IFO <i class=\"far fa-question-circle cursor\" onclick=\"open_info_modal('ifo')\"></i></div>\n";
+	    $this->get_segments_form .= "  <div class=\"w3-container w3-threequarter w3-padding-0\">\n";
 	    $this->get_segments_form .= "      <select id=\"ifo\" class=\"w3-input w3-margin-0\" onchange=\"update_flags()\">\n";
 	    // Get IFO.
 	    $ai = $api->get_ifo_array();
