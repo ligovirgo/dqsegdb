@@ -142,6 +142,11 @@ function switch_choose_flag_option() {
 		$("#div_choose_flag_option").html(r);
 	});
 }
+/* Select/Deselect an IFO. */
+function deselect_ifo(ifo) {
+	$("#div_ifo_" + ifo).removeClass('w3-blue');
+}
+
 /* Update the flags. */
 function update_flags() {
 	// Get currently selected IFO.
