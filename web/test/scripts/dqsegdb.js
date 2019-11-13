@@ -166,6 +166,8 @@ function update_flag_versions(max) {
 				$('#div_versions').removeClass('w3-hide');
 				// Re-write versions field.
 				$('#div_versions_field').html(r);
+				// Show retrieve segment button.
+				$("#div_get_segments_button").removeClass("w3-hide");
 			}
 		});
 	}
@@ -187,10 +189,12 @@ function update_div_flag_versions_from_ta($max) {
 		$.get("scripts/actions.php?action=update_version_div_from_ta&dq_flag=" + dq_flag, function(r) {
 			// If result retrieved
 			if(r != 0) {
+				// Show versions container.
+				$('#div_versions').removeClass('w3-hide');
+				// Re-write versions field.
+				$('#div_versions_field').html(r);
 				// Show retrieve segment button.
 				$("#div_get_segments_button").removeClass("w3-hide");
-				// Re-write form.
-				$('#div_versions').html(r);
 			}
 		});
 	}
