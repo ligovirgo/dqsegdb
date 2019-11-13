@@ -82,12 +82,9 @@ class Homepage {
 	    $ai = $api->get_ifo_array();
 	    // If IFO array has been returned.
 	    if(is_array($ai)) {
-	        foreach($_SESSION['deselected_ifo'] as $k => $v) {
-	            $this->get_segments_form .= "k: ".$k."; v: ".$v."<br>\n";
-	        }
-	        $ifo_class = 'w3-white';
 	        // Loop IFO.
 	        foreach($ai['Ifos'] as $k => $ifo) {
+	            $ifo_class = 'w3-white';
 	            if(!key_exists($ifo, $_SESSION['deselected_ifo'])) {
 	                $ifo_class = 'w3-blue';
 	            }
