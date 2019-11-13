@@ -220,7 +220,7 @@ function select_version_uri(span_name, uri) {
 }
 /* Get segments. */
 function get_segments() {
-	$("#div_get_segments_button").addClass("w3-hide");
+	$("#btn_get_segments").addClass("w3-hide");
 	$("#p_getting_segments").removeClass("w3-hide");
 	// Get GPS start and stop times.
 	s = $("#gps_start_time").val();
@@ -236,7 +236,7 @@ function get_segments() {
 			window.open(r, '_self');
 		}
 		// Show button and hide message.
-		$("#div_get_segments_button").removeClass("w3-hide");
+		$("#btn_get_segments").removeClass("w3-hide");
 		$("#span_getting_segments").addClass("w3-hide");
 	});
 }
