@@ -118,7 +118,7 @@ class Homepage {
 	    $this->get_segments_form .= "</div>\n";
 	    // Versions.
 	    $version_hide = NULL;
-	    if(empty($_SESSION['dq_flags'])) {
+	    if(empty($_SESSION['dq_flag'])) {
 	        $version_hide = " w3-hide";
 	    }
 	    $this->get_segments_form .= "<div id=\"div_versions\" class=\"w3-container w3-padding w3-border-top".$version_hide."\">\n";
