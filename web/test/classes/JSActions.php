@@ -118,7 +118,8 @@ class JSAction {
 		    $_SESSION['gps_stop'] = $_GET['e'];
 		    // Get segment JSON.
 		    $data = $api->get_segments($_GET['s'], $_GET['e'], $_GET['history']);
-		    $this->document = $file->build_output_payload($data, $_GET['format']);
+		    //$this->document = $file->build_output_payload($data, $_GET['format']);
+		    $this->document = $data;
 		}
 		    
 		// Output response.
