@@ -120,6 +120,8 @@ class Homepage {
 	    $this->get_segments_form .= "<div id=\"div_versions\" class=\"w3-container w3-padding w3-border-top w3-hide\">\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-quarter w3-padding-0 w3-padding-top w3-padding-bottom w3-padding-right\">Versions <i class=\"far fa-question-circle cursor\" onclick=\"open_info_modal('flag_versions')\"></i></div>\n";
 	    $this->get_segments_form .= "  <div id=\"div_versions_field\" class=\"w3-container w3-threequarter w3-padding-0\"></div>\n";
+	    $this->get_versions();
+	    $this->get_segments_form .= $this->version_div;
 	    $this->get_segments_form .= "</div>\n";
 	    // GPS times.
 	    $this->get_segments_form .= "<div class=\"w3-container w3-padding w3-border-top\">\n";

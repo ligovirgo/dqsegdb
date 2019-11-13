@@ -290,12 +290,6 @@ class DAO {
 	                                    ':h' => $_SESSION['host_id']))) {
 	                // Set.
 	                $r = TRUE;
-	                $log->write_to_log_file(0, "Filename: ".$f);
-	                $log->write_to_log_file(0, "Filesize: ".$fs);
-	                $log->write_to_log_file(0, "URI: ".$fu);
-	                $log->write_to_log_file(0, "Format: ".$of_id);
-	                $log->write_to_log_file(0, "User ID: ".$uid);
-	                $log->write_to_log_file(0, "host_fk: ".$_SESSION['host_id']);
 	            }
 	            else {
 	                // Write to log.
