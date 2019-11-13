@@ -81,7 +81,7 @@ class JSAction {
 		    $this->document = $home->choose_flag_option;
 		}
 		elseif($_GET['action'] == 'update_flag_filter') {
-		    $_SESSION['flag_filter'] = $_GET['flag_filter'];
+		    $_SESSION['flag_filter'] = $_GET['ff'];
 		}
 		elseif($_GET['action'] == 'set_output_format') {
 		    $_SESSION['output_format'] = $_GET['f'];

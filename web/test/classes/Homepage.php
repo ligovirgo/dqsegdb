@@ -137,7 +137,7 @@ class Homepage {
 	    $this->get_segments_form .= "  </div>\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-threequarter w3-padding-0\">\n";
 	    $this->get_segments_form .= "      <div class=\"w3-container w3-padding-0 w3-margin-0\">\n";
-	    $this->get_segments_form .= "          <input class=\"w3-input w3-margin-0\" id=\"flag_filter\" value=\"".$_SESSION['flag_filter']."\" type=\"text\" placeholder=\"Filter the flag list.\" onkeypress=\"filter_flag_list()\"/>\n";
+	    $this->get_segments_form .= "          <input class=\"w3-input w3-margin-0\" id=\"flag_filter\" name=\"flag_filter\" value=\"".$_SESSION['flag_filter']."\" type=\"text\" placeholder=\"Filter the flag list\" onkeypress=\"filter_flag_list()\" />\n";
 	    $this->get_segments_form .= "      </div>\n";
 	    $this->get_segments_form .= "      <div id=\"div_choose_flag_option\" class=\"w3-container w3-padding-0 w3-margin-0\">\n";
 	    $this->build_choose_flag_option_multiple_ifo();
@@ -306,7 +306,6 @@ class Homepage {
                         // If the flag filter is not empty or matches with the name of the field.
                         if(empty($_SESSION['flag_filter'])
                         || preg_match('/'.$_SESSION['flag_filter'].'/i', $u[3])) {
-                            $log->write_to_log_file(0, 'Flag filter: '.$_SESSION['flag_filter']);
                             // Set the flag name as it appears.
                             $flag_uri_txt = $u[2].' - '.$u[3];
         	                // If the DQ Flag session exists, set selected.
