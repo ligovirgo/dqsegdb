@@ -283,28 +283,28 @@ class Homepage {
             $a = $api->get_all_flags();
 	        // If array has been returned.
 	        if(isset($a['results']) && is_array($a['results'])) {
+	            $fa = array();
+	            if(!empty($_SESSION['dq_flag'])) {
+	                // Explode flags.
+	                $fa = explode(',',$_SESSION['dq_flag']);
+	            }
 	            // Loop URI array.
 	            foreach($a['results'] as $k => $uri) {
-	                $log->write_to_log_file(0, $uri);
                     // Explode to array.
                     $u = explode('/',$uri);
-                    // If actually at the Use_all_Flags key.
-                    if($u[2] == 'IFO') {
-                        $flag_uri_txt = str_replace('_',' ',$u[3]);
-                        $flag_uri_txt = str_replace('IFO/',' ',$flag_uri_txt);
+                    // If the second key in the array is not deselected.
+                    if(!key_exists($u[2], $_SESSION['deselected_ifo'])) {
+                        // Set the flag name as it appears.
+                        $flag_uri_txt = $u[2].' - '.$u[3];
+    	                // If the DQ Flag session exists, set selected.
+    	                $sel = NULL;
+    	                // If URI is in selected array.
+    	                if(in_array($uri, $fa)) {
+    	                    $sel = " selected=\"selected\"";
+    	                }
+    	                // Set.
+    	                $this->choose_flag_option .= "		<option value=\"".$uri."\"".$sel.">".$flag_uri_txt."</option>\n";
                     }
-	                // If the DQ Flag session exists, set selected.
-	                $sel = NULL;
-	                if(isset($_SESSION['dq_flag'])) {
-	                    // Explode flags.
-	                    $fa = explode(',',$_SESSION['dq_flag']);
-	                    // If URI is in array.
-	                    if(in_array($uri, $fa)) {
-	                        $sel = " selected=\"selected\"";
-	                    }
-	                }
-	                // Set.
-	                $this->choose_flag_option .= "		<option value=\"".$uri."\"".$sel.">".$flag_uri_txt."</option>\n";
 	            }
 	        }
 	        // Close select.
