@@ -304,8 +304,8 @@ class Homepage {
                     // If the second key in the array is not deselected.
                     if(!key_exists($u[2], $_SESSION['deselected_ifo'])) {
                         // If the flag filter is not empty or matches with the name of the field.
-                        if(!empty($_SESSION['flag_filter'])
-                        && preg_match('/'.$_SESSION['flag_filter'].'/i', $u[3])) {
+                        if(empty($_SESSION['flag_filter'])
+                        || preg_match('/'.$_SESSION['flag_filter'].'/i', $u[3])) {
                             // Set the flag name as it appears.
                             $flag_uri_txt = $u[2].' - '.$u[3];
         	                // If the DQ Flag session exists, set selected.
