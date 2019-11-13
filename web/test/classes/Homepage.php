@@ -82,9 +82,13 @@ class Homepage {
 	    $ai = $api->get_ifo_array();
 	    // If IFO array has been returned.
 	    if(is_array($ai)) {
+	        $ifo_class = NULL;
 	        // Loop IFO.
 	        foreach($ai['Ifos'] as $k => $ifo) {
-	            $this->get_segments_form .= "<div id=\"div_ifo_".$ifo."\" class=\"w3-tag w3-blue w3-hover-grey w3-border w3-round w3-margin-right cursor\" onclick=\"deselect_ifo('".$ifo."')\">".str_replace('_', ' ', $ifo)."</div>";
+	            if(!in_array($_GET['ifo'], $_SESSION['deselected_ifo'])) {
+	                $ifo_class = ' w3-blue';
+	            }
+	            $this->get_segments_form .= "<div id=\"div_ifo_".$ifo."\" class=\"w3-tag".$ifo_class." w3-hover-grey w3-border w3-round w3-margin-right cursor\" onclick=\"deselect_ifo('".$ifo."')\">".str_replace('_', ' ', $ifo)."</div>";
 	        }
 	    }
 	    $this->get_segments_form .= "      </select>\n";
