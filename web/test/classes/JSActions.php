@@ -80,6 +80,9 @@ class JSAction {
 		    $home->build_choose_flag_option_multiple_ifo();
 		    $this->document = $home->choose_flag_option;
 		}
+		elseif($_GET['action'] == 'update_flag_filter') {
+		    $_SESSION['flag_filter'] = $_GET['flag_filter'];
+		}
 		elseif($_GET['action'] == 'set_output_format') {
 		    $_SESSION['output_format'] = $_GET['f'];
 		}

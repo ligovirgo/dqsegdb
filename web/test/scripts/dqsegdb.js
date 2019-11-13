@@ -176,6 +176,14 @@ function update_flags() {
 		$('#div_choose_flag_option').html(r);
 	});
 }
+/* Filter the flag list */
+function filter_flag_list() {
+	var ff = $("#flag_filter").val();
+	// Update.
+	$.get("scripts/actions.php?action=update_flag_filter&ff=" + ff, function(r) {
+		update_flags_multiple_ifo();
+	});
+}
 /* Update the flag versions. */
 function update_flag_versions(max) {
 	// Get currently selected flag.

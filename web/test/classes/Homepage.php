@@ -137,7 +137,7 @@ class Homepage {
 	    $this->get_segments_form .= "  </div>\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-threequarter w3-padding-0\">\n";
 	    $this->get_segments_form .= "      <div class=\"w3-container w3-padding-0 w3-margin-0\">\n";
-	    $this->get_segments_form .= "          <input class=\"w3-input w3-margin-0\" id=\"flag_filter\" value=\"".$_SESSION['flag_filter']."\" type=\"text\" placeholder=\"Filter the flag list.\" />\n";
+	    $this->get_segments_form .= "          <input class=\"w3-input w3-margin-0\" id=\"flag_filter\" value=\"".$_SESSION['flag_filter']."\" type=\"text\" placeholder=\"Filter the flag list.\" onkeypress=\"filter_flag_list()\"/>\n";
 	    $this->get_segments_form .= "      </div>\n";
 	    $this->get_segments_form .= "      <div id=\"div_choose_flag_option\" class=\"w3-container w3-padding-0 w3-margin-0\">\n";
 	    $this->build_choose_flag_option_multiple_ifo();
@@ -303,18 +303,22 @@ class Homepage {
                     $u = explode('/',$uri);
                     // If the second key in the array is not deselected.
                     if(!key_exists($u[2], $_SESSION['deselected_ifo'])) {
-                        // Set the flag name as it appears.
-                        $flag_uri_txt = $u[2].' - '.$u[3];
-    	                // If the DQ Flag session exists, set selected.
-    	                $sel = NULL;
-    	                // If URI is in selected array.
-    	                if(in_array($uri, $fa)) {
-    	                    $sel = " selected=\"selected\"";
-    	                }
-    	                // Set.
-    	                $this->choose_flag_option .= "		<option value=\"".$uri."\"".$sel.">".$flag_uri_txt."</option>\n";
-    	                // Increment the flag counter.
-    	                $flag_count++;
+                        // If the flag filter is not empty or matches with the name of the field.
+                        if(!empty($_SESSION['flag_filter'])
+                        && preg_match('/'.$_SESSION['flag_filter'].'/i', $u[3])) {
+                            // Set the flag name as it appears.
+                            $flag_uri_txt = $u[2].' - '.$u[3];
+        	                // If the DQ Flag session exists, set selected.
+        	                $sel = NULL;
+        	                // If URI is in selected array.
+        	                if(in_array($uri, $fa)) {
+        	                    $sel = " selected=\"selected\"";
+        	                }
+        	                // Set.
+        	                $this->choose_flag_option .= "		<option value=\"".$uri."\"".$sel.">".$flag_uri_txt."</option>\n";
+        	                // Increment the flag counter.
+        	                $flag_count++;
+                        }
                     }
 	            }
 	        }
