@@ -40,6 +40,14 @@ class SessionManager {
 		if(!isset($_SESSION['ifo'])) {
 		    $_SESSION['ifo'] = NULL;
 		}
+		// GPS start.
+		if(!isset($_SESSION['gps_start'])) {
+		    $_SESSION['gps_start'] = '';
+		}
+		// GPS stop.
+		if(!isset($_SESSION['gps_stop'])) {
+		    $_SESSION['gps_stop'] = '';
+		}
 		// Include history.
 		if(!isset($_SESSION['include_history'])) {
 		    $_SESSION['include_history'] = $constants->include_history_default;

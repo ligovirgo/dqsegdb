@@ -51,7 +51,7 @@ class Files {
 			// Convert file to different format, too.
 		    shell_exec($constants->doc_root.$constants->python_utilities_dir.'convert_formats.py '.$variable->doc_root.$variable->download_dir.$in_file." -o ".$constants->doc_root.$constants->download_dir.$out_file." -t ".$format);
 			// Insert file metadata to database.
-			//$dao->insert_file_metadata($out_file, $format);
+			$dao->insert_file_metadata($out_file, $format);
 		}
 	}
 	

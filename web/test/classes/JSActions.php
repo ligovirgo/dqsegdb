@@ -114,6 +114,8 @@ class JSAction {
 		    }
 		}
 		elseif($_GET['action'] == 'get_segments') {
+		    $_SESSION['gps_start'] = $_GET['s'];
+		    $_SESSION['gps_stop'] = $_GET['e'];
 		    // Get segment JSON.
 		    $data = $api->get_segments($_GET['s'], $_GET['e'], $_GET['history']);
 		    $this->document = $file->build_output_payload($data, $_GET['format']);
