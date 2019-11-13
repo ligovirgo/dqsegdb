@@ -157,7 +157,7 @@ class Homepage {
 	    $this->get_segments_form .= "</div>\n";
 	    // Get-Segments button.
 	    $this->get_segments_form .= "<div id=\"div_get_segments_button\" class=\"w3-container w3-padding w3-border-top w3-hide\">\n";
-	    $this->get_segments_form .= "  <div class=\"w3-button w3-blue w3-hover-grey w3-center\"><i class=\"fas fa-save cursor\"></i> Get segments</div>\n";
+	    $this->get_segments_form .= "  <div class=\"w3-button w3-blue w3-hover-grey w3-center\" onclick=\"get_segments()\"><i class=\"fas fa-save cursor\"></i> Get segments</div>\n";
 	    $this->get_segments_form .= "  <span id=\"p_getting_segments\" class=\"w3-hide\"><i class=\"fas fa-spinner w3-spin\"></i> Getting segments...</span>\n";
 	    $this->get_segments_form .= "</div>\n";
 	    // Close form.
