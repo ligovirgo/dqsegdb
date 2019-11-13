@@ -133,7 +133,7 @@ class Homepage {
 	    $this->get_segments_form .= "  <a onclick=\"switch_choose_flag_option()\" class=\"link\">Switch flag-select view</a>\n";
 	    $this->get_segments_form .= "  </div>\n";
 	    $this->get_segments_form .= "  <div id=\"div_choose_flag_option\" class=\"w3-container w3-threequarter w3-padding-0\">\n";
-	    $this->build_choose_flag_option();
+	    $this->build_choose_flag_option_multiple_ifo();
 	    $this->get_segments_form .= $this->choose_flag_option;
 	    $this->get_segments_form .= "  </div>\n";
 	    $this->get_segments_form .= "</div>\n";

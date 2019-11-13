@@ -159,6 +159,7 @@ function deselect_ifo(ifo) {
 }
 /* Update the flags. */
 function update_flags_multiple_ifo() {
+	$('#div_choose_flag_option').html("<i class=\"fas fa-spinner w3-spin\"></i> Re-building flag list...");
 	// Update.
 	$.get("scripts/actions.php?action=update_flags_multiple_ifo", function(r) {
 		// Re-write form.
