@@ -204,7 +204,65 @@ class DAO {
 	    return $r;
 	}
 	
-
+	///////////////////
+	// FILE-RELATED //
+	/////////////////
+	
+	/* Insert file metadata to database. */
+	/*	public function insert_file_metadata($f, $format) {
+	    // Init.
+	    $r = FALSE;
+	    $fu = NULL;
+	    // Instantiate.
+	    $constants = new Constants();
+	    // Get file-related variables.
+	    $constants->get_file_related_variables();
+	    // If arg passed.
+	    if(isset($f)) {
+	        // Get user ID for this user.
+	        $uid = $this->get_valid_user_id();
+	        // If valid UID is returned.
+	        if($uid != 0) {
+	            // Explode filename backwards.
+	            $exp = explode('.', $f);
+	            // Get file format ID.
+	            $format_id = $this->get_value_id($exp[1]);
+	            // Set args.
+	            $args = $serverdata->get_uri_args($_SESSION['default_gps_start'], $_SESSION['default_gps_stop']);
+	            // Get filesize.
+	            //if(!preg_match("/coalesced_json/",$f){
+	            //    $fs = filesize($variable->doc_root.$variable->download_dir.$f);
+	                //} else {
+	                $fs = filesize($variable->doc_root.$variable->download_dir.str_replace("_",".",$f));
+	                //}
+	                // Loop through URI used in file creation and add to history.
+	                foreach($_SESSION['uri_deselected'] as $i => $uri) {
+	                    // Build string.
+	                    $fu .= ', '.$uri.$args;
+	                }
+	                // Remove first two characters from URI string.
+	                $fu = substr($fu, 2);
+	                // Get host-related ID.
+	                $host_id = $this->get_value_id($_SESSION['default_host']);
+	                // Create PDO object
+	                $this->dbConnect();
+	                // Build prepared statement.
+	                if(($stmt = $this->pdo->prepare("INSERT INTO tbl_file_metadata
+							 					 (file_name, file_size, file_uri_used, file_format_fk, user_fk, host_fk)
+								 				 VALUES
+												 (:f, :fs, :fu, :format_id, :uid, :h)"))) {
+												 // Execute.
+	                if($stmt->execute(array(':f' => $f, ':fs' => $fs, ':fu' => $fu, ':format_id' => $format_id, ':uid' => $uid, ':h' => $host_id))) {
+	                    // Set.
+	                    $r = TRUE;
+	                }
+	                }
+	                }
+	        }
+	        // Return.
+	        return $r;
+	    }*/
+	    
 }
 
 ?>

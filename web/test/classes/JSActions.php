@@ -13,6 +13,8 @@ DQSEGDB WUI uses the following open source software:
 
 // Get libraries.
 require_once 'APIRequests.php';
+require_once 'Constants.php';
+require_once 'Files.php';
 require_once 'Homepage.php';
 require_once 'SessionManager.php';
 
@@ -37,6 +39,8 @@ class JSAction {
 		$this->document = 0;
 		// Initialise.
 		$api = new APIRequests();
+		$constants = new Constants();
+		$file = new Files();
 		$home = new Homepage();
 		$session = new SessionManager();
 		
@@ -120,10 +124,9 @@ class JSAction {
 		            // Make non-JSON file.
 		            $file->make_non_json_file($in_file, $out_file, $data, $_GET['format']);
 		            // Set file to open automatically, replacing underscre with point, so as to enable JSON data to to be formatted in browser.
-		            $this->document = $variable->download_dir.$unix_ts.'.'.str_replace('_', '.', $_GET['format']);
+		            $this->document = $constants->download_dir.$unix_ts.'.'.str_replace('_', '.', $_GET['format']);
 		        }
 		    }
-		    
 		}
 		    
 		// Output response.

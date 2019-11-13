@@ -28,6 +28,10 @@ class Constants {
 	public $choose_flag_option_default;
 	public $max_selectable_flags;
 	
+	public $doc_root;
+	public $download_dir;
+	public $python_utilities_dir;
+	
 	public $log_dir;
 	public $log_levels;
 	public $log_current_level;
@@ -51,6 +55,13 @@ class Constants {
         $this->include_history_default = 0;
         $this->choose_flag_option_default = 0;
         $this->max_selectable_flags = 10;
+	}
+	
+	// Set file-related variables.
+	public function get_file_related_variables() {
+	    $this->doc_root = '/usr/share/dqsegdb/web/test/';
+	    $this->download_dir = 'downloads/';
+	    $this->python_utilities_dir = 'python_utilities/';
 	}
 	
 	/* Logger constants. */
