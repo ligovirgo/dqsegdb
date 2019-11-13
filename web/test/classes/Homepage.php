@@ -238,10 +238,11 @@ class Homepage {
 	public function get_versions() {
 	    // Init.
 	    $this->version_div = NULL;
-	    // Instantiate.
-	    $constant = new Constants();
 	    // If the DQ Flag session exists.
 	    if(isset($_SESSION['dq_flag'])) {
+	        // Instantiate.
+	        $constant = new Constants();
+	        // General constants.
 	        $constant->general_constants();
 	        // Explode flags.
 	        $da = explode(',',$_SESSION['dq_flag']);

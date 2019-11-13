@@ -40,6 +40,10 @@ class SessionManager {
 		if(!isset($_SESSION['ifo'])) {
 		    $_SESSION['ifo'] = NULL;
 		}
+		// DQ Flag.
+		if(!isset($_SESSION['dq_flag'])) {
+		    $_SESSION['dq_flag'] = NULL;
+		}
 		// GPS start.
 		if(!isset($_SESSION['gps_start'])) {
 		    $_SESSION['gps_start'] = '';
