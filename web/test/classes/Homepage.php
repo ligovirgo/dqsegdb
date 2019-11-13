@@ -15,6 +15,7 @@ DQSEGDB WUI uses the following open source software:
 require_once 'APIRequests.php';
 require_once 'Constants.php';
 require_once 'DAO.php';
+require_once 'Logger.php';
 
 /* Handle homepage. */
 class Homepage {
@@ -271,6 +272,7 @@ class Homepage {
 	    // Instantiate.
 	    $api = new APIRequests();
 	    $constants = new Constants();
+	    $log = new Logger();
 	    // General constants.
 	    $constants->general_constants();
 	    // If using select.
@@ -283,15 +285,13 @@ class Homepage {
 	        if(isset($a['results']) && is_array($a['results'])) {
 	            // Loop URI array.
 	            foreach($a['results'] as $k => $uri) {
+	                $log->write_to_log_file(0, $uri);
                     // Explode to array.
                     $u = explode('/',$uri);
                     // If actually at the Use_all_Flags key.
                     if($u[2] == 'IFO') {
                         $flag_uri_txt = str_replace('_',' ',$u[3]);
                         $flag_uri_txt = str_replace('IFO/',' ',$flag_uri_txt);
-                    }
-                    if($u[2] != 'IFO') {
-                        $flag_uri_txt = $u[2].' - '.$u[3];
                     }
 	                // If the DQ Flag session exists, set selected.
 	                $sel = NULL;
