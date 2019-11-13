@@ -272,6 +272,7 @@ class Homepage {
 	public function build_choose_flag_option_multiple_ifo() {
 	    // Init.
 	    $this->choose_flag_option = NULL;
+	    $flag_count = 0;
 	    // Instantiate.
 	    $api = new APIRequests();
 	    $constants = new Constants();
@@ -307,11 +308,17 @@ class Homepage {
     	                }
     	                // Set.
     	                $this->choose_flag_option .= "		<option value=\"".$uri."\"".$sel.">".$flag_uri_txt."</option>\n";
+    	                // Increment the flag counter.
+    	                $flag_count++;
                     }
 	            }
 	        }
 	        // Close select.
 	        $this->choose_flag_option .= "	</select>\n";
+	        // If no flags available.
+	        if($flag_count == 0) {
+	            $this->choose_flag_option .= "	<p><i class=\"fas fa-exclamation-circle\"></i> No flags are available for the current selection.</p>\n";
+	        }
 	    }
 	    // Otherwise, if textarea.
 	    elseif($_SESSION['choose_flag_option'] == 1) {
