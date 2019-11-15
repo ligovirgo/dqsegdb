@@ -202,7 +202,7 @@ function deselect_flag(uri, f, max) {
 /* Update the flag versions. */
 function update_flag_versions() {
 	// Update version div.
-	$.get("scripts/actions.php?action=update_version_div&dq_flag=" + dq_flag, function(r) {
+	$.get("scripts/actions.php?action=update_version_div", function(r) {
 		// Show versions container.
 		$('#div_versions').removeClass('w3-hide');
 		// Re-write versions field.
