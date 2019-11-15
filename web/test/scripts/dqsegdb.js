@@ -200,7 +200,7 @@ function update_flag_versions(max) {
 	// Get currently selected flag.
 	var dq_flag = $("#dq_flag").val();
 	// If DQ flag lenght exists.
-	if($("#dq_flag").val().length > 0) {
+	if(($("#dq_flag").val() || '').length > 0) {
 		// If number of elements in list is less than or equal to 10.
 		if(dq_flag.length <= 10) {
 			// Update version div.
@@ -216,10 +216,10 @@ function update_flag_versions(max) {
 				}
 			});
 		}
-	}
-	// Otherwise, if number of elements in list is more than 10.
-	else {
-		open_warning_modal(get_too_many_flags_msg(dq_flag.length, max));
+		// Otherwise, if number of elements in list is more than 10.
+		else {
+			open_warning_modal(get_too_many_flags_msg(dq_flag.length, max));
+		}
 	}
 }
 /* Update the flag versions from a textarea. */
