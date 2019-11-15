@@ -137,7 +137,7 @@ class Homepage {
 	    $this->get_segments_form .= "  </div>\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-threequarter w3-padding-0\">\n";
 	    $this->get_segments_form .= "      <div class=\"w3-container w3-padding-0 w3-margin-0\">\n";
-	    $this->get_segments_form .= "          <input class=\"w3-input w3-margin-0\" id=\"flag_filter\" name=\"flag_filter\" value=\"".$_SESSION['flag_filter']."\" type=\"text\" placeholder=\"Filter the flag list\" onkeypress=\"filter_flag_list()\" />\n";
+	    $this->get_segments_form .= "          <input class=\"w3-input w3-margin-0\" id=\"flag_filter\" name=\"flag_filter\" value=\"".$_SESSION['flag_filter']."\" type=\"text\" placeholder=\"Start typing part of a flag name here to filter...\" onkeypress=\"filter_flag_list()\" />\n";
 	    $this->get_segments_form .= "      </div>\n";
 	    $this->get_segments_form .= "      <div id=\"div_choose_flag_option\" class=\"w3-container w3-padding-0 w3-margin-0\">\n";
 	    $this->build_choose_flag_option_multiple_ifo();
@@ -287,7 +287,7 @@ class Homepage {
 	    // If using select.
 	    if($_SESSION['choose_flag_option'] == 0) {
 	        // Open select.
-	        $this->choose_flag_option .= "	<ul id=\"div_dq_flags\" class=\"w3-ul\" style=\"height:200px;overflow-y:scroll\">\n";
+	        $this->choose_flag_option .= "	<ul id=\"div_dq_flags\" class=\"w3-ul w3-border\" style=\"height:200px;overflow-y:scroll\">\n";
 	        // Get all flags.
             $a = $api->get_all_flags();
 	        // If array has been returned.
@@ -301,14 +301,14 @@ class Homepage {
                     // If the second key in the array is not deselected.
                     if(!key_exists($ifo, $_SESSION['deselected_ifo'])) {
                         // If the flag has not already been selected.
-                        if(!in_array($flag, $_SESSION['dq_flags'])) {
+                        if(!in_array($uri, $_SESSION['dq_flag_uri'])) {
                             // If the flag filter is not empty or matches with the name of the field.
                             if(empty($_SESSION['flag_filter'])
                             || preg_match('/'.$_SESSION['flag_filter'].'/i', $flag)) {
                                 // Set the flag name as it appears.
                                 $flag_uri_txt = $ifo.' - '.$flag;
             	                // Set.
-                                $this->choose_flag_option .= "		<li id=\"li_".$flag."\" class=\"w3-border-bottom w3-hover-grey cursor\" onclick=\"select_flag('".$uri."', '".$flag."')\">".$flag_uri_txt."</li>\n";
+                                $this->choose_flag_option .= "		<li id=\"li_".$flag."\" class=\"w3-border-bottom w3-hover-light-grey cursor\" onclick=\"select_flag('".$uri."', '".$flag."')\">".$flag_uri_txt."</li>\n";
             	                // Increment the flag counter.
             	                $flag_count++;
                             }

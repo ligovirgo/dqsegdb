@@ -183,41 +183,33 @@ function filter_flag_list() {
 		update_flags_multiple_ifo();
 	});
 }
+/* Select a flag. */
+function select_flag(uri, f) {
+	$.get("scripts/actions.php?action=select_flag&dq_flag_uri=" + uri, function(r) {
+		// Remove from the flag list.
+		$("#li_" + f).remove();
+		// Update the flag verions.
+		update_flag_versions();
+	});
+}
 /* Deselect a flag from the versions container. */
 function deselect_flag(uri, f, max) {
-	$.get("scripts/actions.php?action=deselect_flag&dq_flag=" + uri, function(r) {
-		// Remove from the flag-version list.
-		$("#tr_" + f).remove();
-		// If the select option exists.
-		if($("#dq_flag option[value='" + uri + "']").length > 0) {
-			// Deselect flag in multiple select.
-			$("#dq_flag option[value='" + uri + "']").prop('selected', false);
-		}
+	$.get("scripts/actions.php?action=deselect_flag&dq_flag_uri=" + uri, function(r) {
+		// Update the flag verions.
+		update_flag_versions();
 	});
 }
 /* Update the flag versions. */
-function update_flag_versions(max) {
-	// Get currently selected flag.
-	var dq_flag = $("#dq_flag").val();
-	// If number of elements in list is less than or equal to 10.
-	if(dq_flag.length <= 10) {
-		// Update version div.
-		$.get("scripts/actions.php?action=update_version_div&dq_flag=" + dq_flag, function(r) {
-			// If result retrieved
-			if(r != 0) {
-				// Show versions container.
-				$('#div_versions').removeClass('w3-hide');
-				// Re-write versions field.
-				$('#div_versions_field').html(r);
-				// Show retrieve segment button.
-				$("#div_get_segments_button").removeClass("w3-hide");
-			}
-		});
-	}
-	// Otherwise, if number of elements in list is more than 10.
-	else {
-		open_warning_modal(get_too_many_flags_msg(dq_flag.length, max));
-	}
+function update_flag_versions() {
+	// Update version div.
+	$.get("scripts/actions.php?action=update_version_div&dq_flag=" + dq_flag, function(r) {
+		// Show versions container.
+		$('#div_versions').removeClass('w3-hide');
+		// Re-write versions field.
+		$('#div_versions_field').html(r);
+		// Show retrieve segment button.
+		$("#div_get_segments_button").removeClass("w3-hide");
+	});
 }
 /* Update the flag versions from a textarea. */
 function update_div_flag_versions_from_ta($max) {

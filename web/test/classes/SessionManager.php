@@ -45,8 +45,8 @@ class SessionManager {
 		    $_SESSION['deselected_ifo'] = array();
 		}
 		// DQ Flag.
-		if(!isset($_SESSION['dq_flags'])) {
-		    $_SESSION['dq_flags'] = array();
+		if(!isset($_SESSION['dq_flag_uri'])) {
+		    $_SESSION['dq_flag_uri'] = array();
 		}
 		// Flag filter.
 		if(!isset($_SESSION['flag_filter'])) {

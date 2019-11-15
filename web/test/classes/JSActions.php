@@ -99,11 +99,16 @@ class JSAction {
 		    $home->build_choose_flag_option();
 		    $this->document = $home->choose_flag_option;
 		}
+		elseif($_GET['action'] == 'select_flag') {
+		    if(!in_array($_GET['dq_flag_uri'], $_SESSION['dq_flag_uris'])) {
+		        array_push($_SESSION['dq_flag_uris'], $_GET['dq_flag_uri']);
+		    }
+		}
 		elseif($_GET['action'] == 'deselect_flag') {
-		    $_SESSION['dq_flag'] = str_replace($_GET['dq_flag'], '', $_SESSION['dq_flag']);
+		    if(($k = array_search($_GET['dq_flag_uri'], $_SESSION['dq_flag_uris'])) !== false) {
+		        unset($_SESSION['dq_flag_uris'][$k]);
 		}
 		elseif($_GET['action'] == 'update_version_div') {
-	        $_SESSION['dq_flag'] = $_GET['dq_flag'];
 		    $home->get_versions();
 		    $this->document = $home->version_div;
 		}
