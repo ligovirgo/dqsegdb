@@ -179,16 +179,19 @@ function update_flags() {
 /* Filter the flag list */
 function filter_flag_list() {
 	var ff = $("#flag_filter").val();
-	// Update.
 	$.get("scripts/actions.php?action=update_flag_filter&ff=" + ff, function(r) {
 		update_flags_multiple_ifo();
 	});
 }
 /* Deselect a flag from the versions container. */
-function deselect_flag(uri, max) {
-	// Update.
+function deselect_flag(uri, f, max) {
 	$.get("scripts/actions.php?action=deselect_flag&dq_flag=" + uri, function(r) {
+		// Remove table row containing versions for this flag.
+		//$("#tr_" + f).remove();
+		// Deselect flag in multiple select.
 		$("#dq_flag option[value='" + uri + "']").prop('selected', false);
+		// Update the flag-versions following the deselection.
+		update_flag_versions(max);
 	});
 }
 /* Update the flag versions. */
