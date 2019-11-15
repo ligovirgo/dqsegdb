@@ -184,6 +184,10 @@ function filter_flag_list() {
 		update_flags_multiple_ifo();
 	});
 }
+/* Deselect a flag from the versions container. */
+function deselect_flag(flag) {
+	
+}
 /* Update the flag versions. */
 function update_flag_versions(max) {
 	// Get currently selected flag.

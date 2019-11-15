@@ -369,7 +369,9 @@ class Homepage {
 	                    }
 	                    // Get row.
 	                    $this->version_div .= "    <tr>\n";
-	                    $this->version_div .= "        <td id=\"flag_".$flag_name."\">".$flag_name."</td>\n";
+	                    $this->version_div .= "        <td id=\"flag_".$flag_name."\">\n";
+	                    $this->version_div .= "            <div class=\"w3-tag w3-red w3-hover-light-grey w3-round w3-border w3-margin-right\" onclick=\"deselect_flag(".$uri.")\"><i class=\"fas fa-cross\"></i></div>".$flag_name."\n";
+	                    $this->version_div .= "        </td>\n";
 	                    $this->version_div .= "        <td id=\"flag_".$flag_name."_versions\">\n";
 	                    // Add version information after flag name.
 	                    $this->get_flag_version_span_contents($uri);
