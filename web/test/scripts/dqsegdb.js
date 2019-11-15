@@ -187,7 +187,7 @@ function filter_flag_list() {
 /* Deselect a flag from the versions container. */
 function deselect_flag(uri, max) {
 	// Update.
-	$.get("scripts/actions.php?action=deselect_flag&uri=" + uri, function(r) {
+	$.get("scripts/actions.php?action=deselect_flag&dq_flag=" + uri, function(r) {
 		$("#dq_flag option[value='" + uri + "']").prop('selected', false);
 	});
 }

@@ -99,9 +99,13 @@ class JSAction {
 		    $home->build_choose_flag_option();
 		    $this->document = $home->choose_flag_option;
 		}
+		elseif($_GET['action'] == 'deselect_flag') {
+		    $log->write_to_log_file(0, "Before: ".$_SESSION['dq_flag']);
+		    $_SESSION['dq_flag'] = str_replace($_GET['dq_flag'], '', $_SESSION['dq_flag']);
+		    $log->write_to_log_file(0, "After: ".$_SESSION['dq_flag']);
+		}
 		elseif($_GET['action'] == 'update_version_div') {
 	        $_SESSION['dq_flag'] = $_GET['dq_flag'];
-	        $log->write_to_log_file(0, $_SESSION['dq_flag']);
 		    $home->get_versions();
 		    $this->document = $home->version_div;
 		}
