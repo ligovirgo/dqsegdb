@@ -287,37 +287,31 @@ class Homepage {
 	    // If using select.
 	    if($_SESSION['choose_flag_option'] == 0) {
 	        // Open select.
-	        $this->choose_flag_option .= "	<ul id=\"div_dq_flags\" class=\"w3-ul\" style=\"height:100px;overflow-y:scroll\">\n";
+	        $this->choose_flag_option .= "	<ul id=\"div_dq_flags\" class=\"w3-ul\" style=\"height:200px;overflow-y:scroll\">\n";
 	        // Get all flags.
             $a = $api->get_all_flags();
 	        // If array has been returned.
 	        if(isset($a['results']) && is_array($a['results'])) {
-	            $fa = array();
-	            if(!empty($_SESSION['dq_flag'])) {
-	                // Explode flags.
-	                $fa = explode(',',$_SESSION['dq_flag']);
-	            }
 	            // Loop URI array.
 	            foreach($a['results'] as $k => $uri) {
                     // Explode to array.
                     $u = explode('/',$uri);
+                    $ifo = $u[2];
+                    $flag = $u[3];
                     // If the second key in the array is not deselected.
-                    if(!key_exists($u[2], $_SESSION['deselected_ifo'])) {
-                        // If the flag filter is not empty or matches with the name of the field.
-                        if(empty($_SESSION['flag_filter'])
-                        || preg_match('/'.$_SESSION['flag_filter'].'/i', $u[3])) {
-                            // Set the flag name as it appears.
-                            $flag_uri_txt = $u[2].' - '.$u[3];
-        	                // If the DQ Flag session exists, set selected.
-        	                $sel = NULL;
-        	                // If URI is in selected array.
-        	                if(in_array($uri, $fa)) {
-        	                    $sel = " selected=\"selected\"";
-        	                }
-        	                // Set.
-        	                $this->choose_flag_option .= "		<li id=\"li_".$uri."\" class=\"w3-border-bottom\" onclick=\"select_flag('".$uri."')\">".$flag_uri_txt."</li>\n";
-        	                // Increment the flag counter.
-        	                $flag_count++;
+                    if(!key_exists($ifo, $_SESSION['deselected_ifo'])) {
+                        // If the flag has not already been selected.
+                        if(!in_array($flag, $_SESSION['dq_flags'])) {
+                            // If the flag filter is not empty or matches with the name of the field.
+                            if(empty($_SESSION['flag_filter'])
+                            || preg_match('/'.$_SESSION['flag_filter'].'/i', $flag)) {
+                                // Set the flag name as it appears.
+                                $flag_uri_txt = $ifo.' - '.$flag;
+            	                // Set.
+                                $this->choose_flag_option .= "		<li id=\"li_".$flag."\" class=\"w3-border-bottom w3-hover-grey cursor\" onclick=\"select_flag('".$uri."', '".$flag."')\">".$flag_uri_txt."</li>\n";
+            	                // Increment the flag counter.
+            	                $flag_count++;
+                            }
                         }
                     }
 	            }
