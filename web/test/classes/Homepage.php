@@ -335,16 +335,14 @@ class Homepage {
 	public function get_versions() {
 	    // Init.
 	    $this->version_div = NULL;
-	    // If the DQ Flag session is not empty.
-	    if(!empty($_SESSION['dq_flag'])) {
+	    // If the DQ Flag URI session is not empty.
+	    if(!empty($_SESSION['dq_flag_uris'])) {
 	        // Instantiate.
 	        $constant = new Constants();
 	        // General constants.
 	        $constant->general_constants();
-	        // Explode flags.
-	        $da = explode(',',$_SESSION['dq_flag']);
 	        // If number of selected flags within maximum allowable value.
-	        if(count($da) <= $constant->max_selectable_flags) {
+	        if(count($_SESSION['dq_flag_uris']) <= $constant->max_selectable_flags) {
 	            // Open table.
 	            $this->version_div .= "<table class=\"w3-table-all w3-margin-0\">\n";
 	            // Loop through selected URI.
