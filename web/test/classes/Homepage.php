@@ -95,41 +95,6 @@ class Homepage {
 	    $this->get_segments_form .= "      </select>\n";
 	    $this->get_segments_form .= "  </div>\n";
 	    $this->get_segments_form .= "</div>\n";
-/*	    // IFO.
- * 2019-11-13 - Select-drop-down list, used in first version of DQSEGDB WUI
- * to filter the flag list. Replaced with possibility to de-select IFO options.
-	    $this->get_segments_form .= "<div class=\"w3-container w3-border-top\">\n";
-	    $this->get_segments_form .= "  <div class=\"w3-container w3-quarter w3-padding-0 w3-padding-top w3-padding-bottom w3-padding-right\">IFO <i class=\"far fa-question-circle cursor\" onclick=\"open_info_modal('ifo')\"></i></div>\n";
-	    $this->get_segments_form .= "  <div class=\"w3-container w3-threequarter w3-padding-0\">\n";
-	    $this->get_segments_form .= "      <select id=\"ifo\" class=\"w3-input w3-margin-0\" onchange=\"update_flags()\">\n";
-	    // Get IFO.
-	    $ai = $api->get_ifo_array();
-	    // If IFO array has been returned.
-	    if(is_array($ai)) {
-	        // Init counter.
-	        $n = 0;
-	        // Add 'All IFO' option.
-	        array_unshift($ai['Ifos'], 'Use_all_IFO');
-	        // Loop IFO.
-    	    foreach($ai['Ifos'] as $k => $ifo) {
-    	        $n++;
-    	        // If on first loop and no default has yet been set.
-    	        if($n == 1 && !isset($_SESSION['ifo'])) {
-    	            // Set default host.
-    	            $_SESSION['ifo'] = $ifo;
-    	        }
-    	        // Set selected.
-    	        $sel = NULL;
-    	        if($ifo == $_SESSION['ifo']) {
-    	            $sel = " selected=\"selected\"";
-    	        }
-    	        $this->get_segments_form .= "          <option value=\"".$ifo."\"".$sel.">".str_replace('_', ' ', $ifo)."</option>\n";
-    	    }
-	    }
-	    $this->get_segments_form .= "      </select>\n";
-	    $this->get_segments_form .= "  </div>\n";
-	    $this->get_segments_form .= "</div>\n";
-*/
 	    // Flags.
 	    $this->get_segments_form .= "<div class=\"w3-container w3-padding w3-border-top\">\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-quarter w3-padding-0 w3-padding-top w3-padding-bottom w3-padding-right\">Flags <i class=\"far fa-question-circle cursor\" onclick=\"open_info_modal('flags')\"></i><br>";
@@ -204,75 +169,6 @@ class Homepage {
 	    $this->get_segments_form .= "</form>\n";
 	}
 	
-	/* Build the choose-flag option. */
-	public function build_choose_flag_option() {
-	    // Init.
-	    $this->choose_flag_option = NULL;
-	    // Instantiate.
-	    $api = new APIRequests();
-	    $constants = new Constants();
-	    // General constants.
-	    $constants->general_constants();
-	    // If using select.
-	    if($_SESSION['choose_flag_option'] == 0) {
-	        // Open select.
-	        $this->choose_flag_option .= "	<ul id=\"div_dq_flags\" class=\"w3-ul\" style=\"height:100px\">\n";
-	        // If selecting all flags.
-	        if($_SESSION['ifo'] == 'Use_all_IFO') {
-	            $a = $api->get_all_flags();
-	        }
-	        // Otherwise, get flags related only to a specific IFO. 
-	        else {
-	            $a = $api->get_ifo_flags();
-	        }
-	        // If array has been returned.
-	        if(isset($a['results']) && is_array($a['results'])) {
-	            // Loop URI array.
-	            foreach($a['results'] as $k => $uri) {
-	                // If selecting all flags.
-	                if($_SESSION['ifo'] == 'Use_all_IFO') {
-	                    // Explode to array.
-	                    $u = explode('/',$uri);
-	                    // If actually at the Use_all_Flags key.
-	                    if($u[2] == 'IFO') {
-	                        $flag_uri_txt = str_replace('_',' ',$u[3]);
-	                        $flag_uri_txt = str_replace('IFO/',' ',$flag_uri_txt);
-	                    }
-	                    if($u[2] != 'IFO') {
-	                        $flag_uri_txt = $u[2].' - '.$u[3];
-	                    }
-	                }
-	                // Or, if selecting flags associated to a specific IFO.
-	                else {
-	                    // Set simply to flag name.
-	                    $flag_uri_txt = $uri;
-	                    // Reset URI.
-	                    $uri = '/dq/'.$_SESSION['ifo'].'/'.$uri;
-	                }
-	                // If the DQ Flag session exists, set selected.
-	                $sel = NULL;
-	                if(isset($_SESSION['dq_flag'])) {
-	                    // Explode flags.
-	                    $fa = explode(',',$_SESSION['dq_flag']);
-	                    // If URI is in array.
-	                    if(in_array($uri, $fa)) {
-	                        $sel = " selected=\"selected\"";
-	                    }
-	                }
-	                // Set.
-	                $this->choose_flag_option .= "		<li id=\"li_".$uri."\" class=\"w3-border-bottom\" onclick=\"select_flag('".$uri."')\">".$flag_uri_txt."</li>\n";
-	            }
-	        }
-	        // Close select.
-	        $this->choose_flag_option .= "	</ul>\n";
-	    }
-	    // Otherwise, if textarea.
-	    elseif($_SESSION['choose_flag_option'] == 1) {
-	        // Get textarea.
-	        $this->choose_flag_option = "	<textarea id=\"ta_dq_flag\" onchange=\"update_flag_versions_from_ta(".$constants->max_selectable_flags.")\"></textarea>\n";
-	    }
-	}
-	
 	/* Build the choose-flag option when using multiple IFO. */
 	public function build_choose_flag_option_multiple_ifo() {
 	    // Init.
@@ -301,7 +197,7 @@ class Homepage {
                     // If the second key in the array is not deselected.
                     if(!key_exists($ifo, $_SESSION['deselected_ifo'])) {
                         // If the flag has not already been selected.
-                        if(!in_array($uri, $_SESSION['dq_flag_uri'])) {
+                        if(!in_array($uri, $_SESSION['dq_flag_uris'])) {
                             // If the flag filter is not empty or matches with the name of the field.
                             if(empty($_SESSION['flag_filter'])
                             || preg_match('/'.$_SESSION['flag_filter'].'/i', $flag)) {

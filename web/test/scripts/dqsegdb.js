@@ -184,7 +184,7 @@ function filter_flag_list() {
 	});
 }
 /* Select a flag. */
-function select_flag(uri, f) {
+function select_flag(uri) {
 	$.get("scripts/actions.php?action=select_flag&dq_flag_uri=" + uri, function(r) {
 		// Remove from the flag list.
 		$("#li_" + f).remove();
