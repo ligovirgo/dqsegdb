@@ -112,7 +112,7 @@ class Homepage {
 	    $this->get_segments_form .= "</div>\n";
 	    // Versions.
 	    $version_hide = NULL;
-	    if(empty($_SESSION['dq_flag'])) {
+	    if(empty($_SESSION['dq_flag_uris'])) {
 	        $version_hide = " w3-hide";
 	    }
 	    $this->get_segments_form .= "<div id=\"div_versions\" class=\"w3-container w3-padding w3-border-top".$version_hide."\">\n";
@@ -242,7 +242,7 @@ class Homepage {
 	            // Open table.
 	            $this->version_div .= "<table class=\"w3-table-all w3-margin-0\">\n";
 	            // Loop through selected URI.
-	            foreach($da as $k => $uri) {
+	            foreach($_SESSION['dq_flag_uris'] as $k => $uri) {
 	                // Explode to get flag.
 	                $fa = explode('/', $uri);
 	                $u = $fa[2];
@@ -271,18 +271,6 @@ class Homepage {
 	            }
 	            // Close table.
 	            $this->version_div .= "</table>\n";
-	            // Ensure that only flags that have been selected by the user are in the call to the server.
-	            foreach($_SESSION['uri_selected'] as $i => $uri) {
-	                // Explode to get flag.
-	                $fa = explode('/', $uri);
-	                $u = $fa[2];
-	                $fn = $fa[3];
-	                // If flag not found in call to server array.
-	                if(!preg_match("/".$u."\/".$fn."/i", $_SESSION['dq_flag'])) {
-	                    // Remove from array.
-	                    unset($_SESSION['uri_selected'][$i]);
-	                }
-	            }
 	        }
 	    }
 	}
