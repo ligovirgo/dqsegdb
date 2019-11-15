@@ -196,18 +196,20 @@ class Homepage {
                     $flag = $u[3];
                     // If the second key in the array is not deselected.
                     if(!key_exists($ifo, $_SESSION['deselected_ifo'])) {
-                        // If the flag has not already been selected.
-                        if(!in_array($uri, $_SESSION['dq_flag_uris'])) {
-                            // If the flag filter is not empty or matches with the name of the field.
-                            if(empty($_SESSION['flag_filter'])
-                            || preg_match('/'.$_SESSION['flag_filter'].'/i', $flag)) {
-                                // Set the flag name as it appears.
-                                $flag_uri_txt = $ifo.' - '.$flag;
-            	                // Set.
-                                $this->choose_flag_option .= "		<li id=\"li_".$flag."\" class=\"w3-border-bottom w3-hover-light-grey cursor\" onclick=\"select_flag('".$uri."', '".$flag."')\">".$flag_uri_txt."</li>\n";
-            	                // Increment the flag counter.
-            	                $flag_count++;
-                            }
+                        // By default, show the flag.
+                        $class = NULL;
+                        // If the flag has already been selected.
+                        if(in_array($uri, $_SESSION['dq_flag_uris'])) {
+                            // Hide it.
+                            $class = ' w3-hide';
+                        }
+                        // If the flag filter is not empty or matches with the name of the field.
+                        if(empty($_SESSION['flag_filter'])
+                        || preg_match('/'.$_SESSION['flag_filter'].'/i', $flag)) {
+            	            // Set.
+                            $this->choose_flag_option .= "		<li id=\"li_".$flag."\" class=\"w3-border-bottom w3-hover-light-grey cursor".$class."\" onclick=\"select_flag('".$uri."', '".$flag."')\">".$ifo.' - '.$flag."</li>\n";
+            	            // Increment the flag counter.
+            	            $flag_count++;
                         }
                     }
 	            }

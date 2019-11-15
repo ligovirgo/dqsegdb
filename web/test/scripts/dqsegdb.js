@@ -187,7 +187,7 @@ function filter_flag_list() {
 function select_flag(uri, f) {
 	$.get("scripts/actions.php?action=select_flag&dq_flag_uri=" + uri, function(r) {
 		// Remove from the flag list.
-		$("#li_" + f).remove();
+		$("#li_" + f).addClass('w3-hide');
 		// Update the flag verions.
 		update_flag_versions();
 	});
@@ -195,6 +195,8 @@ function select_flag(uri, f) {
 /* Deselect a flag from the versions container. */
 function deselect_flag(uri, f, max) {
 	$.get("scripts/actions.php?action=deselect_flag&dq_flag_uri=" + uri, function(r) {
+		// Add back in to the flag list.
+		$("#li_" + f).removeClass('w3-hide');
 		// Update the flag verions.
 		update_flag_versions();
 	});
