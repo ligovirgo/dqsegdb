@@ -186,10 +186,11 @@ function filter_flag_list() {
 /* Deselect a flag from the versions container. */
 function deselect_flag(uri, f, max) {
 	$.get("scripts/actions.php?action=deselect_flag&dq_flag=" + uri, function(r) {
-		// Remove table row containing versions for this flag.
-		//$("#tr_" + f).remove();
-		// Deselect flag in multiple select.
-		$("#dq_flag option[value='" + uri + "']").prop('selected', false);
+		// If the select option exists.
+		if($("#dq_flag option[value='" + uri + "']").length > 0) {
+			// Deselect flag in multiple select.
+			$("#dq_flag option[value='" + uri + "']").prop('selected', false);
+		}
 		// Update the flag-versions following the deselection.
 		update_flag_versions(max);
 	});
