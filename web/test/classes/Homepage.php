@@ -287,7 +287,7 @@ class Homepage {
 	    // If using select.
 	    if($_SESSION['choose_flag_option'] == 0) {
 	        // Open select.
-	        $this->choose_flag_option .= "	<ul id=\"div_dq_flags\" class=\"w3-ul\" style=\"height:100px\">\n";
+	        $this->choose_flag_option .= "	<ul id=\"div_dq_flags\" class=\"w3-ul\" style=\"height:100px;overflow-y:scroll\">\n";
 	        // Get all flags.
             $a = $api->get_all_flags();
 	        // If array has been returned.
