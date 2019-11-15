@@ -278,7 +278,7 @@ class Homepage {
 	    // Init.
 	    $exists = FALSE;
 	    // Loop through the selected flag-versions.
-	    foreach($_SESSION['dq_flag_uris'] as $k => $uri) {
+	    foreach($_SESSION['uri_selected'] as $k => $uri) {
 	        // If the flag name exists.
 	        if(preg_match('/'.$flag_name.'/i', $uri)) {
 	            $exists = TRUE;
@@ -287,7 +287,7 @@ class Homepage {
 	    }
 	    // If the URI does not exist, add it as a default.
 	    if(!$exists) {
-	        array_push($_SESSION['dq_flag_uris'], $u);
+	        array_push($_SESSION['uri_selected'], $u);
 	    }
 	}
 
