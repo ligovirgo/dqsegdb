@@ -186,13 +186,13 @@ function filter_flag_list() {
 /* Deselect a flag from the versions container. */
 function deselect_flag(uri, f, max) {
 	$.get("scripts/actions.php?action=deselect_flag&dq_flag=" + uri, function(r) {
+		// Remove from the flag-version list.
+		$("#tr_" + f).remove();
 		// If the select option exists.
 		if($("#dq_flag option[value='" + uri + "']").length > 0) {
 			// Deselect flag in multiple select.
 			$("#dq_flag option[value='" + uri + "']").prop('selected', false);
 		}
-		// Update the flag-versions following the deselection.
-		update_flag_versions(max);
 	});
 }
 /* Update the flag versions. */
@@ -200,8 +200,7 @@ function update_flag_versions(max) {
 	// Get currently selected flag.
 	var dq_flag = $("#dq_flag").val();
 	// If number of elements in list is less than or equal to 10.
-	if(($("#dq_flag").val() || '').length == 0
-		|| dq_flag.length <= 10) {
+	if(dq_flag.length <= 10) {
 		// Update version div.
 		$.get("scripts/actions.php?action=update_version_div&dq_flag=" + dq_flag, function(r) {
 			// If result retrieved
