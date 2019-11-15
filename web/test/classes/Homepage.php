@@ -250,17 +250,13 @@ class Homepage {
 	                $u = $fa[2];
 	                // If the flag name exists.
 	                if(isset($fa[3]) && !empty($fa[3])) {
+	                    $ifo = $fa[2];
 	                    $flag_name = $fa[3];
 	                    $span_name = str_replace('-','_',str_replace(' ','',$fa[3]));
-	                    // If selecting from all flags.
-	                    if($_SESSION['ifo'] == 'Use_all_IFO') {
-	                        $flag_name = $fa[2].' - '.$flag_name;
-	                        $span_name = $fa[2].'_'.$span_name;
-	                    }
 	                    // Get row.
 	                    $this->version_div .= "    <tr id=\"tr_".$flag_name."\">\n";
 	                    $this->version_div .= "        <td id=\"flag_".$flag_name."\">\n";
-	                    $this->version_div .= "            <div class=\"w3-tag w3-red w3-hover-light-grey w3-round w3-border w3-margin-right cursor\" onclick=\"deselect_flag('".$uri."', '".$flag_name."', .".$constant->max_selectable_flags.")\"><i class=\"far fa-times-circle\"></i></div>".$flag_name."\n";
+	                    $this->version_div .= "            <div class=\"w3-tag w3-red w3-hover-light-grey w3-round w3-border w3-margin-right cursor\" onclick=\"deselect_flag('".$uri."', '".$flag_name."', .".$constant->max_selectable_flags.")\"><i class=\"far fa-times-circle\"></i></div>".$ifo.' - '.$flag_name."\n";
 	                    $this->version_div .= "        </td>\n";
 	                    $this->version_div .= "        <td id=\"flag_".$flag_name."_versions\">\n";
 	                    // Add version information after flag name.
