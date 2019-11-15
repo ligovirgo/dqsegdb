@@ -185,12 +185,11 @@ function filter_flag_list() {
 	});
 }
 /* Deselect a flag from the versions container. */
-function deselect_flag(uri) {
-	console.log(uri);
-	$("#dq_flag option[value='" + uri + "']").prop('selected', false);
+function deselect_flag(uri, max) {
 	// Update.
-	//$.get("scripts/actions.php?action=deselect_flag&uri=" + uri, function(r) {
-	//});
+	$.get("scripts/actions.php?action=deselect_flag&uri=" + uri, function(r) {
+		$("#dq_flag option[value='" + uri + "']").prop('selected', false);
+	});
 }
 /* Update the flag versions. */
 function update_flag_versions(max) {

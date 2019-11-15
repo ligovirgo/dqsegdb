@@ -101,15 +101,13 @@ class JSAction {
 		}
 		elseif($_GET['action'] == 'update_version_div') {
 	        $_SESSION['dq_flag'] = $_GET['dq_flag'];
+	        $log->write_to_log_file(0, $_SESSION['dq_flag']);
 		    $home->get_versions();
 		    $this->document = $home->version_div;
 		}
 		elseif($_GET['action'] == 'update_version_div_from_ta') {
-		    // If flags passed.
-		    if(isset($_GET['dq_flag'])) {
-		        // Set flag session.
-		        $_SESSION['dq_flag'] = $home->set_ta_flags($_GET['dq_flag']);
-		    }
+	        // Set flag session.
+	        $_SESSION['dq_flag'] = $home->set_ta_flags($_GET['dq_flag']);
 		    $home->get_versions();
 		    $this->document = $home->version_div;
 		}
