@@ -287,7 +287,7 @@ class Homepage {
 	    // If using select.
 	    if($_SESSION['choose_flag_option'] == 0) {
 	        // Open select.
-	        $this->choose_flag_option .= "	<select multiple size=\"8\" id=\"dq_flag\" onchange=\"update_flag_versions(".$constants->max_selectable_flags.")\">\n";
+	        $this->choose_flag_option .= "	<ul id=\"div_dq_flags\" class=\"w3-ul\" style=\"height:100px\">\n";
 	        // Get all flags.
             $a = $api->get_all_flags();
 	        // If array has been returned.
@@ -315,7 +315,7 @@ class Homepage {
         	                    $sel = " selected=\"selected\"";
         	                }
         	                // Set.
-        	                $this->choose_flag_option .= "		<option value=\"".$uri."\"".$sel.">".$flag_uri_txt."</option>\n";
+        	                $this->choose_flag_option .= "		<li id=\"li_".$uri."\" class=\"w3-border-bottom\" onclick=\"select_flag('".$uri."')\">".$flag_uri_txt."</li>\n";
         	                // Increment the flag counter.
         	                $flag_count++;
                         }
@@ -323,7 +323,7 @@ class Homepage {
 	            }
 	        }
 	        // Close select.
-	        $this->choose_flag_option .= "	</select>\n";
+	        $this->choose_flag_option .= "	</ul>\n";
 	        // If no flags available.
 	        if($flag_count == 0) {
 	            // Re-write the created variable.
