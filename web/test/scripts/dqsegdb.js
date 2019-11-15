@@ -249,8 +249,6 @@ function get_too_many_flags_msg(len, max) {
 }
 /* Select/De-select a specific flag version URI. */
 function select_version_uri(span_name, uri) {
-	// Init.
-	r = 0;
 	// Update version div.
 	$.get("scripts/actions.php?action=select_version_uri&uri=" + uri, function(r) {
 	});

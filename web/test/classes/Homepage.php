@@ -247,12 +247,12 @@ class Homepage {
 	            foreach($_SESSION['dq_flag_uris'] as $k => $uri) {
 	                // Explode to get flag.
 	                $fa = explode('/', $uri);
-	                $u = $fa[2];
 	                // If the flag name exists.
 	                if(isset($fa[3]) && !empty($fa[3])) {
 	                    $ifo = $fa[2];
 	                    $flag_name = $fa[3];
-	                    $span_name = str_replace('-','_',str_replace(' ','',$fa[3]));
+	                    // Check if it is already in the selected Versions array an, if not, add a default value.
+	                    $this->add_version_to_session($uri, $flag_name);
 	                    // Get row.
 	                    $this->version_div .= "    <tr id=\"tr_".$flag_name."\">\n";
 	                    $this->version_div .= "        <td id=\"flag_".$flag_name."\">\n";
@@ -270,6 +270,24 @@ class Homepage {
 	            // Close table.
 	            $this->version_div .= "</table>\n";
 	        }
+	    }
+	}
+	
+	/* Check if it a flag-version has already been selected and, if not, add it to the selected array. */
+	public function add_version_to_session($u, $flag_name) {
+	    // Init.
+	    $exists = FALSE;
+	    // Loop through the selected flag-versions.
+	    foreach($_SESSION['dq_flag_uris'] as $k => $uri) {
+	        // If the flag name exists.
+	        if(preg_match('/'.$flag_name.'/i', $uri)) {
+	            $exists = TRUE;
+	            break;
+	        }
+	    }
+	    // If the URI does not exist, add it as a default.
+	    if(!$exists) {
+	        array_push($_SESSION['dq_flag_uris'], $u);
 	    }
 	}
 
