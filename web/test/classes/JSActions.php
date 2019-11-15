@@ -107,6 +107,7 @@ class JSAction {
 		elseif($_GET['action'] == 'deselect_flag') {
 		    if(($k = array_search($_GET['dq_flag_uri'], $_SESSION['dq_flag_uris'])) !== false) {
 		        unset($_SESSION['dq_flag_uris'][$k]);
+		    }
 		}
 		elseif($_GET['action'] == 'update_version_div') {
 		    $home->get_versions();
