@@ -91,7 +91,7 @@ def generate_vdb(json_dict,filepath):
     known_not_active_segments_string=',0 \n'.join([str(i[0])+","+str(i[1]) for i in known_not_active_segments])+",0 \n"
     # Get the query info to write to the header.
     query_info_string=json.dumps(v[0]['query_information'], indent=1)
-    r = r + query_info_string.'\n'
+    r = r + query_info_string + '\n'
     # Write the segment strings and then return the content.
     r = r + active_segments_string
     r = r + unknown_segments_string
