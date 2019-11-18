@@ -206,7 +206,7 @@ if __name__ == "__main__":
         # Get the length of the dictionary passed.
         json_dict_len = len(json_dict)
         # Set the header if not in JSON.
-        if args.type not 'json' and args.type not 'coalesced_json':
+        if not args.type == 'json' and not args.type == 'coalesced_json':
             # Set the header, dependent upon the length of the dictionary.
             if json_dict_len == 1:
                 hdr = '# One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
