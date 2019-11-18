@@ -117,7 +117,7 @@ class APIRequests {
         foreach($_SESSION['uri_selected'] as $i => $uri) {
             $log->write_to_log_file(0, $uri);
             // Get resultant array.
-            $a = json_decode(array_push(file_get_contents($ah[0]['host_ip'].$uri.$args), true));
+            $a = json_decode(array_push($a, file_get_contents($ah[0]['host_ip'].$uri.$args), true));
         }
         // Convert segments back to JSON to push back to user.
         $a = json_encode($a, JSON_NUMERIC_CHECK);
