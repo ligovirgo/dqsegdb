@@ -100,7 +100,7 @@ class HTMLStructure {
 	    $this->info_modal .= "			</header>\n";
 	    $this->info_modal .= "			<div class=\"w3-container\">\n";
 	    $this->info_modal .= "				<h4 id=\"hdr-info\" style=\"font-weight:bold\"></h4>\n";
-	    $this->info_modal .= "				<p id=\"p-info\"></p>\n";
+	    $this->info_modal .= "				<div id=\"div-info-contents\"></div>\n";
 	    $this->info_modal .= "			</div>\n";
 	    $this->info_modal .= "		</div>\n";
 	    $this->info_modal .= "	</div>\n";

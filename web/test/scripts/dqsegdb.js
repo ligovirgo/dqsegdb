@@ -93,7 +93,7 @@ function open_info_modal(k) {
 	$.getJSON("resources/info.json", function(json){
 		// Set.
 		$('#hdr-info').html(json[k]['title']);
-		$('#p-info').html(json[k]['text']);
+		$('#div-info-contents').html(json[k]['text']);
 		// Display.
 		$("#info-modal").css("display","block");
 	});

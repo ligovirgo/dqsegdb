@@ -1,26 +1,26 @@
 {
 	"ifo" : {
 		"title" : "Interferometers",
-		"text" : "The interferometers that have data-quality flags available in DQSEGDB."
+		"text" : "<p>A clickable list of the interferometers that have data-quality flags available in DQSEGDB.</p><p>If the IFO is blue, then the flags related to it and available in DQSEGDB are displayed in the Flags section below. If the IFO is white, then the Flags are not listed.</p>"
 	},
 	"flags" : {
-		"title" : "Data-Quality Flags",
-		"text" : "Flags available for the currently selected IFO. A maximum of <strong>[MAX_FLAGS]</strong> flags can be selected at any one time. When flags are selected the versions available for them are pulled from the database and made available for selection."
+		"title" : "Flags",
+		"text" : "<p>The Data Quality Flags available for the IFO that are currently selected in the row above.</p><p>A maximum of <strong>[MAX_FLAGS]</strong> Flags can be selected at any one time.</p><p>When a Flag is selected, it is moved into the Versions row below, and removed from the Flags list.</p>"
 	},
 	"flag_versions" : {
-		"title" : "Data-Quality Flag Versions",
-		"text" : "<em>i</em> Versions can be associated to each flag. This section provides all of the flags that are available for each of the flags that have been selected."
+		"title" : "Flag Versions",
+		"text" : "<p>Any Flag selected in the Flags section above, automatically appears in the Versions list. By default, its Version #1 is selected, but the user can change this to select any other available Version.</p><p><em>n</em> Versions can be associated to each Flag.</p><p>Flags and their associated Versions can be removed from this list by clicking on the red X button, available to the left of the Flag name.</p>"
 	},
 	"gps_times" : {
 		"title" : "GPS Times",
-		"text" : "The GPS range boundaries used to filter the segments. Start and/or Stop can be provided."
+		"text" : "<p>The GPS-time range-boundaries used to filter the segments.</p><p>Start and/or Stop GPS times can be provided.</p>"
 	},
 	"include_history" : {
 		"title" : "Include history?",
-		"text" : "Sets whether or not to include the insert_history dictionary for the flag in the returned payload."
+		"text" : "<p>Sets whether or not to include the <em>insert_history</em> dictionary for the Flag in the returned JSON payload.</p><p>This is only really required when investigating potential issues with a Flag-Version and by default is set to <em>Off</em></p>"
 	},
 	"output_formats" : {
 		"title" : "Output formats",
-		"text" : "Results returned from the server can be provided in the following formats. All formats - except 'JSON' - return coalesced segments."
+		"text" : "<p>Results returned from the server can be provided in the following formats: [OUTPUT_FORMATS].</p><p>All formats - except 'JSON' - return coalesced segments.</p>"
 	}
 }
