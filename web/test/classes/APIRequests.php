@@ -114,7 +114,7 @@ class APIRequests {
         // Get details for this host.
         $ah = $dao->get_host_details($_SESSION['host_id']);
         // Loop through each flag.
-        foreach($_SESSION['uri_selected'] as $i => $uri) {
+        foreach($_SESSION['dq_flag_uris'] as $i => $uri) {
             $log->write_to_log_file(0, $uri);
             // Decode JSON result and push to array.
             array_push($a, json_decode(file_get_contents($ah[0]['host_ip'].$uri.$args), true));

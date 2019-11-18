@@ -123,15 +123,15 @@ class JSAction {
 		    // If URI passed.
 		    if(isset($_GET['uri'])) {
 		        // If URI not in deselected array.
-		        if(!in_array($_GET['uri'], $_SESSION['uri_selected'])) {
+		        if(!in_array($_GET['uri'], $_SESSION['dq_flag_uris'])) {
 		            // Add to deselected array.
-		            array_push($_SESSION['uri_selected'], $_GET['uri']);
+		            array_push($_SESSION['dq_flag_uris'], $_GET['uri']);
 		        }
 		        // Otherwise, if in deselected array.
 		        else {
 		            // Remove from de-selected array.
-		            if(($k = array_search($_GET['uri'], $_SESSION['uri_selected'])) !== false) {
-		                unset($_SESSION['uri_selected'][$k]);
+		            if(($k = array_search($_GET['uri'], $_SESSION['dq_flag_uris'])) !== false) {
+		                unset($_SESSION['dq_flag_uris'][$k]);
 		            }
 		        }
 		    }
