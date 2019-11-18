@@ -190,6 +190,8 @@ if __name__ == "__main__":
     loads in the JSON payload, builds the header, builds the alternative 
     payload and then writes it to the output file.
     """
+    # Init.
+    hdr = ''    
     args = parse_command_line()
     # Set the accepted formats.
     output_formats = ['vdb', 'ascii', 'coalesced_json', 'csv', 'tsv']
@@ -203,11 +205,13 @@ if __name__ == "__main__":
     else:
         # Get the length of the dictionary passed.
         json_dict_len = len(json_dict)
-        # Set the header, dependent upon the length of the dictionary.
-        if json_dict_len == 1:
-            hdr = '# One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
-        else:
-            hdr = '# % Flag-Versions requested. %d results:\n' % (json_dict_len)
+        # Set the header if not in JSON.
+        if args.type not 'json' and args.type not 'coalesced_json':
+            # Set the header, dependent upon the length of the dictionary.
+            if json_dict_len == 1:
+                hdr = '# One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
+            else:
+                hdr = '# % Flag-Versions requested. %d results:\n' % (json_dict_len)
         # Handle ASCII- and tab-separated-value-type conversion.
         if args.type == 'ascii' or args.type == 'tsv':
             s = generate_ascii_tsv(json_dict, args.type)
