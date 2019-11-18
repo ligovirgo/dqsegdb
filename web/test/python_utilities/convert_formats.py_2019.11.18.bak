@@ -94,7 +94,7 @@ def generated_ascii(json_dict, output_format):
     # Init.
     r = ''
     # Loop through the JSON dictionary.
-    for k, v in json_dict:
+    for k, v in json_dict.itervalues():
         # If the active list is not empty.
         if v['active']:
             # Get the segments into a LIGO segments structure. 
