@@ -113,8 +113,6 @@ class APIRequests {
         }
         // Get details for this host.
         $a = $dao->get_host_details($_SESSION['host_id']);
-        // Get file contents.
-        //$a = json_decode(file_get_contents($a[0]['host_ip'].'/dq/'.$_SESSION['ifo']), true);
         // Loop through each flag.
         foreach($_SESSION['uri_selected'] as $i => $uri) {
             $log->write_to_log_file(0, $uri);

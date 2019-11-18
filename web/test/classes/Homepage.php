@@ -127,7 +127,7 @@ class Homepage {
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-quarter w3-padding-0 w3-padding-top w3-padding-bottom w3-padding-right\">GPS times <i class=\"far fa-question-circle cursor\" onclick=\"open_info_modal('gps_times')\"></i></div>\n";
 	    $this->get_segments_form .= "  <div class=\"w3-container w3-threequarter w3-padding-0\">\n";
 	    $this->get_segments_form .= "      <input class=\"w3-input w3-half w3-margin-0\" id=\"gps_start_time\" name=\"gps_start_time\" value=\"".$_SESSION['gps_start']."\" min=\"0\" type=\"number\" placeholder=\"GPS start\" />\n";
-	    $this->get_segments_form .= "<input class=\"w3-input w3-half w3-margin-0\" id=\"gps_start_time\" name=\"gps_start_time\" value=\"".$_SESSION['gps_stop']."\" min=\"0\" type=\"number\" placeholder=\"GPS stop\" />\n";
+	    $this->get_segments_form .= "<input class=\"w3-input w3-half w3-margin-0\" id=\"gps_stop_time\" name=\"gps_stop_time\" value=\"".$_SESSION['gps_stop']."\" min=\"0\" type=\"number\" placeholder=\"GPS stop\" />\n";
 	    $this->get_segments_form .= "  </div>\n";
 	    $this->get_segments_form .= "</div>\n";
 	    // Include history.
