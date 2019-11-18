@@ -200,10 +200,13 @@ if __name__ == "__main__":
         # Handle Coalesced JSON conversion.
         elif args.type == 'coalesced_json':
             s = generated_json(json_dict, args.output)
-        # Prefix the header to the results.
-        r = hdr + s
-        # Build the final filepath and dopy the results to it.
-        filepath = args.output
-        final_filepath = ".".join(["_".join(args.output.split("_")[0:-1]), args.output.split("_")[-1:][0]])
-        shutil.copy(r, final_filepath)
-        print("Output file %s created" % (r))
+        # Open the output file and copy the results to it.
+        try:
+            f = open(args.output,'w')
+        except:
+            raise Error('Problem opening file: %s' % (args.output))
+        else:
+            # Append the header and the results to the file.
+            f.write(hdr + s)
+            f.close()
+            print("Output file %s created" % (args.output))
