@@ -219,7 +219,7 @@ if __name__ == "__main__":
             s = generate_coalesced_json(json_dict)
         # Open the output file and copy the results to it.
         try:
-            f = open(args.output,'w')
+            f = open(args.output.replace('coalesced_json', 'coalesced.json'),'w')
         except:
             raise Exception('Problem opening file: %s' % (args.output))
         else:
