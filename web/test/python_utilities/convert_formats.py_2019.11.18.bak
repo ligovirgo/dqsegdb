@@ -110,7 +110,7 @@ def generate_ascii_tsv(json_dict, output_format):
     format.
     """
     # Init.
-    s = []]
+    s = []
     r = ''
     # Loop through the JSON dictionary.
     for v in json_dict:
