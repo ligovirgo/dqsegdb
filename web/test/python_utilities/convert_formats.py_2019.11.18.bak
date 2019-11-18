@@ -56,52 +56,47 @@ def generate_vdb(json_dict,filepath):
     so that it provides data in a VDB-style format.
     """
     # Init.
+    sa = ''
+    sk = ''
+    gps_s = 0
+    gps_e = 9999999999
     r = ''
     # Loop through the JSON dictionary.
     for v in json_dict:
         # If the active list is not empty.
         if v['active']:
             # Get the segments into a LIGO segments structure. 
-            sa = segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']])
-            # Coalesce the segments.
-            sa.coalesce()
+            sa = sa + segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']])
         # If the known list is not empty.
         if v['known']:
             # Get the segments into a LIGO segments structure. 
-            sk = segments.segmentlist([segments.segment(x[0],x[1]) for x in v['known']])
-            # Coalesce the segments.
-            sk.coalesce()
-    return r
-    #res_dict=json.loads(json_str)
-    res_dict=json_dict
-    print(res_dict)
-    active_list=res_dict['active']
-    active_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in active_list])
-    active_segments.coalesce()
-    known_list=res_dict['known']
-    known_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in known_list])
-    known_segments.coalesce()
-    
-    query_start=res_dict['query_information']['start']
-    query_stop=res_dict['query_information']['end']
-    if query_start!=0 and query_stop!=0:
-        requested_span=segments.segmentlist([segments.segment(query_start,query_stop)])
-    else:
-        requested_span=segments.segmentlist([segments.segment(0,9999999999)])
-    active_segments_string=',1 \n'.join([str(i[0])+","+str(i[1]) for i in active_segments])+",1 \n"
-    unknown_segments=requested_span-known_segments    
-    unknown_segments_string=',-1 \n'.join([str(i[0])+","+str(i[1]) for i in unknown_segments])+",-1 \n"    
-    known_not_active_segments=known_segments-active_segments
+            sk = sk + segments.segmentlist([segments.segment(x[0],x[1]) for x in v['known']])
+    # Coalesce the segments.
+    sa.coalesce()
+    sk.coalesce()
+    # If GPS times have been defined in the JSON dictionary, handle them here.
+    if v[0]['query_information']['start'] != 0:
+        gps_s = v[0]['query_information']['start']
+    if v[0]['query_information']['end'] != 0:
+        gps_e = v[0]['query_information']['end']
+    # Get the requested span.
+    requested_span = segments.segmentlist([segments.segment(gps_s, gps_e)])
+    # Build the active segment list into a string.
+    active_segments_string = ',1 \n'.join([str(i[0])+","+str(i[1]) for i in sa])+",1 \n"
+    # Build the unknown segment list and string. 
+    unknown_segments = requested_span - sk
+    unknown_segments_string = ',-1 \n'.join([str(i[0])+","+str(i[1]) for i in unknown_segments])+",-1 \n"
+    # Build the known-not-active segment list and string. 
+    known_not_active_segments = sk-sa
     known_not_active_segments_string=',0 \n'.join([str(i[0])+","+str(i[1]) for i in known_not_active_segments])+",0 \n"
-    output_fileh=open(filepath,'a')
-    query_info_string=json.dumps(res_dict['query_information'], indent=1)
-    output_fileh.writelines(query_info_string)
-    output_fileh.write('\n')
-    output_fileh.writelines(active_segments_string)
-    output_fileh.writelines(unknown_segments_string)
-    output_fileh.writelines(known_not_active_segments_string)
-    output_fileh.close()
-    return filepath
+    # Get the query info to write to the header.
+    query_info_string=json.dumps(v[0]['query_information'], indent=1)
+    r = r + query_info_string.'\n'
+    # Write the segment strings and then return the content.
+    r = r + active_segments_string
+    r = r + unknown_segments_string
+    r = r + known_not_active_segments_string
+    return r
 
 def generate_ascii_tsv(json_dict, output_format):
     """
