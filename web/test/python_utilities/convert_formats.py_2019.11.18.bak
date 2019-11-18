@@ -134,25 +134,25 @@ def generate_coalesced_json(json_dict):
     """
     # Init.
     r = ''
-    coalesced_json_dict = json_dict
+    coalesced_json = json_dict
     # Loop through the JSON dictionary.
-    for v in json_dict:
+    for k, v in enumerate(json_dict):
         # If the active list is not empty.
         if v['active']:
             # Get the segments into a LIGO segments structure. 
             sa = convert_json_list_to_segmentlist(v['active'])
             # Coalesce segments, convert to JSON and add to coalesced dict.
             sa.coalesce()
-            coalesced_json_dict['active'] = convert_segmentlist_to_json(sa)
+            coalesced_json[k]['active'] = convert_segmentlist_to_json(sa)
         # If the known list is not empty.
         if v['known']:
             # Get the segments into a LIGO segments structure. 
             sk = convert_json_list_to_segmentlist(v['known'])
             # Coalesce segments, convert to JSON and add to coalesced dict.
             sk.coalesce()
-            coalesced_json_dict['known'] = convert_segmentlist_to_json(sk)
+            coalesced_json[k]['known'] = convert_segmentlist_to_json(sk)
     # Convert the result to string to be written to the output file. 
-    r = json.dumps(coalesced_json_dict)
+    r = json.dumps(coalesced_json)
     return r
 
 def convert_segmentlist_to_json(segmentlist_input):
