@@ -88,10 +88,11 @@ def generated_vdb_ascii(json_dict,filepath):
     output_fileh.close()
     return filepath
 
-def generated_ascii(json_dict, output_format):
+def generate_ascii_tsv(json_dict, output_format):
     """
     Take the JSON dictionary returned by the API server and convert it so 
-    that it provides only the active segments in an ASCII format.
+    that it provides only the active segments in an ASCII or tab-separated-
+    value format.
     """
     # Init.
     r = ''
@@ -101,10 +102,16 @@ def generated_ascii(json_dict, output_format):
         if v['active']:
             # Get the segments into a LIGO segments structure. 
             s = segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']])
-            # Coalesce them down.
+            # Coalesce the segments.
             s.coalesce()
-            # Convert the segments into ASCII format.
-            r = '\n'.join([str(i[0]) + "," + str(i[1]) for i in s])
+            # Use a comma to divide the segment times.
+            if output_format == 'ascii':
+                d = ','
+            # Use the tab character to divide the segment times.
+            elif output_format == 'tsv':
+                d = '\t'
+            # Break the segments down by line, using the defined divider.
+            r = '\n'.join([str(i[0]) + d + str(i[1]) for i in s])
     return r
 
 def generated_json(json_dict,filepath):
@@ -183,8 +190,11 @@ if __name__ == "__main__":
     payload and then writes it to the output file.
     """
     args = parse_command_line()
-    if args.type != 'vdb' and args.type != 'ascii' and args.type != 'coalesced_json':
-        raise InputError('Please provide type of vdb or ascii or coalesced_json')
+    # Set the accepted formats.
+    output_formats = ['vdb', 'ascii', 'coalesced_json', 'csv', 'tsv']
+    # Raise an error if an errant output-format has been provided.
+    if args.type in output_formats:
+        raise InputError('Please provide one of the following types: %s ' % (", ".join(output_formats)))
     try:
         json_dict = json.load(open(args.jsonfile))
     except:
@@ -197,10 +207,9 @@ if __name__ == "__main__":
             hdr = '#One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
         else:
             hdr = '#% Flag-Versions requested. %d results:\n' % (json_dict_len)
-        # Handle ASCII-type conversion.
-        if args.type == 'ascii':
-            # Build the accumulative segment list.
-            s = generated_ascii(json_dict, args.output)
+        # Handle ASCII- and tab-separated-value-type conversion.
+        if args.type == 'ascii' or args.type == 'tsv':
+            s = generate_ascii_tsv(json_dict, args.output)
         # Handle VDB-type conversion.
         elif args.type == 'vdb':
             s = generated_vdb_ascii(json_dict, args.output)
