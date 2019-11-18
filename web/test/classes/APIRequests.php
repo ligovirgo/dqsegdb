@@ -102,7 +102,7 @@ class APIRequests {
     /* Get segments from the server. */
     public function get_segments($s, $e, $history) {
         // Init.
-        $r = array();
+        $a = array();
         // Instantiate.
         $dao = new DAO();
         $log = new Logger();
@@ -112,15 +112,17 @@ class APIRequests {
             $args = $args.'&include=metadata,active,known';
         }
         // Get details for this host.
-        $a = $dao->get_host_details($_SESSION['host_id']);
+        $ah = $dao->get_host_details($_SESSION['host_id']);
         // Loop through each flag.
         foreach($_SESSION['uri_selected'] as $i => $uri) {
             $log->write_to_log_file(0, $uri);
             // Get resultant array.
-            $r = array_push($r, file_get_contents($a[0]['host_ip'].$uri.$args));
+            $a = json_decode(array_push(file_get_contents($ah[0]['host_ip'].$uri.$args), true));
         }
+        // Convert segments back to JSON to push back to user.
+        $a = json_encode($a, JSON_NUMERIC_CHECK);
         // Return.
-        return $r;
+        return $a;
     }
 
     /* Get URI args. */
