@@ -66,11 +66,11 @@ def generate_vdb(json_dict):
         # If the active list is not empty.
         if v['active']:
             # Get the segments into a LIGO segments structure. 
-            sa = sa + segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']])
+            sa = sa + convert_json_list_to_segmentlist(v['active'])
         # If the known list is not empty.
         if v['known']:
             # Get the segments into a LIGO segments structure. 
-            sk = sk + segments.segmentlist([segments.segment(x[0],x[1]) for x in v['known']])
+            sk = sk + convert_json_list_to_segmentlist(v['known'])
     # Coalesce the segments.
     sa.coalesce()
     sk.coalesce()
@@ -112,7 +112,7 @@ def generate_ascii_tsv(json_dict, output_format):
         # If the active list is not empty.
         if v['active']:
             # Get the segments into a LIGO segments structure.
-            s = s + segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']])
+            s = s + convert_json_list_to_segmentlist(v['active'])
     # If the active segment-list has been built.
     if s:
         # Coalesce the segments.
@@ -127,57 +127,56 @@ def generate_ascii_tsv(json_dict, output_format):
         r = '\n'.join([str(i[0]) + d + str(i[1]) for i in s])
     return r
 
-def generate_coalesced_json(json_dict,filepath):
+def generate_coalesced_json(json_dict):
     """
     Take a Flag-Version-Segments JSON dictionary, coalesce the segments and 
     return it as a new JSON dictionary.
     """
-    res_dict=json_dict
-    active_list=res_dict['active']
-    active_segments=convert_json_list_to_segmentlist(active_list)
-    active_segments.coalesce()
-    active_json=convert_segmentlist_to_json(active_segments)
-    res_dict['active']=active_json
-
-    known_list=res_dict['known']
-    known_segments=convert_json_list_to_segmentlist(known_list)
-    known_segments.coalesce()
-    known_json=convert_json_list_to_segmentlist(known_segments)
-    res_dict['known']=known_json
-    #print filepath
-    ### Document why we need the next line!:
-    ### It is because the file name would be <number>.coalesced_json and we want it to be <number>.coalesced.json instead.  This breaks with normal file names given to command line though
-    #filepath=".".join(["_".join(filepath.split("_")[0:-1]),filepath.split("_")[-1:][0]])
-    #filepath='.'.join(filepath.split('_')[)
-    #print filepath
-    output_fileh=open(filepath,'a') 
-    #output_fileh.writelines(active_segments_string) 
-    json_output_string=json.dumps(res_dict)
-    #print "Coalesced json string type"
-    #print type(json_output_string)
-    output_fileh.writelines(json_output_string)
-    output_fileh.close()
-    return filepath
+    # Init.
+    sa = ''
+    sk = ''
+    r = ''
+    # Loop through the JSON dictionary.
+    for v in json_dict:
+        # If the active list is not empty.
+        if v['active']:
+            # Get the segments into a LIGO segments structure. 
+            sa = sa + convert_json_list_to_segmentlist(v['active'])
+        # If the known list is not empty.
+        if v['known']:
+            # Get the segments into a LIGO segments structure. 
+            sk = sk + convert_json_list_to_segmentlist(v['known'])
+    # Coalesce the segments.
+    sa.coalesce()
+    sk.coalesce()
+    # Convert the segments back to JSON.
+    ja = convert_segmentlist_to_json(sa)
+    jk = convert_segmentlist_to_json(sk)
+    # Build the result dictionary and over-write the active and known lists.
+    coalesced_json_dict = json_dict
+    coalesced_json_dict['active'] = ja
+    coalesced_json_dict['known'] = jk
+    # Convert the result to string to be written to the output file. 
+    r = json.dumps(coalesced_json_dict)
+    return r
 
 def convert_segmentlist_to_json(segmentlist_input):
     """ 
     Helper function used to convert segmentlist to json list of lists type 
     object.
-    Utility method, ripped from jsonhelper.py in dqsegdb package, until we 
+    * Utility method, ripped from jsonhelper.py in dqsegdb package, until we 
     can use it as a dependency.
     """
-    json_list=[[x[0],x[1]] for x in segmentlist_input]
-    return json_list
+    return [[x[0],x[1]] for x in segmentlist_input]
 
 def convert_json_list_to_segmentlist(jsonlist):
     """ 
     Helper function used to convert JSON list of lists-type object to a 
     segmentlist object-
-    Utility method, ripped from jsonhelper.py in dqsegdb package, until we 
+    * Utility method, ripped from jsonhelper.py in dqsegdb package, until we 
     can use it as a dependency.
     """
-    segment_list=segments.segmentlist([segments.segment(x[0],x[1]) for x in jsonlist])
-    return segment_list
+    return segments.segmentlist([segments.segment(x[0],x[1]) for x in jsonlist])
 
 def parse_command_line():
     """
