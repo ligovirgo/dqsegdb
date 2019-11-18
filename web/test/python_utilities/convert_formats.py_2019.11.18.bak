@@ -6,7 +6,7 @@ from ligo import segments
 
 """
 Methods used to convert JSON-payload data retrieved from the API server into 
-other formats.
+other user-requested formats.
 
 Formats - also known as 'output formats' - are distinguished as follows:
   - json:
@@ -46,6 +46,8 @@ Formats - also known as 'output formats' - are distinguished as follows:
     
 Descriptions last updated on the 18th of November, 2019, by Gary Hemming, 
 courtesy of descriptions provided by Robert Bruntz.
+
+Last update, 18th of November, 2019, by Gary Hemming.
 """
 
 
@@ -100,7 +102,7 @@ def generated_ascii(json_dict, output_format):
             # Get the segments into a LIGO segments structure. 
             s = segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']])
             # Coalesce them down.
-            #s.coalesce()
+            s.coalesce()
             # Convert the segments into ASCII format.
             r = '\n'.join([str(i[0]) + "," + str(i[1]) for i in s])
     return r
@@ -175,6 +177,11 @@ def parse_command_line():
     return args
 
 if __name__ == "__main__":
+    """
+    The script starts here, parses the args passed by the user and then, 
+    loads in the JSON payload, builds the header, builds the alternative 
+    payload and then writes it to the output file.
+    """
     args = parse_command_line()
     if args.type != 'vdb' and args.type != 'ascii' and args.type != 'coalesced_json':
         raise InputError('Please provide type of vdb or ascii or coalesced_json')
@@ -187,9 +194,9 @@ if __name__ == "__main__":
         json_dict_len = len(json_dict)
         # Set the header, dependent upon the length of the dictionary.
         if json_dict_len == 1:
-            hdr = 'One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
+            hdr = '#One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
         else:
-            hdr = '% Flag-Versions requested. %d results:\n' % (json_dict_len)
+            hdr = '#% Flag-Versions requested. %d results:\n' % (json_dict_len)
         # Handle ASCII-type conversion.
         if args.type == 'ascii':
             # Build the accumulative segment list.
@@ -209,4 +216,3 @@ if __name__ == "__main__":
             # Append the header and the results to the file.
             f.write(hdr + s)
             f.close()
-            print("Output file %s created" % (args.output))
