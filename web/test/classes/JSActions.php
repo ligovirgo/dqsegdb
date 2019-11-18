@@ -108,6 +108,9 @@ class JSAction {
 		    if(($k = array_search($_GET['dq_flag_uri'], $_SESSION['dq_flag_uris'])) !== false) {
 		        unset($_SESSION['dq_flag_uris'][$k]);
 		    }
+		    if(($k = array_search($_GET['dq_flag_uri'], $_SESSION['uri_selected'])) !== false) {
+		        unset($_SESSION['uri_selected'][$k]);
+		    }
 		}
 		elseif($_GET['action'] == 'update_version_div') {
 		    $home->get_versions();
@@ -123,15 +126,15 @@ class JSAction {
 		    // If URI passed.
 		    if(isset($_GET['uri'])) {
 		        // If URI not in deselected array.
-		        if(!in_array($_GET['uri'], $_SESSION['dq_flag_uris'])) {
+		        if(!in_array($_GET['uri'], $_SESSION['uri_selected'])) {
 		            // Add to deselected array.
-		            array_push($_SESSION['dq_flag_uris'], $_GET['uri']);
+		            array_push($_SESSION['uri_selected'], $_GET['uri']);
 		        }
 		        // Otherwise, if in deselected array.
 		        else {
 		            // Remove from de-selected array.
-		            if(($k = array_search($_GET['uri'], $_SESSION['dq_flag_uris'])) !== false) {
-		                unset($_SESSION['dq_flag_uris'][$k]);
+		            if(($k = array_search($_GET['uri'], $_SESSION['uri_selected'])) !== false) {
+		                unset($_SESSION['uri_selected'][$k]);
 		            }
 		        }
 		    }
