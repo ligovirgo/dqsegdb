@@ -4,34 +4,50 @@ import json
 import shutil
 from ligo import segments
 
-########### ########### ########### ###########
-#
-# Extract json file to string
-#
-########### ########### ########### ###########
+"""
+Methods used to convert JSON-payload data retrieved from the API server into 
+other formats.
 
-def open_json_file(json_filepath):
-    try:
-        return [json.load(open(json_filepath))]
-    except ValueError:
-        start_json_block_index=0
-        result_array=[]
-        data=open(json_filepath,'r').readlines()
-        count=0
-        index=0
-        clean_data=data[0].strip()
-        for i in clean_data:
-            if i=="{":
-                count=count+1
-            elif i=="}":
-                count=count-1
-            if count==0:
-                #print "Made it through first payload at index: %d" % index
-                #print clean_data[start_json_block_index:index+1]
-                result_array.append(json.loads(clean_data[start_json_block_index:index+1]))
-                start_json_block_index=index+1
-            index+=1
-        return result_array
+Formats - also known as 'output formats' - are distinguished as follows:
+  - json:
+    - not coalesced;
+    - has both known and active (active first, then known);
+    - see: https://segments-web.ligo.org/downloads/1552078659.json (787kB).
+  - vdb:
+    - coalesced;
+    - this is a Virgo-defined format;
+    - VDB stands for Virgo DataBase;
+    - has separate datasets: 'known' (not active) and 'active' (which implies 
+      'known') (active-and-known first (field #3 = 1), then search range 
+      (field #3 = -1), then known-only (not active) (field #3 = 0))
+    - so all points in time are part of 1 of 3 sets: unknown, known but not 
+      active, or known and active; cf. coalesced json, where known and active 
+      is a subset of known;
+    - run "awk 'BEGIN { FS = ","; OFS = "," } ; { if ((NF==3) && ($3==1)) 
+      print $1, $2 }'  infile.vdb  >  outfile.txt" to get known-and-active 
+      segments, like in the ascii file format;
+    - see: https://segments-web.ligo.org/downloads/1552078644.vdb (3kB).
+  - ascii:
+    - not coalesced;
+    - has only active, not known;
+    - identical to tsv, but comma separated values (ascii) is replaced by a 
+      tab (tsv);
+    - see: https://segments-web.ligo.org/downloads/1552078659.ascii (147kB).
+  - coalesced_json:
+    - coalesced;
+    - has both known and active (known first, then active);
+    - see: https://segments-web.ligo.org/downloads/1552078670.coalesced_json (2kB).
+  - tsv:
+    - not coalesced;
+    - has only active, not known;
+    - identical to ascii, but comma separating values (ascii) is replaced by 
+      a tab (tsv);
+    - see: https://segments-web.ligo.org/downloads/1552078679.tsv (147kB)
+    
+Descriptions last updated on the 18th of November, 2019, by Gary Hemming, 
+courtesy of descriptions provided by Robert Bruntz.
+"""
+
 
 ################################################################################
 #
@@ -70,17 +86,24 @@ def generated_vdb_ascii(json_dict,filepath):
     output_fileh.close()
     return filepath
 
-def generated_ascii(json_dict,filepath):
-    #res_dict=json.loads(json_str)    
-    res_dict=json_dict
-    active_list=res_dict['active']
-    active_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in active_list])    
-    active_segments_string='\n'.join([str(i[0])+","+str(i[1]) for i in active_segments])
-    active_segments.coalesce()
-    output_fileh=open(filepath,'a')    
-    output_fileh.writelines(active_segments_string)
-    output_fileh.close()
-    return filepath
+def generated_ascii(json_dict, output_format):
+    """
+    Take the JSON dictionary returned by the API server and convert it so 
+    that it provides only the active segments in an ASCII format.
+    """
+    # Init.
+    r = ''
+    # Loop through the JSON dictionary.
+    for k, v in json_dict:
+        # If the active list is not empty.
+        if v['active']:
+            # Get the segments into a LIGO segments structure. 
+            s = segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']])
+            # Coalesce them down.
+            #s.coalesce()
+            # Convert the segments into ASCII format.
+            r = '\n'.join([str(i[0]) + "," + str(i[1]) for i in s])
+    return r
 
 def generated_json(json_dict,filepath):
     res_dict=json_dict
@@ -141,6 +164,9 @@ def convert_json_list_to_segmentlist(jsonlist):
 ######
 
 def parse_command_line():
+    """
+    Set the args that can be passed by the user at the command line.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('jsonfile', type=str, help="Json input file.")
     parser.add_argument('-o', '--output', help="Output file path")
@@ -150,61 +176,34 @@ def parse_command_line():
 
 if __name__ == "__main__":
     args = parse_command_line()
-    #print args.output
     if args.type != 'vdb' and args.type != 'ascii' and args.type != 'coalesced_json':
         raise InputError('Please provide type of vdb or ascii or coalesced_json')
-    json_dict_array=open_json_file(args.jsonfile)
-    if args.type == 'vdb':
-        if len(json_dict_array)==1:
-            json_dict=json_dict_array[0]
-            res_file=generated_vdb_ascii(json_dict,args.output)
+    try:
+        json_dict = json.load(open(args.jsonfile))
+    except:
+        raise Error('Unable to load JSON file: %s' % (args.jsonfile))
+    else:
+        # Get the length of the dictionary passed.
+        json_dict_len = len(json_dict)
+        # Set the header, dependent upon the length of the dictionary.
+        if json_dict_len == 1:
+            hdr = 'One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
         else:
-            for json_dict in json_dict_array:
-                version=json_dict['version']
-                fileh=open(args.output,'a')
-                if fileh.tell()==0:
-                    fileh.writelines('Multiple Versions Requested, Version = %d Results: \n' % int(version))
-                else:
-                    fileh.writelines('\nMultiple Versions Requested, Version = %d Results: \n' % int(version))
-                fileh.close()
-                res_file=generated_vdb_ascii(json_dict,args.output)
-    elif args.type == 'ascii':
-        #res_file=generated_ascii(json_dict,args.output)
-        if len(json_dict_array)==1:
-            json_dict=json_dict_array[0]
-            res_file=generated_ascii(json_dict,args.output)
-        else:
-            for json_dict in json_dict_array:
-                version=json_dict['version']
-                fileh=open(args.output,'a')
-                if fileh.tell()==0:
-                    fileh.writelines('Multiple Versions Requested, Version = %d Results: \n' % int(version))
-                else:
-                    fileh.writelines('\nMultiple Versions Requested, Version = %d Results: \n' % int(version))
-                fileh.close()
-                res_file=generated_ascii(json_dict,args.output)
-
-    elif args.type == 'coalesced_json':
-        #res_file=generated_json(json_dict,args.output)
-        if len(json_dict_array)==1:
-            json_dict=json_dict_array[0]
-            res_file=generated_json(json_dict,args.output)
-        else:
-            for number,json_dict in enumerate(json_dict_array):
-                version=json_dict['version']
-                fileh=open(args.output,'a')
-                if fileh.tell()==0:
-                    fileh.writelines('Multiple Versions Requested, Version = %d Results: \n' % int(version))
-                else:
-                    fileh.writelines('\nMultiple Versions Requested, Version = %d Results: \n' % int(version))
-                fileh.close()
-                #res_file=generated_json(json_dict,args.output)
-                if number==0:
-                    res_file=generated_json(json_dict,args.output)
-                else:
-                    res_file=generated_json(json_dict,res_file)
-        filepath=args.output
-        final_filepath=".".join(["_".join(filepath.split("_")[0:-1]),filepath.split("_")[-1:][0]])
-        shutil.copy(res_file, final_filepath)
-
-    print "Output file %s created" % res_file
+            hdr = '% Flag-Versions requested. %d results:\n' % (json_dict_len)
+        # Handle ASCII-type conversion.
+        if args.type == 'ascii':
+            # Build the accumulative segment list.
+            s = generated_ascii(json_dict, args.output)
+        # Handle VDB-type conversion.
+        elif args.type == 'vdb':
+            s = generated_vdb_ascii(json_dict, args.output)
+        # Handle Coalesced JSON conversion.
+        elif args.type == 'coalesced_json':
+            s = generated_json(json_dict, args.output)
+        # Prefix the header to the results.
+        r = hdr + s
+        # Build the final filepath and dopy the results to it.
+        filepath = args.output
+        final_filepath = ".".join(["_".join(args.output.split("_")[0:-1]), args.output.split("_")[-1:][0]])
+        shutil.copy(r, final_filepath)
+        print("Output file %s created" % (r))
