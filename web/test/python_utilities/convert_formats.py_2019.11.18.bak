@@ -12,8 +12,6 @@ from ligo import segments
 
 def open_json_file(json_filepath):
     try:
-        f=open('/var/log/dqsegdb_web/2019-11-18.log', 'a')
-        f.write("JSON: " + json_filepath)
         return [json.load(open(json_filepath))]
     except ValueError:
         start_json_block_index=0
@@ -33,7 +31,6 @@ def open_json_file(json_filepath):
                 result_array.append(json.loads(clean_data[start_json_block_index:index+1]))
                 start_json_block_index=index+1
             index+=1
-        f.write("result: " + result_array)
         return result_array
 
 ################################################################################
@@ -45,6 +42,7 @@ def open_json_file(json_filepath):
 def generated_vdb_ascii(json_dict,filepath):
     #res_dict=json.loads(json_str)
     res_dict=json_dict
+    print(res_dict)
     active_list=res_dict['active']
     active_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in active_list])
     active_segments.coalesce()
