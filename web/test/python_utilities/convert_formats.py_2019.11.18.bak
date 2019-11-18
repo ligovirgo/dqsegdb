@@ -209,13 +209,13 @@ if __name__ == "__main__":
             hdr = '#% Flag-Versions requested. %d results:\n' % (json_dict_len)
         # Handle ASCII- and tab-separated-value-type conversion.
         if args.type == 'ascii' or args.type == 'tsv':
-            s = generate_ascii_tsv(json_dict, args.output)
+            s = generate_ascii_tsv(json_dict, args.type)
         # Handle VDB-type conversion.
         elif args.type == 'vdb':
-            s = generated_vdb_ascii(json_dict, args.output)
+            s = generated_vdb_ascii(json_dict)
         # Handle Coalesced JSON conversion.
         elif args.type == 'coalesced_json':
-            s = generated_json(json_dict, args.output)
+            s = generated_json(json_dict)
         # Open the output file and copy the results to it.
         try:
             f = open(args.output,'w')
