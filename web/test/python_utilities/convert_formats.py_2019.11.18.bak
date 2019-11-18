@@ -50,7 +50,7 @@ courtesy of descriptions provided by Robert Bruntz.
 Last update, 18th of November, 2019, by Gary Hemming.
 """
 
-def generate_vdb(json_dict,filepath):
+def generate_vdb(json_dict):
     """
     Take a Flag-Version-Segments JSON dictionary and convert it so that it 
     so that it provides data in a VDB-style format.
