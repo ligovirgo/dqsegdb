@@ -105,8 +105,16 @@ class JSAction {
 		    }
 		}
 		elseif($_GET['action'] == 'deselect_flag') {
+		    $log->write_to_log_file(0, 'BEFORE:');
+		    foreach($_SESSION['dq_flag_uris'] as $k => $v) {
+		        $log->write_to_log_file(0, 'k: '.$v.'; v: '.$v);
+		    }
 		    if(($k = array_search($_GET['dq_flag_uri'], $_SESSION['dq_flag_uris'])) !== false) {
 		        unset($_SESSION['dq_flag_uris'][$k]);
+		    }
+		    $log->write_to_log_file(0, 'AFTER:');
+		    foreach($_SESSION['dq_flag_uris'] as $k => $v) {
+		        $log->write_to_log_file(0, 'k: '.$v.'; v: '.$v);
 		    }
 		}
 		elseif($_GET['action'] == 'update_version_div') {
