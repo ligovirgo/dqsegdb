@@ -50,14 +50,28 @@ courtesy of descriptions provided by Robert Bruntz.
 Last update, 18th of November, 2019, by Gary Hemming.
 """
 
-
-################################################################################
-#
-#  Conversions from JSON to user requested formats
-#
-################################################################################
-
-def generated_vdb_ascii(json_dict,filepath):
+def generate_vdb(json_dict,filepath):
+    """
+    Take a Flag-Version-Segments JSON dictionary and convert it so that it 
+    so that it provides data in a VDB-style format.
+    """
+    # Init.
+    r = ''
+    # Loop through the JSON dictionary.
+    for v in json_dict:
+        # If the active list is not empty.
+        if v['active']:
+            # Get the segments into a LIGO segments structure. 
+            sa = segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']])
+            # Coalesce the segments.
+            sa.coalesce()
+        # If the known list is not empty.
+        if v['known']:
+            # Get the segments into a LIGO segments structure. 
+            sk = segments.segmentlist([segments.segment(x[0],x[1]) for x in v['known']])
+            # Coalesce the segments.
+            sk.coalesce()
+    return r
     #res_dict=json.loads(json_str)
     res_dict=json_dict
     print(res_dict)
@@ -67,6 +81,7 @@ def generated_vdb_ascii(json_dict,filepath):
     known_list=res_dict['known']
     known_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in known_list])
     known_segments.coalesce()
+    
     query_start=res_dict['query_information']['start']
     query_stop=res_dict['query_information']['end']
     if query_start!=0 and query_stop!=0:
@@ -90,31 +105,38 @@ def generated_vdb_ascii(json_dict,filepath):
 
 def generate_ascii_tsv(json_dict, output_format):
     """
-    Take the JSON dictionary returned by the API server and convert it so 
-    that it provides only the active segments in an ASCII or tab-separated-
-    value format.
+    Take a Flag-Version-Segments JSON dictionary and convert it so that it 
+    provides only the active segments in an ASCII or tab-separated-value 
+    format.
     """
     # Init.
+    s = []]
     r = ''
     # Loop through the JSON dictionary.
     for v in json_dict:
         # If the active list is not empty.
         if v['active']:
             # Get the segments into a LIGO segments structure. 
-            s = segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']])
-            # Coalesce the segments.
-            s.coalesce()
-            # Use a comma to divide the segment times.
-            if output_format == 'ascii':
-                d = ','
-            # Use the tab character to divide the segment times.
-            elif output_format == 'tsv':
-                d = '\t'
-            # Break the segments down by line, using the defined divider.
-            r = '\n'.join([str(i[0]) + d + str(i[1]) for i in s])
+            s.extend(segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']]))
+    # If the active segment-list has been built.
+    if s:
+        # Coalesce the segments.
+        s.coalesce()
+        # Use a comma to divide the segment times.
+        if output_format == 'ascii':
+            d = ','
+        # Use the tab character to divide the segment times.
+        elif output_format == 'tsv':
+            d = '\t'
+        # Break the segments down by line, using the defined divider.
+        r = '\n'.join([str(i[0]) + d + str(i[1]) for i in s])
     return r
 
-def generated_json(json_dict,filepath):
+def generate_coalesced_json(json_dict,filepath):
+    """
+    Take a Flag-Version-Segments JSON dictionary, coalesce the segments and 
+    return it as a new JSON dictionary.
+    """
     res_dict=json_dict
     active_list=res_dict['active']
     active_segments=convert_json_list_to_segmentlist(active_list)
@@ -142,35 +164,25 @@ def generated_json(json_dict,filepath):
     output_fileh.close()
     return filepath
 
-
-
-##### 
-#
-# Ripped from jsonhelper.py in dqsegdb package until we can use it as a dependency
-#
-#####
-
 def convert_segmentlist_to_json(segmentlist_input):
     """ 
     Helper function used to convert segmentlist to json list of lists type 
     object.
+    Utility method, ripped from jsonhelper.py in dqsegdb package, until we 
+    can use it as a dependency.
     """
     json_list=[[x[0],x[1]] for x in segmentlist_input]
     return json_list
 
 def convert_json_list_to_segmentlist(jsonlist):
-     """ 
-     Helper function used to convert json list of lists type object to a 
-     segmentlist object
-     """
-     segment_list=segments.segmentlist([segments.segment(x[0],x[1]) for x in jsonlist])
-     return segment_list
-
-#####
-#
-#  Set up parser for command line execution
-#
-######
+    """ 
+    Helper function used to convert JSON list of lists-type object to a 
+    segmentlist object-
+    Utility method, ripped from jsonhelper.py in dqsegdb package, until we 
+    can use it as a dependency.
+    """
+    segment_list=segments.segmentlist([segments.segment(x[0],x[1]) for x in jsonlist])
+    return segment_list
 
 def parse_command_line():
     """
@@ -204,24 +216,24 @@ if __name__ == "__main__":
         json_dict_len = len(json_dict)
         # Set the header, dependent upon the length of the dictionary.
         if json_dict_len == 1:
-            hdr = '#One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
+            hdr = '# One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
         else:
-            hdr = '#% Flag-Versions requested. %d results:\n' % (json_dict_len)
+            hdr = '# % Flag-Versions requested. %d results:\n' % (json_dict_len)
         # Handle ASCII- and tab-separated-value-type conversion.
         if args.type == 'ascii' or args.type == 'tsv':
             s = generate_ascii_tsv(json_dict, args.type)
         # Handle VDB-type conversion.
         elif args.type == 'vdb':
-            s = generated_vdb_ascii(json_dict)
+            s = generate_vdb(json_dict)
         # Handle Coalesced JSON conversion.
         elif args.type == 'coalesced_json':
-            s = generated_json(json_dict)
+            s = generate_coalesced_json(json_dict)
         # Open the output file and copy the results to it.
         try:
             f = open(args.output,'w')
         except:
             raise Exception('Problem opening file: %s' % (args.output))
         else:
-            # Append the header and the results to the file.
+            # Append the header and the results to the file and close off.
             f.write(hdr + s)
             f.close()
