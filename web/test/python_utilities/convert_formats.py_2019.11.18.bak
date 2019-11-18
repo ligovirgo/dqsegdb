@@ -110,14 +110,14 @@ def generate_ascii_tsv(json_dict, output_format):
     format.
     """
     # Init.
-    s = []
+    s = ''
     r = ''
     # Loop through the JSON dictionary.
     for v in json_dict:
         # If the active list is not empty.
         if v['active']:
-            # Get the segments into a LIGO segments structure. 
-            s.extend(segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']]))
+            # Get the segments into a LIGO segments structure.
+            s = s + segments.segmentlist([segments.segment(x[0],x[1]) for x in v['active']])
     # If the active segment-list has been built.
     if s:
         # Coalesce the segments.
