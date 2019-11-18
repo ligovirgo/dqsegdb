@@ -193,12 +193,12 @@ if __name__ == "__main__":
     # Set the accepted formats.
     output_formats = ['vdb', 'ascii', 'coalesced_json', 'csv', 'tsv']
     # Raise an error if an errant output-format has been provided.
-    if args.type in output_formats:
-        raise InputError('Please provide one of the following types: %s ' % (", ".join(output_formats)))
+    if args.type not in output_formats:
+        raise Exception('Please provide one of the following types: %s ' % (", ".join(output_formats)))
     try:
         json_dict = json.load(open(args.jsonfile))
     except:
-        raise Error('Unable to load JSON file: %s' % (args.jsonfile))
+        raise Exception('Unable to load JSON file: %s' % (args.jsonfile))
     else:
         # Get the length of the dictionary passed.
         json_dict_len = len(json_dict)
@@ -220,7 +220,7 @@ if __name__ == "__main__":
         try:
             f = open(args.output,'w')
         except:
-            raise Error('Problem opening file: %s' % (args.output))
+            raise Exception('Problem opening file: %s' % (args.output))
         else:
             # Append the header and the results to the file.
             f.write(hdr + s)
