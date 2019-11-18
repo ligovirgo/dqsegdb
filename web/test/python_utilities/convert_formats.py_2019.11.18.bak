@@ -75,10 +75,10 @@ def generate_vdb(json_dict):
     sa.coalesce()
     sk.coalesce()
     # If GPS times have been defined in the JSON dictionary, handle them here.
-    if v[0]['query_information']['start'] != 0:
-        gps_s = v[0]['query_information']['start']
-    if v[0]['query_information']['end'] != 0:
-        gps_e = v[0]['query_information']['end']
+    if v['query_information']['start'] != 0:
+        gps_s = v['query_information']['start']
+    if v['query_information']['end'] != 0:
+        gps_e = v['query_information']['end']
     # Get the requested span.
     requested_span = segments.segmentlist([segments.segment(gps_s, gps_e)])
     # Build the active segment list into a string.
@@ -90,7 +90,7 @@ def generate_vdb(json_dict):
     known_not_active_segments = sk-sa
     known_not_active_segments_string=',0 \n'.join([str(i[0])+","+str(i[1]) for i in known_not_active_segments])+",0 \n"
     # Get the query info to write to the header.
-    query_info_string=json.dumps(v[0]['query_information'], indent=1)
+    query_info_string=json.dumps(v['query_information'], indent=1)
     r = r + query_info_string + '\n'
     # Write the segment strings and then return the content.
     r = r + active_segments_string
