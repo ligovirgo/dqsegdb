@@ -258,7 +258,7 @@ class Homepage {
                     $this->version_div .= "        </td>\n";
                     $this->version_div .= "        <td id=\"flag_".$ifo_flag."_versions\">\n";
                     // Add version information after flag name.
-                    $this->get_flag_version_span_contents($ifo_flag);
+                    $this->get_flag_version_span_contents($ifo_flag, $versions);
                     $this->version_div .= $this->version_span;
                     $this->version_div .= "</td>\n";
                     // Close row.
@@ -289,40 +289,27 @@ class Homepage {
 	}
 
 	/* Get the contents of the flag version span. */
-	public function get_flag_version_span_contents($uri) {
+	public function get_flag_version_span_contents($ifo_flag, $selected_versions) {
 	    // Reset the version_span variable.
 	    $this->version_span = NULL;
 	    // Instantiate.
 	    $api = new APIRequests();
-        // Explode the URI.
-        $e = explode('/', $uri);
-        // If flag passed.
-        if($e[3]) {
-            // If it already contains a version number, N.B. this occurs when 'Use all IFO' is selected.
-            if(is_numeric(end($e))) {
-                // Remove the last element, i.e. the version number.
-                array_pop($e);
-                // Re-assemble the URI.
-                $uri = implode('/', $e);
-            }
-            $a = $api->get_uri($uri);
-            // If array set.
-            if(isset($a['version']) && is_array($a['version'])) {
-                // Loop through versions.
-                foreach($a['version'] as $k => $v) {
-                    // Set URI with version.
-                    $uri_v = $uri.'/'.$v;
-                    // Set span name.
-                    $span_name = 'span_'.$e[2].'_'.$e[3].'_'.$v;
-                    // Set class.
-                    $check = NULL;
-                    if(in_array($uri_v, $_SESSION['uri_selected'])) {
-                        $check = ' checked';
-                    }
-                    // Output versions.
-                    $this->version_span .= "<div id=\"".$span_name."\" class=\"w3-tag w3-light-grey w3-round w3-border w3-margin-right\"><input type=\"radio\" name=\"checkbox_".$span_name."\" id=\"checkbox_".$span_name."\" onchange=\"select_version_uri('".$span_name."','".$uri_v."')\" value=\"".$uri_v."\"".$check."> ".$v."</div>";
+	    // Get the JSON payload for this flag.
+	    $a = $api->get_uri('/dq/'.str_replace('___', '/', $ifo_flag));
+        // If array set.
+        if(isset($a['version']) && is_array($a['version'])) {
+            // Loop through versions.
+            foreach($a['version'] as $k => $v) {
+                // Set span name.
+                $span_name = 'span_'.$ifo_flag.'_'.$v;
+                // Set class.
+                $check = NULL;
+                if(in_array($v, $selected_versions)) {
+                    $check = ' checked';
                 }
-	        }
+                // Output versions.
+                $this->version_span .= "<div id=\"".$span_name."\" class=\"w3-tag w3-light-grey w3-round w3-border w3-margin-right\"><input type=\"radio\" name=\"checkbox_".$span_name."\" id=\"checkbox_".$span_name."\" onchange=\"select_version_uri('".$ifo_flag."','".$v."')\" value=\"".v."\"".$check."> ".$v."</div>";
+            }
 	    }
 	}
 
