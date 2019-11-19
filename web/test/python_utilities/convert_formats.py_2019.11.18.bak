@@ -48,7 +48,7 @@ Descriptions last updated on the 18th of November, 2019, by Gary Hemming,
 courtesy of descriptions provided by Robert Bruntz.
 
 History:
-Last update: 18th of November, 2019, by Gary Hemming.
+Last update: 19th of November, 2019, by Gary Hemming.
 """
 
 """
@@ -78,7 +78,7 @@ def generate_vdb(json_dict):
         if v['known']:
             # Get the segments into a LIGO segments structure. 
             sk = sk + convert_json_list_to_segmentlist(v['known'])
-    # Coalesce the segments.
+    # If they have been set, coalesce the segments.
     if sa:
         sa.coalesce()
     if sk:
