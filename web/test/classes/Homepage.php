@@ -250,7 +250,7 @@ class Homepage {
 	            // Open table.
 	            $this->version_div .= "<table class=\"w3-table-all w3-margin-0\">\n";
 	            // Loop through selected URI.
-	            foreach($_SESSION['dq_flag_uris'] as $k => $ifo_flag) {
+	            foreach($_SESSION['dq_flag_uris'] as $ifo_flag => $versions) {
                     // Get row.
 	                $this->version_div .= "    <tr id=\"tr_".$ifo_flag."\">\n";
 	                $this->version_div .= "        <td id=\"flag_".$ifo_flag."\">\n";
