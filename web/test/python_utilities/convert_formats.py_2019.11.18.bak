@@ -210,7 +210,6 @@ def get_flag_versions_as_string(j):
         r = r + "%s/%d, " % (v['name'], v['version'])
     # Remove the trailing comma and return.
     return r[:-1]
-}
 
 """
 * Main.
