@@ -47,7 +47,14 @@ Formats - also known as 'output formats' - are distinguished as follows:
 Descriptions last updated on the 18th of November, 2019, by Gary Hemming, 
 courtesy of descriptions provided by Robert Bruntz.
 
-Last update, 18th of November, 2019, by Gary Hemming.
+History:
+Last update: 18th of November, 2019, by Gary Hemming.
+"""
+
+"""
+* Conversion methods.
+The following methods all handle the conversion of the Flag-Version-Segments 
+JSON payload into another format.
 """
 
 def generate_vdb(json_dict):
@@ -154,6 +161,12 @@ def generate_coalesced_json(json_dict):
     # Convert the result to string to be written to the output file. 
     r = json.dumps(coalesced_json)
     return r
+    
+"""
+* Auxiliary methods
+The following methods all provide auxiliary methods, used by the main or 
+conversion methods.
+"""
 
 def convert_segmentlist_to_json(segmentlist_input):
     """ 
@@ -184,6 +197,25 @@ def parse_command_line():
     args = parser.parse_args()
     return args
 
+def get_flag_versions_as_string(j) {
+    """
+    Get all of the Flag-Versions that have been sent in the JSON payload into 
+    a comma-separated string.
+    """
+    # Init.
+    r = ''
+    # Loop through the JSON dictionary.
+    for k, v in enumerate(json_dict):
+        # Add the name and version to the output string.
+        r = r + "%s/%d, " % (v['name'], v['version'])
+    # Remove the trailing comma and return.
+    return r[:-1]
+}
+
+"""
+* Main.
+"""
+
 if __name__ == "__main__":
     """
     The script starts here, parses the args passed by the user and then, 
@@ -211,7 +243,7 @@ if __name__ == "__main__":
             if json_dict_len == 1:
                 hdr = '# One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
             else:
-                hdr = '# % Flag-Versions requested. %d results:\n' % (json_dict_len)
+                hdr = '# %d Flag-Versions requested (%s).\n' % (json_dict_len, get_flag_versions_as_string(json_dict))
         # Handle ASCII- and tab-separated-value-type conversion.
         if args.type == 'ascii' or args.type == 'tsv':
             s = generate_ascii_tsv(json_dict, args.type)
