@@ -63,8 +63,8 @@ def generate_vdb(json_dict):
     so that it provides data in a VDB-style format.
     """
     # Init.
-    sa = ''
-    sk = ''
+    sa = [] 
+    sk = []
     gps_s = 0
     gps_e = 9999999999
     r = ''
