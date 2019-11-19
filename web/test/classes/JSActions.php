@@ -99,9 +99,21 @@ class JSAction {
 		    $home->build_choose_flag_option();
 		    $this->document = $home->choose_flag_option;
 		}
+		elseif($_GET['action'] == 'check_number_of_selected_flags') {
+		    $number_of_flags_check = TRUE;
+		    if(count($_SESSION['dq_flag_uris']) < $constants->max_selectable_flags) {
+		        $number_of_flags_check = FALSE;
+		    }
+		    $this->document = +$number_of_flags_check;
+		}
+		elseif($_GET['action'] == 'get_max_selected_flags') {
+		    $this->document = $constants->max_selectable_flags;
+		}
 		elseif($_GET['action'] == 'select_flag') {
-		    if(!key_exists($_GET['dq_flag'], $_SESSION['dq_flag_uris'])) {
-		        $_SESSION['dq_flag_uris'][$_GET['dq_flag']] = array(1);
+		    if(count($_SESSION['dq_flag_uris']) <= $constants->max_selectable_flags) {
+    		    if(!key_exists($_GET['dq_flag'], $_SESSION['dq_flag_uris'])) {
+    		        $_SESSION['dq_flag_uris'][$_GET['dq_flag']] = array(1);
+    		    }
 		    }
 		}
 		elseif($_GET['action'] == 'deselect_flag') {

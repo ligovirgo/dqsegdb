@@ -185,11 +185,20 @@ function filter_flag_list() {
 }
 /* Select a flag. */
 function select_flag(ifo_flag) {
-	$.get("scripts/actions.php?action=select_flag&dq_flag=" + ifo_flag, function(r) {
-		// Remove from the flag list.
-		$("#li_" + ifo_flag).addClass('w3-hide');
-		// Update the flag verions.
-		update_flag_versions();
+	$.get("scripts/actions.php?action=check_number_of_selected_flags", function(check) {
+		// If number of selected flags is OK.
+		if(check == 0) {
+			$.get("scripts/actions.php?action=select_flag&dq_flag=" + ifo_flag, function(r) {
+				// Remove from the flag list.
+				$("#li_" + ifo_flag).addClass('w3-hide');
+				// Update the flag verions.
+				update_flag_versions();
+			});
+		}
+		// Otherwise, if too many flags have been selected.
+		else {
+			open_warning_modal(get_too_many_flags_msg());
+		}
 	});
 }
 /* Deselect a flag from the versions container. */
@@ -213,39 +222,14 @@ function update_flag_versions() {
 		$("#div_get_segments_button").removeClass("w3-hide");
 	});
 }
-/* Update the flag versions from a textarea. */
-function update_div_flag_versions_from_ta($max) {
-	// Set flag string.
-	var f_string = "[\"" + $("#ta_dq_flag").val().replace(/\n/g, "\",\"") + "\"]";
-	// Get currently selected IFO.
-	var dq_flag_list = JSON.parse(f_string);
-	// If number of elements in list is less than or equal to 10.
-	if(dq_flag_list.length <= 10) {
-		var dq_flag = $("#ta_dq_flag").val().replace(/\n/g, "[[[BREAK]]]");
-		// Update version div.
-		$.get("scripts/actions.php?action=update_version_div_from_ta&dq_flag=" + dq_flag, function(r) {
-			// If result retrieved
-			if(r != 0) {
-				// Show versions container.
-				$('#div_versions').removeClass('w3-hide');
-				// Re-write versions field.
-				$('#div_versions_field').html(r);
-				// Show retrieve segment button.
-				$("#div_get_segments_button").removeClass("w3-hide");
-			}
-		});
-	}
-	// Otherwise, if number of elements in list is more than 10.
-	else {
-		open_warning_modal(get_too_many_flags_msg(dq_flag_list.length, max));
-	}
-}
 /* Get the too-many-flags-have-been-selected message. */
-function get_too_many_flags_msg(len, max) {
-	// Set.
-	r = len + ' flags have currently been selected.\n\nThe maximum allowable limit via this interface is ' + max;
-	// Return.
-	return r;
+function get_too_many_flags_msg() {
+	$.get("scripts/actions.php?action=get_max_selected_flags", function(max) {
+		// Set.
+		r = 'It is possible to select ' + max + ' flags. This limit has been reached. To select more flags, it will first be necessary to deselect others.';
+		// Return.
+		return r;
+	});
 }
 /* Select/De-select a specific flag version URI. */
 function select_version(ifo_flag, v) {
