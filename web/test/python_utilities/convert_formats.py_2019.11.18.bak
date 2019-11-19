@@ -28,7 +28,7 @@ Formats - also known as 'output formats' - are distinguished as follows:
       segments, like in the ascii file format;
     - see: https://segments-web.ligo.org/downloads/1552078644.vdb (3kB).
   - ascii:
-    - not coalesced;
+    - coalesced;
     - has only active, not known;
     - identical to tsv, but comma separated values (ascii) is replaced by a 
       tab (tsv);
@@ -38,7 +38,7 @@ Formats - also known as 'output formats' - are distinguished as follows:
     - has both known and active (known first, then active);
     - see: https://segments-web.ligo.org/downloads/1552078670.coalesced_json (2kB).
   - tsv:
-    - not coalesced;
+    - coalesced;
     - has only active, not known;
     - identical to ascii, but comma separating values (ascii) is replaced by 
       a tab (tsv);
@@ -79,8 +79,10 @@ def generate_vdb(json_dict):
             # Get the segments into a LIGO segments structure. 
             sk = sk + convert_json_list_to_segmentlist(v['known'])
     # Coalesce the segments.
-    sa.coalesce()
-    sk.coalesce()
+    if sa:
+        sa.coalesce()
+    if sk:
+        sk.coalesce()
     # If GPS times have been defined in the JSON dictionary, handle them here.
     if v['query_information']['start'] != 0:
         gps_s = v['query_information']['start']
@@ -207,7 +209,7 @@ def get_flag_versions_as_string(j):
     # Loop through the JSON dictionary.
     for k, v in enumerate(json_dict):
         # Add the name and version to the output string.
-        r = r + "%s/%d, " % (v['name'], v['version'])
+        r = r + "%s:%s:%d, " % (v['ifo'], v['name'], v['version'])
     # Remove the trailing comma and return.
     return r[:-2]
 
