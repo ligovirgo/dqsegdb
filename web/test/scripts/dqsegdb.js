@@ -197,7 +197,11 @@ function select_flag(ifo_flag) {
 		}
 		// Otherwise, if too many flags have been selected.
 		else {
-			open_warning_modal(get_too_many_flags_msg());
+			$.get("scripts/actions.php?action=get_max_selected_flags", function(max) {
+				m = 'It is possible to select ' + max + ' flags. This limit has been reached. To select more flags, it will first be necessary to deselect others.';
+				// Set.
+				open_warning_modal(m);
+			});
 		}
 	});
 }
@@ -220,15 +224,6 @@ function update_flag_versions() {
 		$('#div_versions_field').html(r);
 		// Show retrieve segment button.
 		$("#div_get_segments_button").removeClass("w3-hide");
-	});
-}
-/* Get the too-many-flags-have-been-selected message. */
-function get_too_many_flags_msg() {
-	$.get("scripts/actions.php?action=get_max_selected_flags", function(max) {
-		// Set.
-		r = 'It is possible to select ' + max + ' flags. This limit has been reached. To select more flags, it will first be necessary to deselect others.';
-		// Return.
-		return r;
 	});
 }
 /* Select/De-select a specific flag version URI. */
