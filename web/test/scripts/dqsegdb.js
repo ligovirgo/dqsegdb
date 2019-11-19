@@ -250,7 +250,7 @@ function get_too_many_flags_msg(len, max) {
 /* Select/De-select a specific flag version URI. */
 function select_version(ifo_flag, v) {
 	// Update version div.
-	$.get("scripts/actions.php?action=select_version_uri&ifo_flag=" + ifo_flag + '&v=' + v, function(r) {
+	$.get("scripts/actions.php?action=select_version&ifo_flag=" + ifo_flag + '&v=' + v, function(r) {
 	});
 }
 /* Get segments. */

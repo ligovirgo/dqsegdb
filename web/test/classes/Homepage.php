@@ -270,24 +270,6 @@ class Homepage {
 	    }
 	}
 	
-	/* Check if it a flag-version has already been selected and, if not, add it to the selected array. */
-	public function add_version_to_session($u, $flag_name) {
-	    // Init.
-	    $exists = FALSE;
-	    // Loop through the selected flag-versions.
-	    foreach($_SESSION['uri_selected'] as $k => $uri) {
-	        // If the flag name exists.
-	        if(preg_match('/'.$flag_name.'/i', $uri)) {
-	            $exists = TRUE;
-	            break;
-	        }
-	    }
-	    // If the URI does not exist, add it as a default.
-	    if(!$exists) {
-	        array_push($_SESSION['uri_selected'], $u);
-	    }
-	}
-
 	/* Get the contents of the flag version span. */
 	public function get_flag_version_span_contents($ifo_flag, $selected_versions) {
 	    // Reset the version_span variable.
