@@ -105,11 +105,17 @@ class JSAction {
 		    }
 		}
 		elseif($_GET['action'] == 'deselect_flag') {
-		    if(($k = array_search($_GET['dq_flag_uri'], $_SESSION['dq_flag_uris'])) !== false) {
-		        unset($_SESSION['dq_flag_uris'][$k]);
-		    }
-		    if(($k = array_search($_GET['dq_flag_uri'], $_SESSION['uri_selected'])) !== false) {
-		        unset($_SESSION['uri_selected'][$k]);
+		    // Remove the version from the passed URI.
+		    $fe = explode('/', $_GET['dq_flag_uri']);
+		    $fe = array_pop($fe);
+		    $fv = implode('/', $fe);
+		    // Loop through the URI array.
+		    foreach($_SESSION['dq_flag_uris'] as $k => $v) {
+		        // If the flag exists in the array.
+		        if(preg_match('/'.$fv.'/i', $v)) {
+		            // Remove it.
+		            unset($_SESSION['dq_flag_uris'][$k]);
+		        }
 		    }
 		}
 		elseif($_GET['action'] == 'update_version_div') {
