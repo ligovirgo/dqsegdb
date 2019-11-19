@@ -158,7 +158,7 @@ class Homepage {
 	    $this->get_segments_form .= "</div>\n";
 	    // Get-Segments button.
 	    $get_segments_button_hide = NULL;
-	    if(empty($_SESSION['dq_flag'])) {
+	    if(empty($_SESSION['dq_flag_uris'])) {
 	        $get_segments_button_hide = " w3-hide";
 	    }
 	    $this->get_segments_form .= "<div id=\"div_get_segments_button\" class=\"w3-container w3-padding w3-border-top".$get_segments_button_hide."\">\n";
