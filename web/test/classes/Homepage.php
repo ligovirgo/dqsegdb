@@ -250,28 +250,19 @@ class Homepage {
 	            // Open table.
 	            $this->version_div .= "<table class=\"w3-table-all w3-margin-0\">\n";
 	            // Loop through selected URI.
-	            foreach($_SESSION['dq_flag_uris'] as $k => $uri) {
-	                // Explode to get flag.
-	                $fa = explode('/', $uri);
-	                // If the flag name exists.
-	                if(isset($fa[3]) && !empty($fa[3])) {
-	                    $ifo = $fa[2];
-	                    $flag_name = $fa[3];
-	                    // Check if it is already in the selected Versions array an, if not, add a default value.
-	                    $this->add_version_to_session($uri, $flag_name);
-	                    // Get row.
-	                    $this->version_div .= "    <tr id=\"tr_".$flag_name."\">\n";
-	                    $this->version_div .= "        <td id=\"flag_".$flag_name."\">\n";
-	                    $this->version_div .= "            <div class=\"w3-tag w3-red w3-hover-light-grey w3-round w3-border w3-margin-right cursor\" onclick=\"deselect_flag('".$uri."', '".$flag_name."', .".$constant->max_selectable_flags.")\"><i class=\"far fa-times-circle\"></i></div>".$ifo.' - '.$flag_name."\n";
-	                    $this->version_div .= "        </td>\n";
-	                    $this->version_div .= "        <td id=\"flag_".$flag_name."_versions\">\n";
-	                    // Add version information after flag name.
-	                    $this->get_flag_version_span_contents($uri);
-	                    $this->version_div .= $this->version_span;
-	                    $this->version_div .= "</td>\n";
-	                    // Close row.
-	                    $this->version_div .= "    </tr>\n";
-	                }
+	            foreach($_SESSION['dq_flag_uris'] as $k => $ifo_flag) {
+                    // Get row.
+	                $this->version_div .= "    <tr id=\"tr_".$ifo_flag."\">\n";
+	                $this->version_div .= "        <td id=\"flag_".$ifo_flag."\">\n";
+	                $this->version_div .= "            <div class=\"w3-tag w3-red w3-hover-light-grey w3-round w3-border w3-margin-right cursor\" onclick=\"deselect_flag('".$ifo_flag."', .".$constant->max_selectable_flags.")\"><i class=\"far fa-times-circle\"></i></div>".str_replace('___', ':', $ifo_flag)."\n";
+                    $this->version_div .= "        </td>\n";
+                    $this->version_div .= "        <td id=\"flag_".$ifo_flag."_versions\">\n";
+                    // Add version information after flag name.
+                    $this->get_flag_version_span_contents($ifo_flag);
+                    $this->version_div .= $this->version_span;
+                    $this->version_div .= "</td>\n";
+                    // Close row.
+                    $this->version_div .= "    </tr>\n";
 	            }
 	            // Close table.
 	            $this->version_div .= "</table>\n";

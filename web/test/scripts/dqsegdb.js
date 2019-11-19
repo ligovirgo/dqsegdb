@@ -184,19 +184,19 @@ function filter_flag_list() {
 	});
 }
 /* Select a flag. */
-function select_flag(uri, f) {
-	$.get("scripts/actions.php?action=select_flag&dq_flag_uri=" + uri, function(r) {
+function select_flag(ifo_flag) {
+	$.get("scripts/actions.php?action=select_flag&dq_flag=" + ifo_flag, function(r) {
 		// Remove from the flag list.
-		$("#li_" + f).addClass('w3-hide');
+		$("#li_" + ifo_flag).addClass('w3-hide');
 		// Update the flag verions.
 		update_flag_versions();
 	});
 }
 /* Deselect a flag from the versions container. */
-function deselect_flag(uri, f, max) {
-	$.get("scripts/actions.php?action=deselect_flag&dq_flag_uri=" + uri, function(r) {
+function deselect_flag(ifo_flag, max) {
+	$.get("scripts/actions.php?action=deselect_flag&dq_flag=" + ifo_flag, function(r) {
 		// Add back in to the flag list.
-		$("#li_" + f).removeClass('w3-hide');
+		$("#li_" + ifo_flag).removeClass('w3-hide');
 		// Update the flag verions.
 		update_flag_versions();
 	});
