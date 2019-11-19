@@ -209,7 +209,7 @@ def get_flag_versions_as_string(j):
         # Add the name and version to the output string.
         r = r + "%s/%d, " % (v['name'], v['version'])
     # Remove the trailing comma and return.
-    return r[:-1]
+    return r[:-2]
 
 """
 * Main.
@@ -238,11 +238,13 @@ if __name__ == "__main__":
         json_dict_len = len(json_dict)
         # Set the header if not in JSON.
         if not args.type == 'json' and not args.type == 'coalesced_json':
+            # Get the Flag-Versions into a single string.
+            fv = get_flag_versions_as_string(json_dict)
             # Set the header, dependent upon the length of the dictionary.
             if json_dict_len == 1:
-                hdr = '# One Flag-Version (%d) requested:\n' % (int(json_dict[0]['version']))
+                hdr = '# One Flag-Version requested (%s).\n' % (fv)
             else:
-                hdr = '# %d Flag-Versions requested (%s).\n' % (json_dict_len, get_flag_versions_as_string(json_dict))
+                hdr = '# %d Flag-Versions requested (%s).\n' % (json_dict_len, fv)
         # Handle ASCII- and tab-separated-value-type conversion.
         if args.type == 'ascii' or args.type == 'tsv':
             s = generate_ascii_tsv(json_dict, args.type)
