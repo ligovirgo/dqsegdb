@@ -113,26 +113,17 @@ class JSAction {
 		    $home->get_versions();
 		    $this->document = $home->version_div;
 		}
-		elseif($_GET['action'] == 'update_version_div_from_ta') {
-	        // Set flag session.
-	        $_SESSION['dq_flag'] = $home->set_ta_flags($_GET['dq_flag']);
-		    $home->get_versions();
-		    $this->document = $home->version_div;
-		}
-		elseif($_GET['action'] == 'select_version_uri') {
-		    // If URI passed.
-		    if(isset($_GET['uri'])) {
-		        // If URI not in deselected array.
-		        if(!in_array($_GET['uri'], $_SESSION['uri_selected'])) {
-		            // Add to deselected array.
-		            array_push($_SESSION['uri_selected'], $_GET['uri']);
-		        }
-		        // Otherwise, if in deselected array.
-		        else {
-		            // Remove from de-selected array.
-		            if(($k = array_search($_GET['uri'], $_SESSION['uri_selected'])) !== false) {
-		                unset($_SESSION['uri_selected'][$k]);
-		            }
+		elseif($_GET['action'] == 'select_version') {
+	        // If Flag-Version has not yet been selected.
+		    if(!in_array($_GET['v'], $_SESSION['dq_flag_uris'][$_GET['ifo_flag']])) {
+		        // Add it to the selected array.
+		        array_push($_SESSION['dq_flag_uris'][$_GET['ifo_flag']], $_GET['v']);
+		    }
+		    // Otherwise, if it has been selected.
+		    else {
+		        // Remove it from the selected array.
+		        if(($k = array_search($_GET['v'], $_SESSION['dq_flag_uris'][$_GET['ifo_flag']])) !== false) {
+		            unset($_SESSION['dq_flag_uris'][$_GET['ifo_flag']][$k]);
 		        }
 		    }
 		}
