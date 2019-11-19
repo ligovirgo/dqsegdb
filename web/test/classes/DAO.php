@@ -268,10 +268,15 @@ class DAO {
             $args = $api->get_uri_args($_SESSION['gps_start'], $_SESSION['gps_stop']);
             // Get filesize.
             $fs = filesize($constants->doc_root.$constants->download_dir.str_replace("_", ".", $f));
-            // Loop through URI used in file creation and add to history.
-            foreach($_SESSION['uri_selected'] as $i => $uri) {
-                // Build string.
-                $fu .= ', '.$uri.$args;
+            // Loop through selected flags used in file creation and add to history.
+            foreach($_SESSION['dq_flag_uris'] as $ifo_flag => $versions) {
+                // Loop selected versions.
+                foreach($versions as $kv => $v) {
+                    // Build URI.
+                    $uri = '/dq/'.str_replace('___', '/', $ifo_flag).'/'.$v;
+                    // Build string.
+                    $fu .= ', '.$uri.$args;
+                }
             }
             // Remove first two characters from URI string.
             $fu = substr($fu, 2);

@@ -105,7 +105,6 @@ class APIRequests {
         $a = array();
         // Instantiate.
         $dao = new DAO();
-        $log = new Logger();
         // Set the arguments to be passed.
         $args = $this->get_uri_args($s, $e);
         if($history == 0) {
@@ -114,10 +113,14 @@ class APIRequests {
         // Get details for this host.
         $ah = $dao->get_host_details($_SESSION['host_id']);
         // Loop through each flag.
-        foreach($_SESSION['uri_selected'] as $i => $uri) {
-            $log->write_to_log_file(0, $uri);
-            // Decode JSON result and push to array.
-            array_push($a, json_decode(file_get_contents($ah[0]['host_ip'].$uri.$args), true));
+        foreach($_SESSION['dq_flag_uris'] as $ifo_flag => $versions) {
+            // Loop selected versions.
+            foreach($versions as $kv => $v) {
+                // Build URI.
+                $uri = '/dq/'.str_replace('___', '/', $ifo_flag).'/'.$v;
+                // Decode JSON result and push to array.
+                array_push($a, json_decode(file_get_contents($ah[0]['host_ip'].$uri.$args), true));
+            }
         }
         // Convert segments back to JSON to push back to user.
         $j = json_encode($a, JSON_NUMERIC_CHECK);

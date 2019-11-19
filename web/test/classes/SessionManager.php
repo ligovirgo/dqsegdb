@@ -72,10 +72,6 @@ class SessionManager {
 		if(!isset($_SESSION['choose_flag_option'])) {
 		    $_SESSION['choose_flag_option'] = $constants->choose_flag_option_default;
 		}
-		// Selected URI.
-		if(!isset($_SESSION['uri_selected'])) {
-		    $_SESSION['uri_selected'] = array();
-		}
 	}
 
 }
