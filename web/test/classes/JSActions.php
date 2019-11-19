@@ -100,20 +100,16 @@ class JSAction {
 		    $this->document = $home->choose_flag_option;
 		}
 		elseif($_GET['action'] == 'select_flag') {
-		    $key = 0;
-		    $ifo_flag = $_GET['ifo'].' - '.$_GET['dq_flag'];
-		    foreach($_SESSION['dq_flag_uris'] as $k => $v) {
-		        if($v['name'] == $ifo_flag) {
-		            $key = $k;
-		            break;
-		        }
-		        if($key == 0) {
-		            array_push($_SESSION['dq_flag_uris'], array('name' => $ifo_flag,
-		                                                        'versions' => array(1)));
-		        }
-		        else {
-		            unset($_SESSION['dq_flag_uris'][$key]);
-		        }
+		    if(!in_array($_GET['dq_flag_uri'], $_SESSION['dq_flag_uris'])) {
+		        array_push($_SESSION['dq_flag_uris'], $_GET['dq_flag_uri']);
+		    }
+		}
+		elseif($_GET['action'] == 'deselect_flag') {
+		    if(($k = array_search($_GET['dq_flag_uri'], $_SESSION['dq_flag_uris'])) !== false) {
+		        unset($_SESSION['dq_flag_uris'][$k]);
+		    }
+		    if(($k = array_search($_GET['dq_flag_uri'], $_SESSION['uri_selected'])) !== false) {
+		        unset($_SESSION['uri_selected'][$k]);
 		    }
 		}
 		elseif($_GET['action'] == 'update_version_div') {
