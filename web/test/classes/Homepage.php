@@ -178,7 +178,6 @@ class Homepage {
 	    // Instantiate.
 	    $api = new APIRequests();
 	    $constants = new Constants();
-	    $log = new Logger();
 	    // General constants.
 	    $constants->general_constants();
 	    // If using select.
@@ -214,7 +213,7 @@ class Homepage {
                 	            // Increment the flag counter.
                 	            $flag_count++;
                 	            // Add to the output array.
-                	            $output_array
+                	            array_push($output_array, $ifo.' - '.$flag); 
                             }
                         }
                     }
