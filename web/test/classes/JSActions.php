@@ -100,22 +100,13 @@ class JSAction {
 		    $this->document = $home->choose_flag_option;
 		}
 		elseif($_GET['action'] == 'select_flag') {
-		    if(!in_array($_GET['dq_flag_uri'], $_SESSION['dq_flag_uris'])) {
-		        array_push($_SESSION['dq_flag_uris'], $_GET['dq_flag_uri']);
+		    if(!key_exists($_GET['dq_flag'], $_SESSION['dq_flag_uris'])) {
+		        $_SESSION['dq_flag_uris'][$_GET['dq_flag_uri']] = array(1);
 		    }
 		}
 		elseif($_GET['action'] == 'deselect_flag') {
-		    // Remove the version from the passed URI.
-		    $fe = explode('/', $_GET['dq_flag_uri']);
-		    $fe = array_pop($fe);
-		    $fv = implode('/', $fe);
-		    // Loop through the URI array.
-		    foreach($_SESSION['dq_flag_uris'] as $k => $v) {
-		        // If the flag exists in the array.
-		        if(preg_match('/'.$fv.'/i', $v)) {
-		            // Remove it.
-		            unset($_SESSION['dq_flag_uris'][$k]);
-		        }
+		    if(!key_exists($_GET['dq_flag'], $_SESSION['dq_flag_uris'])) {
+		        unset($_SESSION['dq_flag_uris'][$_GET['dq_flag']]);
 		    }
 		}
 		elseif($_GET['action'] == 'update_version_div') {

@@ -174,7 +174,7 @@ class Homepage {
 	    // Init.
 	    $this->choose_flag_option = NULL;
 	    $flag_count = 0;
-	    $output_array = array();
+	    $already_output_array = array();
 	    // Instantiate.
 	    $api = new APIRequests();
 	    $constants = new Constants();
@@ -194,12 +194,13 @@ class Homepage {
                     $u = explode('/',$uri);
                     $ifo = $u[2];
                     $flag = $u[3];
+                    $ifo_flag = $ifo."___".$flag;
                     // If the second key in the array is not deselected.
                     if(!key_exists($ifo, $_SESSION['deselected_ifo'])) {
                         // By default, show the flag.
                         $class = NULL;
                         // If the flag has already been selected.
-                        if(in_array($uri, $_SESSION['dq_flag_uris'])) {
+                        if(key_exists($ifo_flag, $_SESSION['dq_flag_uris'])) {
                             // Hide it.
                             $class = ' w3-hide';
                         }
@@ -207,13 +208,13 @@ class Homepage {
                         if(empty($_SESSION['flag_filter'])
                         || preg_match('/'.$_SESSION['flag_filter'].'/i', $flag)) {
                             // If the flag has not been output.
-                            if(!in_array($ifo.' - '.$flag, $output_array)) {
+                            if(!in_array($ifo_flag, $already_output_array)) {
                                 // Set.
-                                $this->choose_flag_option .= "		<li id=\"li_".$flag."\" class=\"w3-border-bottom w3-hover-light-grey cursor".$class."\" onclick=\"select_flag('".$uri."', '".$flag."')\">".$ifo.' - '.$flag."</li>\n";
+                                $this->choose_flag_option .= "		<li id=\"li_".$ifo_flag."\" class=\"w3-border-bottom w3-hover-light-grey cursor".$class."\" onclick=\"select_flag('".$ifo_flag."')\">".str_replace('___', ':', $ifo_flag)."</li>\n";
                 	            // Increment the flag counter.
                 	            $flag_count++;
                 	            // Add to the output array.
-                	            array_push($output_array, $ifo.' - '.$flag); 
+                	            array_push($already_output_array, $ifo_flag);
                             }
                         }
                     }
