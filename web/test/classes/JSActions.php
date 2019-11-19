@@ -101,7 +101,7 @@ class JSAction {
 		}
 		elseif($_GET['action'] == 'select_flag') {
 		    if(!key_exists($_GET['dq_flag'], $_SESSION['dq_flag_uris'])) {
-		        $_SESSION['dq_flag_uris'][$_GET['dq_flag_uri']] = array(1);
+		        $_SESSION['dq_flag_uris'][$_GET['dq_flag']] = array(1);
 		    }
 		}
 		elseif($_GET['action'] == 'deselect_flag') {
