@@ -174,6 +174,7 @@ class Homepage {
 	    // Init.
 	    $this->choose_flag_option = NULL;
 	    $flag_count = 0;
+	    $output_array = array();
 	    // Instantiate.
 	    $api = new APIRequests();
 	    $constants = new Constants();
@@ -206,10 +207,15 @@ class Homepage {
                         // If the flag filter is not empty or matches with the name of the field.
                         if(empty($_SESSION['flag_filter'])
                         || preg_match('/'.$_SESSION['flag_filter'].'/i', $flag)) {
-            	            // Set.
-                            $this->choose_flag_option .= "		<li id=\"li_".$flag."\" class=\"w3-border-bottom w3-hover-light-grey cursor".$class."\" onclick=\"select_flag('".$uri."', '".$flag."')\">".$ifo.' - '.$flag."</li>\n";
-            	            // Increment the flag counter.
-            	            $flag_count++;
+                            // If the flag has not been output.
+                            if(!in_array($ifo.' - '.$flag, $output_array)) {
+                                // Set.
+                                $this->choose_flag_option .= "		<li id=\"li_".$flag."\" class=\"w3-border-bottom w3-hover-light-grey cursor".$class."\" onclick=\"select_flag('".$uri."', '".$flag."')\">".$ifo.' - '.$flag."</li>\n";
+                	            // Increment the flag counter.
+                	            $flag_count++;
+                	            // Add to the output array.
+                	            $output_array
+                            }
                         }
                     }
 	            }
