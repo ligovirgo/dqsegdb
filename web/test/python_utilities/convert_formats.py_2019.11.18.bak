@@ -197,7 +197,7 @@ def parse_command_line():
     args = parser.parse_args()
     return args
 
-def get_flag_versions_as_string(j) {
+def get_flag_versions_as_string(j):
     """
     Get all of the Flag-Versions that have been sent in the JSON payload into 
     a comma-separated string.
