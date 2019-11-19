@@ -47,6 +47,7 @@ class JSAction {
 		$session = new SessionManager();
 		
 		// Constant calls.
+		$constants->general_constants();
 		$constants->get_file_constants();
 		
 		////////////////
