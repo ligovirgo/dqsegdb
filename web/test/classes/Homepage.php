@@ -282,15 +282,13 @@ class Homepage {
         if(isset($a['version']) && is_array($a['version'])) {
             // Loop through versions.
             foreach($a['version'] as $k => $v) {
-                // Set span name.
-                $span_name = 'span_'.$ifo_flag.'_'.$v;
                 // Set class.
                 $check = NULL;
                 if(in_array($v, $selected_versions)) {
                     $check = ' checked';
                 }
                 // Output versions.
-                $this->version_span .= "<div id=\"".$span_name."\" class=\"w3-tag w3-light-grey w3-round w3-border w3-margin-right\"><input type=\"radio\" name=\"checkbox_".$span_name."\" id=\"checkbox_".$span_name."\" onchange=\"select_version('".$ifo_flag."',".$v.")\" value=\"".v."\"".$check."> ".$v."</div>";
+                $this->version_span .= "<div id=\"span_".$ifo_flag."_".$v."\" class=\"w3-tag w3-light-grey w3-round w3-border w3-margin-right\"><input type=\"checkbox\" name=\"checkbox_".$ifo_flag."_".$v."\" id=\"checkbox_".$ifo_flag."_".$v."\" onchange=\"select_version('".$ifo_flag."',".$v.")\" value=\"".v."\"".$check."> ".$v."</div>";
             }
 	    }
 	}
