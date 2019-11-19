@@ -177,7 +177,6 @@ class Homepage {
 	    // Instantiate.
 	    $api = new APIRequests();
 	    $constants = new Constants();
-	    $log = new Logger();
 	    // General constants.
 	    $constants->general_constants();
 	    // If using select.
@@ -199,7 +198,7 @@ class Homepage {
                         // By default, show the flag.
                         $class = NULL;
                         // If the flag has already been selected.
-                        if(in_array($uri, $_SESSION['dq_flag_uris'])) {
+                        if(in_array($ifo.' - '.$flag, $_SESSION['dq_flag_uris'])) {
                             // Hide it.
                             $class = ' w3-hide';
                         }
@@ -207,7 +206,7 @@ class Homepage {
                         if(empty($_SESSION['flag_filter'])
                         || preg_match('/'.$_SESSION['flag_filter'].'/i', $flag)) {
             	            // Set.
-                            $this->choose_flag_option .= "		<li id=\"li_".$flag."\" class=\"w3-border-bottom w3-hover-light-grey cursor".$class."\" onclick=\"select_flag('".$uri."', '".$flag."')\">".$ifo.' - '.$flag."</li>\n";
+                            $this->choose_flag_option .= "		<li id=\"li_".$ifo."_".$flag."\" class=\"w3-border-bottom w3-hover-light-grey cursor".$class."\" onclick=\"select_flag('".$ifo."', '".$flag."')\">".$ifo.' - '.$flag."</li>\n";
             	            // Increment the flag counter.
             	            $flag_count++;
                         }
