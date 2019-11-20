@@ -319,7 +319,7 @@ class DAO {
 	    $this->db_connect();
 	    // Build prepared statement.
 	    if($stmt = $this->pdo->prepare("SELECT file_id
-										FROM tbl_files
+										FROM tbl_file_metadata
 										WHERE file_name=:f
                                         ORDER BY file_id DESC
                                         LIMIT 1")) {
