@@ -292,10 +292,8 @@ $(document).ready(function(){
 });
 
 /* When the view-segments is ready, load in the latest results. */
-$('#div_view_segments').ready({
-/*	$.get("scripts/actions.php?action=get_latest_query_results", function(r) {
+$('#div_view_segments').ready(function(){
+	$.get("scripts/actions.php?action=get_latest_query_results", function(r) {
 		$('#div_view_segments').html(r);
-	});*/
-	console.log('here');
-	//$("#div_view_segments").html('HERE');
+	});
 });
