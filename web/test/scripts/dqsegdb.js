@@ -243,11 +243,12 @@ function get_segments() {
 	f = $('input[name=output_format]:checked').val();
     h = $('input[name=include_history]:checked').val();
 	// Update version div.
-	$.get("scripts/actions.php?action=get_segments&s=" + s + "&e=" + e + "&format=" + f + "&history=" + h, function(r) {
+	$.get("scripts/actions.php?action=get_segments&s=" + s + "&e=" + e + "&format=" + f + "&history=" + h, function(q) {
 		// If result retrieved
-		if(r != 0) {
+		if(q != 0) {
 			// Re-direct.
-			window.open(r, '_self');
+                        //window.open(r, '_self');
+                        go_to_uri('?c=2&q=' + q)
 		}
 		// Show button and hide message.
 		$("#span_getting_segments").addClass("w3-hide");
