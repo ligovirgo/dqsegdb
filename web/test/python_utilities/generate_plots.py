@@ -57,7 +57,7 @@ if __name__ == "__main__":
     and then produces the plot.
     """
     # Init.
-    dqf = []
+    dqfs = []
     args = parse_command_line()
     # Try to load the JSON payload.
     try:
@@ -68,6 +68,13 @@ if __name__ == "__main__":
         # Loop through the Flag-versions passed.
         for v in json_dict:
             # Append the DataQualityFlag to the list.
-            dqf.append(DataQualityFlag(v['name'], active=v['active'], known=v['known'], Description=None))
-                            
+            dqfs.append(DataQualityFlag(v['name'], active=v['active'], known=v['known'], Description=None))
+        # Loop through the DataQualityFlag dictionary.
+        for dqf in dqfs:
+            #bothon = h1month1 & l1month1
+            plot = dqf.plot()
+            #ax = plot.gca()
+            #ax.plot(l1month1)
+            #ax.plot(bothon, label='Both')
+            plot.show()
 
