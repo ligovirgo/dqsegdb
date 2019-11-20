@@ -289,11 +289,12 @@ $(document).ready(function(){
 		}
 	});
 
-	/* When the view-segments is ready, load in the latest results. */
-	$('#div_view_segments').ready({
-		$.get("scripts/actions.php?action=get_latest_query_results", function(r) {
-			$('#div_view_segments').html(r);
-		});
-	});
+});
 
+/* When the view-segments is ready, load in the latest results. */
+$('#div_view_segments').ready({
+/*	$.get("scripts/actions.php?action=get_latest_query_results", function(r) {
+		$('#div_view_segments').html(r);
+	});*/
+	$("#div_view_segments").html('HERE');
 });
