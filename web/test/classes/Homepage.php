@@ -44,7 +44,7 @@ class Homepage {
 		$this->build_homepage_contents();
 		$this->home .= $this->homepage_contents;
 		// Build the visualisation contents.
-		$this->build_visualisation_contents();
+		$visualisation->build_visualisation_contents();
 		$this->home .= $visualisation->visualisation_contents;
 		// Close section.
 		$this->home .= "	</section>\n";
