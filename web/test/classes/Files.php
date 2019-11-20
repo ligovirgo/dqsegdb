@@ -61,6 +61,7 @@ class Files {
 	    $r = NULL;
 	    // Instantiate.
 	    $constants = new Constants();
+	    $dao = new DAO();
 	    // Get file-related variables.
 	    $constants->get_file_constants();
     	// If JSON passed.
@@ -77,9 +78,11 @@ class Files {
     	        $this->make_non_json_file($in_file, $out_file, $data, $f);
     	        // Set file to open automatically, replacing underscre with point, so as to enable JSON data to to be formatted in browser.
     	        $r = $constants->download_dir.$unix_ts.'.'.str_replace('_', '.', $f);
+    	        // Return the ID of the file that has just been inserted.
+    	        $r = $dao->get_new_file_id($in_file);
     	    }
     	}
-    	// Return payload.
+    	// Return ID.
     	return $r;
 	}
 	

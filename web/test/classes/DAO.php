@@ -308,6 +308,43 @@ class DAO {
 	    return $r;
 	}
 
+	/* Get the ID of the file that the user has just built. */
+	public function get_new_file_id($f) {
+	    // Init.
+	    $r = 0;
+	    $file_id = 0;
+	    // Instantiate.
+	    $log = new Logger();
+	    // Create PDO object
+	    $this->db_connect();
+	    // Build prepared statement.
+	    if($stmt = $this->pdo->prepare("SELECT file_id
+										FROM tbl_files
+										WHERE file_name=:f
+                                        ORDER BY file_id DESC
+                                        LIMIT 1")) {
+            // If statement executes.
+    	    if($stmt->execute(array(':f' => $f))) {
+    	        // Bind by column name.
+    	        $stmt->bindColumn('file_id', $file_id);
+    	        // Loop.
+    	        while($stmt->fetch()) {
+    	            // Set.
+    	            $r = $file_id;
+    	        }
+    	    }
+    	    // Otherwise.
+    	    else {
+    	        // Write to log.
+    	        $log->write_to_log_file(3, "Problem retrieving ID for file: ".$f.". Statement not executed.");
+    	        // Write verbose.
+    	        $log->write_verbose_to_error_stack(NULL, $stmt->errorInfo());
+    	    }
+	    }
+	    // Return.
+	    return $r;
+	}
+	
 	/////////////////////////////
 	// USER-RELATED FUNCTIONS //
 	///////////////////////////
