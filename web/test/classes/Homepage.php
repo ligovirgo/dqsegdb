@@ -16,6 +16,7 @@ require_once 'APIRequests.php';
 require_once 'Constants.php';
 require_once 'DAO.php';
 require_once 'Logger.php';
+require_once 'Visualisation.php';
 
 /* Handle homepage. */
 class Homepage {
@@ -31,6 +32,8 @@ class Homepage {
 	public function build_homepage() {
 		// Init.
 		$this->home = NULL;
+		// Instantiate.
+		$visualisation = new Visualisation();
 		// Output the homepage container.
 		$this->home .= "	<div id=\"div_homepage\" class=\"w3-container w3-padding-0 homepage\">\n";
 		// Build.
@@ -40,6 +43,9 @@ class Homepage {
 		// Build the homepage contents.
 		$this->build_homepage_contents();
 		$this->home .= $this->homepage_contents;
+		// Build the visualisation contents.
+		$this->build_visualisation_contents();
+		$this->home .= $visualisation->visualisation_contents;
 		// Close section.
 		$this->home .= "	</section>\n";
 		// Close overall div.

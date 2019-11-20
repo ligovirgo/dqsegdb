@@ -73,20 +73,19 @@ if __name__ == "__main__":
             sa.coalesce()
             sk = convert_json_list_to_segmentlist(v['known'])
             sk.coalesce()
-            # Set the DataQualityFlag.
+            # Build the DQ flag structure.
             dq_flag = DataQualityFlag(v['name'], active=convert_segmentlist_to_json(sa), known=convert_segmentlist_to_json(sk), description=None)
-            # Append the DataQualityFlag to the list.
+            # Append the DQ flag to the list.
             dqfs.append(dq_flag)
-            # Build the all flags bar.
+            # Add to what will be come the all-flags bar.
             all_flags = all_flags + dq_flag
         # Instantiate plot with first flag.
         plot = dqfs[0].plot()
         ax = plot.gca()
-        # Loop through the DataQualityFlag dictionary.
+        # Loop through the DQ Flag dictionary.
         for dqf in dqfs:
             # Build the plot for the flag.
             ax.plot(dqf)
         # Build the all-flag plot.
         ax.plot(all_flags, label='All')
         plot.save(args.output)
-
