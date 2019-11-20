@@ -309,22 +309,25 @@ class DAO {
 	}
 
 	/* Get the ID of the file that the user has just built. */
-	public function get_new_file_id($f) {
+	public function get_new_file_id() {
 	    // Init.
 	    $r = 0;
 	    $file_id = 0;
 	    // Instantiate.
 	    $log = new Logger();
+	    $user = new User();
+	    // Get the user ID.
+	    $uid = $user->get_valid_user_id();
 	    // Create PDO object
 	    $this->db_connect();
 	    // Build prepared statement.
 	    if($stmt = $this->pdo->prepare("SELECT file_id
 										FROM tbl_file_metadata
-										WHERE file_name=:f
+										WHERE file_user_fk=:u
                                         ORDER BY file_id DESC
                                         LIMIT 1")) {
             // If statement executes.
-    	    if($stmt->execute(array(':f' => $f))) {
+	        if($stmt->execute(array(':u' => $uid))) {
     	        // Bind by column name.
     	        $stmt->bindColumn('file_id', $file_id);
     	        // Loop.
@@ -336,13 +339,42 @@ class DAO {
     	    // Otherwise.
     	    else {
     	        // Write to log.
-    	        $log->write_to_log_file(3, "Problem retrieving ID for file: ".$f.". Statement not executed.");
+    	        $log->write_to_log_file(3, "Problem retrieving ID for user: ".$uid.". Statement not executed.");
     	        // Write verbose.
     	        $log->write_verbose_to_error_stack(NULL, $stmt->errorInfo());
     	    }
 	    }
 	    // Return.
 	    return $r;
+	}
+	
+	/* Get an array of file details. */
+	public function get_file_details($f) {
+	    // Init.
+	    $a = array();
+	    // Instantiate.
+	    $log = new Logger();
+	    // Create PDO object
+	    $this->db_connect();
+	    // Build prepared statement.
+	    if($stmt = $this->pdo->prepare("SELECT *
+										FROM tbl_file_metadata
+                                        WHERE file_id=:f")) {
+			// If statement executes.
+    	    if($stmt->execute(array(':f' => $f))) {
+    	        // Fetch the result.
+    	        $a = $stmt->fetchAll();
+    	    }
+    	    // Otherwise.
+    	    else {
+    	        // Write to log.
+    	        $log->write_to_log_file(3, "Problem retrieving array of file details for ID: ".$f.". Statement not executed.");
+    	        // Write verbose.
+    	        $log->write_verbose_to_error_stack(NULL, $stmt->errorInfo());
+    	    }
+	    }
+	    // Return.
+	    return $a;
 	}
 	
 	/////////////////////////////

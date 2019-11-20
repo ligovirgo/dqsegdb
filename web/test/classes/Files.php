@@ -17,6 +17,8 @@ require_once('DAO.php');
 
 // File-handling class.
 class Files {
+    
+    public $file_details;
 
 	/* Make a JSON file. */
 	public function make_json_file($in_file, $data) {
@@ -79,13 +81,30 @@ class Files {
     	        // Set file to open automatically, replacing underscre with point, so as to enable JSON data to to be formatted in browser.
     	        $r = $constants->download_dir.$unix_ts.'.'.str_replace('_', '.', $f);
     	        // Return the ID of the file that has just been inserted.
-    	        $r = $dao->get_new_file_id($in_file);
+    	        //$r = $dao->get_new_file_id($in_file);
     	    }
     	}
     	// Return ID.
     	return $r;
 	}
 	
+	public function get_latest_file_details() {
+	    // Instantiate.
+	    $dao = new DAO();
+        $this->get_file_details($dao->get_new_file_id());
+        return $this->file_details;
+	}
+
+	/* Get details of a file. */
+	public function get_file_details($f) {
+	    // Init.
+	    $this->file_details;
+	    // Instantiate.
+	    $dao = new DAO();
+	    // Get file details array.
+	    $a = $dao->get_file_details($f);
+	    $this->file_details = $a['file_name'];
+	}
 }
 
 ?>
