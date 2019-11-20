@@ -58,6 +58,7 @@ if __name__ == "__main__":
     """
     # Init.
     dqfs = []
+    all_flags = DataQualityFlag('', active=[], known=[], description=None)
     args = parse_command_line()
     # Try to load the JSON payload.
     try:
@@ -67,14 +68,25 @@ if __name__ == "__main__":
     else:
         # Loop through the Flag-versions passed.
         for v in json_dict:
+            # Convert JSON segments to LIGO Segment structure and coalesce.
+            sa = convert_json_list_to_segmentlist(v['active'])
+            sa.coalesce()
+            sk = convert_json_list_to_segmentlist(v['known'])
+            sk.coalesce()
+            # Set the DataQualityFlag.
+            dq_flag = DataQualityFlag(v['name'], active=convert_segmentlist_to_json(sa), known=convert_segmentlist_to_json(sk), description=None)
             # Append the DataQualityFlag to the list.
-            dqfs.append(DataQualityFlag(v['name'], active=v['active'], known=v['known'], Description=None))
+            dqfs.append(dq_flag)
+            # Build the all flags bar.
+            all_flags = all_flags + dq_flag
+        # Instantiate plot with first flag.
+        plot = dqfs[0].plot()
+        ax = plot.gca()
         # Loop through the DataQualityFlag dictionary.
         for dqf in dqfs:
-            #bothon = h1month1 & l1month1
-            plot = dqf.plot()
-            #ax = plot.gca()
-            #ax.plot(l1month1)
-            #ax.plot(bothon, label='Both')
-            plot.show()
+            # Build the plot for the flag.
+            ax.plot(dqf)
+        # Build the all-flag plot.
+        ax.plot(all_flags, label='All')
+        plot.save(args.output)
 
