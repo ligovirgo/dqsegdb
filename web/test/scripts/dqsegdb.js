@@ -248,7 +248,7 @@ function get_segments() {
 		if(f != 0) {
 			// Re-direct.
             //window.open(r, '_self');
-            go_to_uri('?c=2&f=' + f)
+            go_to_uri('?c=2&f=' + f);
 		}
 		// Show button and hide message.
 		$("#span_getting_segments").addClass("w3-hide");
@@ -289,5 +289,11 @@ $(document).ready(function(){
 		}
 	});
 
+	/* When the view-segments is ready, load in the latest results. */
+	$('#div_view_segments').ready({
+		$.get("scripts/actions.php?action=get_latest_query_results", function(r) {
+			$('#div_view_segments').html(r);
+		}
+	});
 
 });

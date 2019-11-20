@@ -147,7 +147,9 @@ class JSAction {
 		    $data = $api->get_segments($_GET['s'], $_GET['e'], $_GET['history']);
 		    $this->document = $file->build_output_payload($data, $_GET['format']);
 		}
-		    
+		elseif($_GET['action'] == 'get_latest_query_results') {
+		    $this->document = 'Here';
+		}
 		// Output response.
 		echo $this->document;
 	}
