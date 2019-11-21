@@ -107,11 +107,12 @@ class Files {
 	    // Get file-related variables.
 	    $constants->get_file_constants();
 	    // Build the output full path.
-	    $ofp = $constants->doc_root.$constants->plots_dir.str_replace('.json', '.png', $a[0]['file_name']);
+	    $img_file_name = str_replace('.json', '.png', $a[0]['file_name']);
+	    $ofp = $constants->doc_root.$constants->plots_dir.$img_file_name;
 	    // Generate the PNG from the JSON.
 	    shell_exec($constants->doc_root.$constants->python_utilities_dir.'generate_plots.py '.$constants->doc_root.$constants->download_dir.$a[0]['file_name']." -o ".$ofp);
 	    // Output the file plot.
-	    $this->file_details .= "<img src=\"".$ofp."\">\n";
+	    $this->file_details .= "<img src=\"".$constants->plots_dir.$img_file_name."\">\n";
 	    $this->file_details .= "<p><strong>File:</strong> ".$a[0]['file_name']."</p>\n";
 	}
 }

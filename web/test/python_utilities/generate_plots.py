@@ -1,4 +1,4 @@
-#!/root/miniconda3/bin/python
+#!/usr/bin/env python
 import argparse
 from gwpy.segments import DataQualityFlag
 import json
