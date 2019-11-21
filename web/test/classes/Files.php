@@ -80,17 +80,19 @@ class Files {
     	        $this->make_non_json_file($in_file, $out_file, $data, $f);
     	        // Set file to open automatically, replacing underscre with point, so as to enable JSON data to to be formatted in browser.
     	        $r = $constants->download_dir.$unix_ts.'.'.str_replace('_', '.', $f);
+    	        // Return the ID of the file that has just been inserted.
+    	        //$r = $dao->get_new_file_id($in_file);
     	    }
     	}
     	// Return ID.
     	return $r;
 	}
 	
-	/* Get the details for the most-recent JSON file produced by a specific user. */
+	/* Get the details for the most-recent file produced by a specific user. */
 	public function get_latest_file_details() {
 	    // Instantiate.
 	    $dao = new DAO();
-	    $id = $dao->get_new_file_id(TRUE);
+	    $id = $dao->get_new_file_id();
         $this->get_file_details($id);
         return $this->file_details;
 	}
@@ -129,7 +131,7 @@ class Files {
 	    // File constants.
 	    $constants->get_file_constants();
 	    // Get and return the contents of the JSON file.
-	    $id = $dao->get_new_file_id(TRUE);
+	    $id = $dao->get_new_file_id();
 	    $a = $dao->get_file_details($id);
 	    return $constants->download_dir.$a[0]['file_name'];
 	}

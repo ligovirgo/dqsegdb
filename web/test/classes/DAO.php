@@ -309,11 +309,10 @@ class DAO {
 	}
 
 	/* Get the ID of the file that the user has just built. */
-	public function get_new_file_id($is_json=FALSE) {
+	public function get_new_file_id() {
 	    // Init.
 	    $r = 0;
 	    $file_id = 0;
-	    $w = '<>';
 	    // Instantiate.
 	    $log = new Logger();
 	    $user = new User();
@@ -321,14 +320,10 @@ class DAO {
 	    $uid = $user->get_valid_user_id();
 	    // Create PDO object
 	    $this->db_connect();
-	    // If looking for new JSON file.
-	    if($is_json) {
-	        $w = '=';
-	    }
 	    // Build prepared statement.
 	    if($stmt = $this->pdo->prepare("SELECT file_id
 										FROM tbl_file_metadata
-										WHERE file_user_fk=:u AND file_format_fk.".$w."50
+										WHERE file_user_fk=:u
                                         ORDER BY file_id DESC
                                         LIMIT 1")) {
             // If statement executes.
