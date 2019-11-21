@@ -58,7 +58,7 @@ if __name__ == "__main__":
     """
     # Init.
     dqfs = []
-    all_flags = DataQualityFlag('', active=[], known=[], description=None)
+    #all_flags = DataQualityFlag('', active=[], known=[], description=None)
     args = parse_command_line()
     # Try to load the JSON payload.
     try:
@@ -75,18 +75,29 @@ if __name__ == "__main__":
             sk.coalesce()
             # Build the DQ flag structure.
             dq_flag = DataQualityFlag(('%s:%s:%d') % (v['ifo'], v['name'], v['version']), active=convert_segmentlist_to_json(sa), known=convert_segmentlist_to_json(sk), description=None)
+            # Check if the variable for the all-flag bar has been set.
+            try:
+                all_flags
+            except:
+                # If it has not been set, initialise as  DQ Flag structure.
+                all_flags = dq_flag
             # Append the DQ flag to the list.
             dqfs.append(dq_flag)
             # Add to what will be come the all-flags bar.
-            all_flags = all_flags + dq_flag
-        # Instantiate plot with first flag.
-        plot = dqfs[0].plot(insetlabels=True)
-        ax = plot.gca()
+            all_flags = (all_flags & dq_flag)
         # Loop through the DQ Flag dictionary.
         for dqf in dqfs:
-            # Build the plot for the flag.
-            ax.plot(dqf)
+            try:
+                plot
+            except:
+                # Initialisa the plot.
+                plot = dqfs[0].plot(insetlabels=True)
+                ax = plot.gca()
+            else:
+                # Add the DQ Flag structure to the plot.
+                ax.plot(dqf)
         # Build the all-flag plot.
         #ax.axvline(json_dict[0]['start'])
+        ax.set_xscale('seconds')
         ax.plot(all_flags, label='All')
         plot.save(args.output)
