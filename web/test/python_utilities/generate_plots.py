@@ -74,18 +74,19 @@ if __name__ == "__main__":
             sk = convert_json_list_to_segmentlist(v['known'])
             sk.coalesce()
             # Build the DQ flag structure.
-            dq_flag = DataQualityFlag(v['name'], active=convert_segmentlist_to_json(sa), known=convert_segmentlist_to_json(sk), description=None)
+            dq_flag = DataQualityFlag(('%s:%s:%d') % (v['ifo'], v['name'], v['version']), active=convert_segmentlist_to_json(sa), known=convert_segmentlist_to_json(sk), description=None)
             # Append the DQ flag to the list.
             dqfs.append(dq_flag)
             # Add to what will be come the all-flags bar.
             all_flags = all_flags + dq_flag
         # Instantiate plot with first flag.
-        plot = dqfs[0].plot()
+        plot = dqfs[0].plot(insetlabels=True)
         ax = plot.gca()
         # Loop through the DQ Flag dictionary.
         for dqf in dqfs:
             # Build the plot for the flag.
             ax.plot(dqf)
         # Build the all-flag plot.
+        #ax.axvline(json_dict[0]['start'])
         ax.plot(all_flags, label='All')
         plot.save(args.output)
