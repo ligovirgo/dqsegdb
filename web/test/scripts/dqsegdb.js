@@ -301,6 +301,7 @@ $('#div_view_segments').ready(function(){
 			});
 			$.get("scripts/actions.php?action=get_latest_additional_payload_filename", function(afn) {
 				if(afn != 0) {
+					console.log(afn);
 					$('#div_view_segments').append('<div id="div_add_payload">Getting additional payload...</div>');
 					if(afn.match(/.coalesced.json/g)) {
 						$.getJSON(afn, function(aj) {
