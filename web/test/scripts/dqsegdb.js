@@ -312,7 +312,7 @@ $('#div_view_segments').ready(function(){
 					else {
 						$.get(afn, function(a) {
 							console.log(a);
-							$('#div_add_payload').html(a);
+							$('#div_add_payload').text(a);
 						});
 					}
 				}
