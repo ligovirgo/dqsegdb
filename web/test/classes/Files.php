@@ -113,7 +113,8 @@ class Files {
 	    shell_exec($constants->doc_root.$constants->python_utilities_dir.'generate_plots.py '.$constants->doc_root.$constants->download_dir.$a[0]['file_name']." -o ".$ofp);
 	    // Output the file plot.
 	    $this->file_details .= "<img src=\"".$constants->plots_dir.$img_file_name."\">\n";
-	    $this->file_details .= "<p><strong>File:</strong> ".$a[0]['file_name']."</p>\n";
+	    $this->file_details .= "<p><strong>File:</strong> <a href=\"".$a[0]['file_name']."\" class=\"link\">".$a[0]['file_name']."</a> (".$a[0]['file_size']." Bytes)<br>\n";
+	    $this->file_details .= "<strong>URL:</strong> <a href=\"".$a[0]['file_uri_used']."\" class=\"link\">".$a[0]['file_uri_used']."</a></p>\n";
 	}
 }
 
