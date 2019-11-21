@@ -103,7 +103,7 @@ class Files {
 	    $dao = new DAO();
 	    // Get file details array.
 	    $a = $dao->get_file_details($f);
-	    $this->file_details = $a['file_name'];
+	    $this->file_details = $a[0]['file_name'];
 	}
 }
 

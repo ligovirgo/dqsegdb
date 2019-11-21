@@ -294,7 +294,7 @@ class Homepage {
                     $check = ' checked';
                 }
                 // Output versions.
-                $this->version_span .= "<div id=\"span_".$ifo_flag."_".$v."\" class=\"w3-tag w3-light-grey w3-round w3-border w3-margin-right\"><input type=\"checkbox\" name=\"checkbox_".$ifo_flag."_".$v."\" id=\"checkbox_".$ifo_flag."_".$v."\" onchange=\"select_version('".$ifo_flag."',".$v.")\" value=\"".v."\"".$check."> ".$v."</div>";
+                $this->version_span .= "<div id=\"span_".$ifo_flag."_".$v."\" class=\"w3-tag w3-light-grey w3-round w3-border w3-margin-right\"><input type=\"checkbox\" name=\"checkbox_".$ifo_flag."_".$v."\" id=\"checkbox_".$ifo_flag."_".$v."\" onchange=\"select_version('".$ifo_flag."',".$v.")\" value=\"".$v."\"".$check."> ".$v."</div>";
             }
 	    }
 	}
