@@ -305,7 +305,7 @@ $('#div_view_segments').ready(function(){
 					console.log(afn);
 					$('#div_view_segments').append('<p class="w3-margin-0 w3-margin-top"><strong>Additional payload<span id="span_additional_payload"> <i class="fas fa-spinner w3-spin"></i> Getting additional payload...</span>:</strong></p><textarea id="div_add_payload" class="w3-container w3-border" style="position:relative;width:100%;height:200px"></textarea>');
 					if(afn.match(/.coalesced.json/g)) {
-						$.getJSON(afn, function(aj) {
+						$.getJSON(afn.replace('coalesced_json', 'coalesced.json'), function(aj) {
 							console.log(aj);
 							$('#span_additional_payload').text('');
 							$('#div_add_payload').html(JSON.stringify(aj));
