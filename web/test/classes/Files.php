@@ -92,7 +92,7 @@ class Files {
 	public function get_latest_file_details() {
 	    // Instantiate.
 	    $dao = new DAO();
-	    $id = $dao->get_new_file_id();
+	    $id = $dao->get_new_file_id(TRUE);
         $this->get_file_details($id);
         return $this->file_details;
 	}
@@ -131,7 +131,7 @@ class Files {
 	    // File constants.
 	    $constants->get_file_constants();
 	    // Get and return the contents of the JSON file.
-	    $id = $dao->get_new_file_id();
+	    $id = $dao->get_new_file_id(TRUE);
 	    $a = $dao->get_file_details($id);
 	    return $constants->download_dir.$a[0]['file_name'];
 	}
