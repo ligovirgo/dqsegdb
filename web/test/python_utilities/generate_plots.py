@@ -97,7 +97,7 @@ if __name__ == "__main__":
                 # Add the DQ Flag structure to the plot.
                 ax.plot(dqf)
         # Build the all-flag plot.
-        #ax.axvline(json_dict[0]['start'])
-        ax.set_xscale('seconds')
+        #ax.set_xscale('hours')
+        ax.set_epoch(json_dict[0]['query_information']['start'])
         ax.plot(all_flags, label='All')
         plot.save(args.output)
