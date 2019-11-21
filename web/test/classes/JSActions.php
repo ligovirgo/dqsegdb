@@ -153,6 +153,10 @@ class JSAction {
 		elseif($_GET['action'] == 'get_latest_json_payload_filename') {
 		    $this->document = $file->get_latest_json_payload_filename();
 		}
+		elseif($_GET['action'] == 'get_latest_additional_payload_filename') {
+		    $this->document = $file->get_latest_additional_payload_filename();
+		}
+		
 		// Output response.
 		echo $this->document;
 	}

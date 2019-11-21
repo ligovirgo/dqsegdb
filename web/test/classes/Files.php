@@ -80,19 +80,17 @@ class Files {
     	        $this->make_non_json_file($in_file, $out_file, $data, $f);
     	        // Set file to open automatically, replacing underscre with point, so as to enable JSON data to to be formatted in browser.
     	        $r = $constants->download_dir.$unix_ts.'.'.str_replace('_', '.', $f);
-    	        // Return the ID of the file that has just been inserted.
-    	        //$r = $dao->get_new_file_id($in_file);
     	    }
     	}
     	// Return ID.
     	return $r;
 	}
 	
-	/* Get the details for the most-recent file produced by a specific user. */
+	/* Get the details for the most-recent JSON file produced by a specific user. */
 	public function get_latest_file_details() {
 	    // Instantiate.
 	    $dao = new DAO();
-	    $id = $dao->get_new_file_id();
+	    $id = $dao->get_new_file_id(TRUE);
         $this->get_file_details($id);
         return $this->file_details;
 	}
@@ -117,7 +115,7 @@ class Files {
 	    $this->file_details .= "<div class=\"w3-container\">\n";
 	    $this->file_details .= "<img src=\"".$constants->plots_dir.$img_file_name."\" style=\"position:relative;width:100%\">\n";
 	    $this->file_details .= "</div>\n";
-	    $this->file_details .= "<p><strong>File:</strong> <a href=\"".$constants->download_dir.$a[0]['file_name']."\" class=\"link\">".$a[0]['file_name']."</a> <span class=\"w3-small w3-dark-grey\">(".$a[0]['file_size']." Bytes)</span><br>\n";
+	    $this->file_details .= "<p><strong>File:</strong> <a href=\"".$constants->download_dir.$a[0]['file_name']."\" class=\"link\">".$a[0]['file_name']."</a> <span class=\"w3-small w3-text-grey\">(".$a[0]['file_size']." Bytes)</span><br>\n";
 	    $this->file_details .= "<strong>URI used:</strong> ".$a[0]['file_uri_used']."</p>\n";
 	    $this->file_details .= "<p><strong>JSON payload:</strong><br>\n";
 	    $this->file_details .= "<div id=\"div_raw_json\" class=\"w3-container w3-border w3-responsive\" style=\"height:200px\"><i class=\"fas fa-spinner w3-spin\"></i> Getting JSON payload...</div>\n";
@@ -125,6 +123,19 @@ class Files {
 
 	/* Get the latest JSON payload produced by a specific user. */
 	public function get_latest_json_payload_filename() {
+	    // Instantiate.
+	    $dao = new DAO();
+	    $constants = new Constants();
+	    // File constants.
+	    $constants->get_file_constants();
+	    // Get and return the contents of the JSON file.
+	    $id = $dao->get_new_file_id(TRUE);
+	    $a = $dao->get_file_details($id);
+	    return $constants->download_dir.$a[0]['file_name'];
+	}
+	
+	/* Get the latest additional payload produced by a specific user. */
+	public function get_latest_additional_payload_filename() {
 	    // Instantiate.
 	    $dao = new DAO();
 	    $constants = new Constants();
