@@ -130,7 +130,7 @@ class Files {
 	    // Get and return the contents of the JSON file.
 	    $id = $dao->get_new_file_id();
 	    $a = $dao->get_file_details($id);
-	    return json_encode($constants->download_dir.file_get_contents($a[0]['file_name']));
+	    return json_encode(file_get_contents($constants->download_dir.$a[0]['file_name']));
 	}
 	
 }
