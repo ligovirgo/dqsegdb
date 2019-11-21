@@ -117,7 +117,7 @@ class Files {
 	    $this->file_details .= "<div class=\"w3-container\">\n";
 	    $this->file_details .= "<img src=\"".$constants->plots_dir.$img_file_name."\" style=\"position:relative;width:100%\">\n";
 	    $this->file_details .= "</div>\n";
-	    $this->file_details .= "<p><strong>File:</strong> <a href=\"".$constants->download_dir.$a[0]['file_name']."\" class=\"link\">".$a[0]['file_name']."</a> (".$a[0]['file_size']." Bytes)<br>\n"; 
+	    $this->file_details .= "<p><strong>File:</strong> <a href=\"".$constants->download_dir.$a[0]['file_name']."\" class=\"link\">".$a[0]['file_name']."</a> <span class=\"w3-small w3-dark-grey\">(".$a[0]['file_size']." Bytes)</span><br>\n";
 	    $this->file_details .= "<strong>URI used:</strong> ".$a[0]['file_uri_used']."</p>\n";
 	    $this->file_details .= "<p><strong>JSON payload:</strong><br>\n";
 	    $this->file_details .= "<div id=\"div_raw_json\" class=\"w3-container w3-border w3-responsive\" style=\"height:200px\"><i class=\"fas fa-spinner w3-spin\"></i> Getting JSON payload...</div>\n";
