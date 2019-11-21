@@ -127,9 +127,9 @@ class Files {
 	        $add_file = " - <a href=\"".$constants->download_dir.$afn."\" class=\"link\">".$afn."</a> <span class=\"w3-small w3-text-grey\">(".$af[0]['file_size']." Bytes)</span>";
 	        $s = 's';
 	    }
-	    $this->file_details .= "<p><strong>File".$s.":</strong> <a href=\"".$constants->download_dir.$a[0]['file_name']."\" class=\"link\">".$a[0]['file_name']."</a> <span class=\"w3-small w3-text-grey\">(".$a[0]['file_size']." Bytes)</span>".$add_file."<br>\n";
-	    $this->file_details .= "<strong>URI used:</strong> ".$a[0]['file_uri_used']."</p>\n";
-	    $this->file_details .= "<p class=\"w3-margin-0 w3-margin-top\"><strong>JSON payload<span id=\"span_raw_json\"> <i class=\"fas fa-spinner w3-spin\"></i> Getting JSON payload...</span>:</strong><br>\n";
+	    $this->file_details .= "<p><strong><i class=\"fas fa-file\"></i> File".$s.":</strong> <a href=\"".$constants->download_dir.$a[0]['file_name']."\" class=\"link\">".$a[0]['file_name']."</a> <span class=\"w3-small w3-text-grey\">(".$a[0]['file_size']." Bytes)</span>".$add_file."<br>\n";
+	    $this->file_details .= "<strong><i class=\"fas fa-link\"></i> URI used:</strong> ".$a[0]['file_uri_used']."</p>\n";
+	    $this->file_details .= "<p class=\"w3-margin-0 w3-margin-top\"><strong><i class=\"far fa-copy\"></i> JSON payload<span id=\"span_raw_json\"> <i class=\"fas fa-spinner w3-spin\"></i> Getting JSON payload...</span>:</strong><br>\n";
 	    $this->file_details .= "<textarea id=\"div_raw_json\" class=\"w3-container w3-border\" style=\"position:relative;width:100%;height:200px\"></textarea>\n";
 	}
 

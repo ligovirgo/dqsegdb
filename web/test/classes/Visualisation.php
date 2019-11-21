@@ -24,7 +24,8 @@ class Visualisation {
         // If on the correct page.
         if($_GET['c'] == 2) {
             $this->visualisation_contents .= "<h3 class=\"w3-text-signal-green\">View segments</h3>\n";
-            $this->visualisation_contents .= "<div id=\"div_view_segments\" class=\"w3-margin-right\">\n";
+            $this->visualisation_contents .= "<p><strong><i class=\"fas fa-link\"></i> <a href=\"?c=1\" class=\"link\">Get some more segments</a>\n";
+            $this->visualisation_contents .= "<div id=\"div_view_segments\" class=\"w3-margin-right w3-padding-0\">\n";
             $this->visualisation_contents .= "<p id=\"p_view_segments\"><i class=\"fas fa-spinner w3-spin\"></i> Building segment visualisation...</p>\n";
             $this->visualisation_contents .= "</div>\n";
         }
