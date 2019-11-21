@@ -296,9 +296,9 @@ $('#div_view_segments').ready(function(){
 	$.get("scripts/actions.php?action=get_latest_query_results", function(r) {
 		$('#div_view_segments').html(r);
 		$.get("scripts/actions.php?action=get_latest_json_payload_filename", function(fn) {
-			if(fn != 0) {
-				$('#div_view_segments').append('<div id="div_add_payload">Getting additional payload...</div>');
-				$.get("scripts/actions.php?action=get_latest_additional_payload_filename", function(afn) {
+			$.get("scripts/actions.php?action=get_latest_additional_payload_filename", function(afn) {
+				if(fn != 0) {
+					$('#div_view_segments').append('<div id="div_add_payload">Getting additional payload...</div>');
 					if(afn.match(/.coalesced.json/g)) {
 						$.getJSON(afn, function(aj) {
 							$('#div_view_segments').html(JSON.stringify(aj));
@@ -309,8 +309,8 @@ $('#div_view_segments').ready(function(){
 							$('#div_view_segments').html(a);
 						});
 					}
-				});
-			}
+				}
+			});
 		});
 	});
 });
