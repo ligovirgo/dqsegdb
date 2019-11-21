@@ -297,6 +297,7 @@ $('#div_view_segments').ready(function(){
 		$('#div_view_segments').html(r);
 		$.get("scripts/actions.php?action=get_latest_json_payload_filename", function(fn) {
 			$.getJSON(fn, function(j) {
+				$('#span_raw_json').text('');
 				$('#div_raw_json').html(JSON.stringify(j));
 			});
 			$.get("scripts/actions.php?action=get_latest_additional_payload_filename", function(afn) {

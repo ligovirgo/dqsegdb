@@ -119,8 +119,8 @@ class Files {
 	    $this->file_details .= "</div>\n";
 	    $this->file_details .= "<p><strong>File:</strong> <a href=\"".$constants->download_dir.$a[0]['file_name']."\" class=\"link\">".$a[0]['file_name']."</a> <span class=\"w3-small w3-text-grey\">(".$a[0]['file_size']." Bytes)</span><br>\n";
 	    $this->file_details .= "<strong>URI used:</strong> ".$a[0]['file_uri_used']."</p>\n";
-	    $this->file_details .= "<p class=\"w3-margin-0 w3-margin-top\"><strong>JSON payload:</strong><br>\n";
-	    $this->file_details .= "<div id=\"div_raw_json\" class=\"w3-container w3-border w3-responsive\" style=\"height:200px\"><i class=\"fas fa-spinner w3-spin\"></i> Getting JSON payload...</div>\n";
+	    $this->file_details .= "<p class=\"w3-margin-0 w3-margin-top\"><strong>JSON payload<span id=\"span_raw_json\"> <i class=\"fas fa-spinner w3-spin\"></i> Getting JSON payload...</span>:</strong><br>\n";
+	    $this->file_details .= "<textarea id=\"div_raw_json\" class=\"w3-container w3-border\" style=\"position:relative;width:100%;height:200px\"></textarea>\n";
 	}
 
 	/* Get the latest JSON payload produced by a specific user. */
