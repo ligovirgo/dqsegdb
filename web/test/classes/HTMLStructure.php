@@ -62,8 +62,8 @@ class HTMLStructure {
 		$this->right_hand_options .= "	<!-- Get right-hand options container -->\n";
 		$this->right_hand_options .= "	<div class=\"w3-container\" style=\"top:50px;\">\n";
 		// Output Line buttons.
-		$this->right_hand_options .= "		<a href=\"?c=2\" class=\"dashboard-btn w3-signal-green w3-tooltip\" style=\"top:78px\"><i class=\"fas fa-user\"><span style=\"left:-52px\" class=\"w3-text w3-tag w3-signal-green w3-animate-right text-tip\">Members</span></i></a>\n";
-		$this->right_hand_options .= "		<a href=\"?c=3\" class=\"dashboard-btn w3-signal-green w3-tooltip\" style=\"top:106px\"><i class=\"fas fa-university\"><span style=\"left:-70px\" class=\"w3-text w3-tag w3-signal-green w3-animate-right text-tip\">Institutions</span></i></a>\n";
+		//$this->right_hand_options .= "		<a href=\"?c=2\" class=\"dashboard-btn w3-signal-green w3-tooltip\" style=\"top:78px\"><i class=\"fas fa-user\"><span style=\"left:-52px\" class=\"w3-text w3-tag w3-signal-green w3-animate-right text-tip\">Members</span></i></a>\n";
+		//$this->right_hand_options .= "		<a href=\"?c=3\" class=\"dashboard-btn w3-signal-green w3-tooltip\" style=\"top:106px\"><i class=\"fas fa-university\"><span style=\"left:-70px\" class=\"w3-text w3-tag w3-signal-green w3-animate-right text-tip\">Institutions</span></i></a>\n";
 		$this->right_hand_options .= "	</div>\n";
 	}
 
