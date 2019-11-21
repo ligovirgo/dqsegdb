@@ -394,9 +394,9 @@ class DAO {
 	    // Build prepared statement.
 	    if($stmt = $this->pdo->prepare("SELECT *
 										FROM tbl_file_metadata
-                                        WHERE file_name LIKE ':fn%' AND file_format_fk<>50")) {
+                                        WHERE file_name LIKE '".$e[0]."%' AND file_format_fk<>50")) {
             // If statement executes.
-	       if($stmt->execute(array(':fn' => $e[0]))) {
+	        if($stmt->execute()) {
     	        // Fetch the result.
     	        $a = $stmt->fetchAll();
     	    }
