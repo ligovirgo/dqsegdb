@@ -30,6 +30,7 @@ class Constants {
 	
 	public $doc_root;
 	public $download_dir;
+	public $plots_dir;
 	public $python_utilities_dir;
 	
 	public $log_dir;
@@ -61,6 +62,7 @@ class Constants {
 	public function get_file_constants() {
 	    $this->doc_root = '/usr/share/dqsegdb/web/test/';
 	    $this->download_dir = 'downloads/';
+	    $this->plots_dir = 'plots/';
 	    $this->python_utilities_dir = 'python_utilities/';
 	}
 	

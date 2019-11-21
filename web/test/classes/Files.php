@@ -100,10 +100,19 @@ class Files {
 	    // Init.
 	    $this->file_details;
 	    // Instantiate.
+	    $constants = new Constants();
 	    $dao = new DAO();
 	    // Get file details array.
 	    $a = $dao->get_file_details($f);
-	    $this->file_details = $a[0]['file_name'];
+	    // Get file-related variables.
+	    $constants->get_file_constants();
+	    // Build the output full path.
+	    $ofp = $constants->doc_root.$constants->plots_dir.str_replace('.json', '.png', $a[0]['file_name']);
+	    // Generate the PNG from the JSON.
+	    shell_exec($constants->doc_root.$constants->python_utilities_dir.'generate_plots.py '.$constants->doc_root.$constants->download_dir.$a[0]['file_name']." -o ".$ofp);
+	    // Output the file plot.
+	    $this->file_details .= "<img src=\"".$ofp."\">\n";
+	    $this->file_details .= "<p><strong>File:</strong> ".$a[0]['file_name']."</p>\n";
 	}
 }
 
