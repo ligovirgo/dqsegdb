@@ -88,11 +88,13 @@ class Files {
     	return $r;
 	}
 	
+	/* Get the details for the most-recent file produced by a specific user. */
 	public function get_latest_file_details() {
 	    // Instantiate.
 	    $dao = new DAO();
-        $this->get_file_details($dao->get_new_file_id());
-        return $this->file_details;
+	    $id = $dao->get_new_file_id();
+        $this->get_file_details($id);
+        return $id;
 	}
 
 	/* Get details of a file. */
@@ -115,8 +117,22 @@ class Files {
 	    $this->file_details .= "<img src=\"".$constants->plots_dir.$img_file_name."\">\n";
 	    $this->file_details .= "<p><strong>File:</strong> <a href=\"".$constants->download_dir.$a[0]['file_name']."\" class=\"link\">".$a[0]['file_name']."</a> (".$a[0]['file_size']." Bytes)<br>\n";
 	    $this->file_details .= "<strong>URI used:</strong> ".$a[0]['file_uri_used']."</p>\n";
-	    $this->file_details .= "<div id=\"div_raw_json\"><i class=\"fa-spinner w3-spin\"></i> Getting JSON payload...</div>\n";
+	    $this->file_details .= "<div id=\"div_raw_json\" class=\"w3-container w3-border w3-responsive\" style=\"height:200px\"><i class=\"fas fa-spinner w3-spin\"></i> Getting JSON payload...</div>\n";
 	}
+
+	/* Get the latest JSON payload produced by a specific user. */
+	public function get_latest_json_payload() {
+	    // Instantiate.
+	    $dao = new DAO();
+	    $constants = new Constants();
+	    // File constants.
+	    $constants->get_file_constants();
+	    // Get and return the contents of the JSON file.
+	    $id = $dao->get_new_file_id();
+	    $a = $dao->get_file_details($id);
+	    return json_encode($constants->download_dir.file_get_contents($a[0]['file_name']));
+	}
+	
 }
 
 ?>

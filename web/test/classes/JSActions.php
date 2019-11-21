@@ -150,6 +150,9 @@ class JSAction {
 		elseif($_GET['action'] == 'get_latest_query_results') {
 		    $this->document = $file->get_latest_file_details();
 		}
+		elseif($_GET['action'] == 'get_latest_json_payload') {
+		    $this->document = $file->get_latest_json_payload();
+		}
 		// Output response.
 		echo $this->document;
 	}
