@@ -296,17 +296,21 @@ $('#div_view_segments').ready(function(){
 	$.get("scripts/actions.php?action=get_latest_query_results", function(r) {
 		$('#div_view_segments').html(r);
 		$.get("scripts/actions.php?action=get_latest_json_payload_filename", function(fn) {
+			$.getJSON(fn, function(j) {
+				$('#div_raw_json').html(JSON.stringify(j));
+			});
 			$.get("scripts/actions.php?action=get_latest_additional_payload_filename", function(afn) {
+				$('#div_view_segments').html(JSON.stringify(aj));
 				if(fn != 0) {
 					$('#div_view_segments').append('<div id="div_add_payload">Getting additional payload...</div>');
 					if(afn.match(/.coalesced.json/g)) {
 						$.getJSON(afn, function(aj) {
-							$('#div_view_segments').html(JSON.stringify(aj));
+							$('#div_add_payload').html(JSON.stringify(aj));
 						});
 					}
 					else {
 						$.get(afn, function(a) {
-							$('#div_view_segments').html(a);
+							$('#div_add_payload').html(a);
 						});
 					}
 				}
