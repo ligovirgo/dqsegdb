@@ -148,7 +148,7 @@ class JSAction {
 		    $this->document = $file->build_output_payload($data, $_GET['format']);
 		}
 		elseif($_GET['action'] == 'get_latest_query_results') {
-		    $this->document = 'Here';
+		    $this->document = $file->get_latest_file_details();
 		}
 		// Output response.
 		echo $this->document;
