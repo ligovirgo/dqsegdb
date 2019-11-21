@@ -381,6 +381,37 @@ class DAO {
 	    return $a;
 	}
 	
+	/* Get an array of additional-file details. */
+	public function get_additional_file_details($fn) {
+	    // Init.
+	    $a = array();
+	    // Instantiate.
+	    $log = new Logger();
+	    // Create PDO object
+	    $this->db_connect();
+	    // Explode the full main filename and get just the name without the file type.
+	    $e = explode('.', $fn);
+	    // Build prepared statement.
+	    if($stmt = $this->pdo->prepare("SELECT *
+										FROM tbl_file_metadata
+                                        WHERE file_name LIKE ':fn%' AND file_format_fk<>50")) {
+            // If statement executes.
+	       if($stmt->execute(array(':fn' => $e[0]))) {
+    	        // Fetch the result.
+    	        $a = $stmt->fetchAll();
+    	    }
+    	    // Otherwise.
+    	    else {
+    	        // Write to log.
+    	        $log->write_to_log_file(3, "Problem retrieving array of additional-file details for file: ".$fn.". Statement not executed.");
+    	        // Write verbose.
+    	        $log->write_verbose_to_error_stack(NULL, $stmt->errorInfo());
+    	    }
+	    }
+	    // Return.
+	    return $a;
+	}
+	
 	/////////////////////////////
 	// USER-RELATED FUNCTIONS //
 	///////////////////////////
