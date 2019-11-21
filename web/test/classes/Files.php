@@ -121,7 +121,7 @@ class Files {
 	}
 
 	/* Get the latest JSON payload produced by a specific user. */
-	public function get_latest_json_payload() {
+	public function get_latest_json_payload_filename() {
 	    // Instantiate.
 	    $dao = new DAO();
 	    $constants = new Constants();
@@ -130,7 +130,7 @@ class Files {
 	    // Get and return the contents of the JSON file.
 	    $id = $dao->get_new_file_id();
 	    $a = $dao->get_file_details($id);
-	    return file_get_contents($constants->download_dir.$a[0]['file_name']);
+	    return $constants->download_dir.$a[0]['file_name'];
 	}
 	
 }

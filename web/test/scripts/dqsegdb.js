@@ -295,8 +295,11 @@ $(document).ready(function(){
 $('#div_view_segments').ready(function(){
 	$.get("scripts/actions.php?action=get_latest_query_results", function(r) {
 		$('#div_view_segments').html(r);
-		$.getJSON("scripts/actions.php?action=get_latest_json_payload", function(json) {
-			$('#div_raw_json').html(json);
+		$.get("scripts/actions.php?action=get_latest_json_payload_filename", function(fn) {
+			$.getJSON(fn, function(json) {
+				console.log(json);
+				$('#div_raw_json').html(json);
+			});
 		});
 	});
 });
