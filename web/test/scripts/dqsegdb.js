@@ -302,16 +302,18 @@ $('#div_view_segments').ready(function(){
 			$.get("scripts/actions.php?action=get_latest_additional_payload_filename", function(afn) {
 				if(afn != 0) {
 					console.log(afn);
-					$('#div_view_segments').append('<p class="w3-margin-0 w3-margin-top"><strong>Additional payload:</strong></p><div id="div_add_payload" class="w3-container w3-border"><i class="fas fa-spinner w3-spin"></i> Getting additional payload...</div>');
+					$('#div_view_segments').append('<p class="w3-margin-0 w3-margin-top"><strong>Additional payload<span id=\"span_additional_payload\"> <i class="fas fa-spinner w3-spin"></i> Getting additional payload...</span>:</strong></p><textarea id="div_add_payload" class="w3-container w3-border"></textarea>');
 					if(afn.match(/.coalesced.json/g)) {
 						$.getJSON(afn, function(aj) {
 							console.log(aj);
+							$('#span_additional_payload').text('');
 							$('#div_add_payload').html(JSON.stringify(aj));
 						});
 					}
 					else {
 						$.get(afn, function(a) {
 							console.log(a);
+							$('#span_additional_payload').text('');
 							$('#div_add_payload').text(a);
 						});
 					}
