@@ -94,7 +94,7 @@ class Files {
 	    $dao = new DAO();
 	    $id = $dao->get_new_file_id();
         $this->get_file_details($id);
-        return $id;
+        return $this->file_details;
 	}
 
 	/* Get details of a file. */
