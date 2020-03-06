@@ -34,3 +34,9 @@ python setup.py install --user
 # This must be run each time you log in, or put it in your log in scripts (.bashrc)
 
 ```
+dqsegdb architecture as used by IGWN
+=======
+<div align="center">
+  <img src="https://raw.githubusercontent.com/ligovirgo/dqsegdb/master/system_architecture_20200212.png">
+</div>
+![dqsegdb architecture as used by IGWN](system_architecture_20200212.png)
