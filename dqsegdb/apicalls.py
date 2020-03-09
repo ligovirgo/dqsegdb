@@ -135,7 +135,7 @@ def dqsegdbFindEndTime(flag_dict):
     Determines max end_time from known times in flag_dict
 
     Parameters
-    _________
+    ----------
     flag_dict: `dictionary`
         Input dictionary, converted from json using json.loads in previous call
 
