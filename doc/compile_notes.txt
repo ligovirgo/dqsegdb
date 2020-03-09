@@ -3,11 +3,17 @@
 
 Steps:
 * In a clone/branch of the dqsegdb repository:
-   * (maybe create a new virtual environment:
+   * (maybe create a new virtual environment: - be careful with this section; might be incomplete or unclear)
       * python3 -m venv /root/venv_dqsegdb_2020.03.09a
       * source /root/venv_dqsegdb_2020.03.09a/bin/activate
       * cd /root/venv_dqsegdb_2020.03.09a/
       * git clone https://github.com/ligovirgo/dqsegdb.git
+   * A) install dqsegdb from the downloaded version
+      * cd dqsegdb
+      * python -m pip install .
+   * B) install dqsegdb from the PyPI version
+      * python -m pip install dqsegdb
+   * probably also need to install lalsuite to get 'lal' (e.g., 'python -m pip install lalsuite')
 * Check on issues with old versions of dqsegdb (<= 1.6.1):
    * dqsegdb/doc/conf.py: Make sure "sphinx.ext.pngmath" has been changed to "sphinx.ext.imgmath"
    * dqsegdb/doc/dqsegdb.rst: Make sure that the line ".. automodule:: dqsegdb.version" has been changed to ".. automodule:: dqsegdb._version"
@@ -18,5 +24,7 @@ Steps:
    * If everything works properly, documentation should show up in dqsegdb/doc/_build/html/; the contents of that dir can be copied to a web-accessible dir and accessed as-is, as long as files have permissions xx5 (e.g., 755)
    * Here are some possible issues and fixes:
       * (make blank dqsegdb/doc/_static dir)
-      * If you get "make: sphinx-build: Command not found" - install 'spinx' (e.g., 'python -m pip install sphinx')
-      * (pip-install 'sphinxcontrib-programoutput', and 'numpydoc')
+      * If you get "make: sphinx-build: Command not found" - install 'sphinx' (e.g., 'python -m pip install sphinx')
+      * If you get "Extension error:  Could not import extension sphinxcontrib.programoutput (exception: No module named 'sphinxcontrib.programoutput')" - install 'sphinxcontrib-programoutput' (e.g., 'python -m pip install sphinxcontrib-programoutput')
+      * If you get "Extension error:  Could not import extension numpydoc (exception: No module named 'numpydoc')" - install 'numpydoc' (e.g., 'python -m pip install numpydoc')
+      * If you get a warning like "WARNING: Unexpected return code 1 from command 'ligolw_segment_query_dqsegdb --help' " - not sure what's going on there; 
