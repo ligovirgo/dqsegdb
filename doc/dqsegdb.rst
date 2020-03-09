@@ -44,7 +44,7 @@ dqsegdb Package
 :mod:`version` Module
 ---------------------
 
-.. automodule:: dqsegdb.version
+.. automodule:: dqsegdb._version
     :members:
     :undoc-members:
     :show-inheritance:
