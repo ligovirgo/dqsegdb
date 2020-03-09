@@ -1,0 +1,16 @@
+# This is just a collection of notes on how to create dqsegdb documentation.
+# Started by Robert Bruntz on 2020.03.09
+
+Steps:
+* In a clone/branch of the dqsegdb repository:
+* Check on issues with old versions of dqsegdb (<= 1.6.1):
+   * dqsegdb/doc/setup.py: Make sure "sphinx.ext.pngmath" has been changed to "sphinx.ext.imgmath"
+   * dqsegdb/doc/dqsegdb.rst: Make sure that the line ".. automodule:: dqsegdb.version" has been changed to ".. automodule:: dqsegdb._version"
+   * dqsegdb/apicalls.py: In the docstring for "def dqsegdbFindEndTime(flag_dict):", make sure that the line after "Parameters" has been changed from underscores to dashes and that there are the same number of dashes as the number of characters in "Parameters" (10)
+* Navigate to dqsegdb/doc/
+* dqsegdb/doc/conf.py: Set the version of documentation to match the version of dqsegdb in the "version = " and "release = " lines (probably set to the same value for both, e.g., "version = 1.6.1"
+* Run 'make html'
+   * If everything works properly, documentation should show up in dqsegdb/doc/_build/html/; the contents of that dir can be copied to a web-accessible dir and accessed as-is, as long as files have permissions xx5 (e.g., 755)
+   * Here are some possible issues and fixes:
+      * (make blank dqsegdb/doc/_static dir)
+      * (pip-install 'sphinx', 'sphinxcontrib-programoutput', and 'numpydoc')
