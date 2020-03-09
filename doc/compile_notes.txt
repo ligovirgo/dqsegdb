@@ -3,8 +3,13 @@
 
 Steps:
 * In a clone/branch of the dqsegdb repository:
+   * (maybe create a new virtual environment:
+      * python3 -m venv /root/venv_dqsegdb_2020.03.09a
+      * source /root/venv_dqsegdb_2020.03.09a/bin/activate
+      * cd /root/venv_dqsegdb_2020.03.09a/
+      * git clone https://github.com/ligovirgo/dqsegdb.git
 * Check on issues with old versions of dqsegdb (<= 1.6.1):
-   * dqsegdb/doc/setup.py: Make sure "sphinx.ext.pngmath" has been changed to "sphinx.ext.imgmath"
+   * dqsegdb/doc/conf.py: Make sure "sphinx.ext.pngmath" has been changed to "sphinx.ext.imgmath"
    * dqsegdb/doc/dqsegdb.rst: Make sure that the line ".. automodule:: dqsegdb.version" has been changed to ".. automodule:: dqsegdb._version"
    * dqsegdb/apicalls.py: In the docstring for "def dqsegdbFindEndTime(flag_dict):", make sure that the line after "Parameters" has been changed from underscores to dashes and that there are the same number of dashes as the number of characters in "Parameters" (10)
 * Navigate to dqsegdb/doc/
@@ -13,4 +18,5 @@ Steps:
    * If everything works properly, documentation should show up in dqsegdb/doc/_build/html/; the contents of that dir can be copied to a web-accessible dir and accessed as-is, as long as files have permissions xx5 (e.g., 755)
    * Here are some possible issues and fixes:
       * (make blank dqsegdb/doc/_static dir)
-      * (pip-install 'sphinx', 'sphinxcontrib-programoutput', and 'numpydoc')
+      * If you get "make: sphinx-build: Command not found" - install 'spinx' (e.g., 'python -m pip install sphinx')
+      * (pip-install 'sphinxcontrib-programoutput', and 'numpydoc')
