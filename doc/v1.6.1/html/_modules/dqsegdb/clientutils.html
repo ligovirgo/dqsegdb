@@ -1,0 +1,634 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dqsegdb.clientutils &#8212; dqsegdb 1.6.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dqsegdb 1.6.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dqsegdb.clientutils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2015 Ryan Fisher, Gary Hemming</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU Affero General Public License as</span>
+<span class="c1"># published by the Free Software Foundation, either version 3 of the</span>
+<span class="c1"># License, or (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU Affero General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Affero General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="kn">import</span> <span class="n">reduce</span>
+
+<span class="kn">from</span> <span class="nn">ligo</span> <span class="kn">import</span> <span class="n">segments</span>
+
+<span class="kn">from</span> <span class="nn">glue.ligolw</span> <span class="kn">import</span> <span class="n">table</span>
+<span class="kn">from</span> <span class="nn">glue.ligolw</span> <span class="kn">import</span> <span class="n">lsctables</span>
+<span class="kn">from</span> <span class="nn">glue.ligolw</span> <span class="kn">import</span> <span class="n">types</span> <span class="k">as</span> <span class="n">ligolwtypes</span>
+
+<span class="kn">from</span> <span class="nn">glue.segmentdb</span> <span class="kn">import</span> <span class="n">segmentdb_utils</span>
+
+<span class="kn">from</span> <span class="nn">glue.ligolw.utils</span> <span class="kn">import</span> <span class="n">ligolw_sqlite</span>
+<span class="kn">from</span> <span class="nn">glue.ligolw</span> <span class="kn">import</span> <span class="n">dbtables</span>
+
+<span class="kn">from</span> <span class="nn">dqsegdb</span> <span class="kn">import</span> <span class="n">jsonhelper</span>
+
+
+<div class="viewcode-block" id="include_exclude_caller"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.include_exclude_caller">[docs]</a><span class="k">def</span> <span class="nf">include_exclude_caller</span><span class="p">(</span><span class="n">includedList</span><span class="p">,</span><span class="n">excludedList</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">,</span><span class="n">protocol</span><span class="p">,</span> <span class="n">server</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to query the dqsegdb for lists of included and excluded flags.</span>
+<span class="sd">    Returns lists of JSON for the included and excluded flags and lists of</span>
+<span class="sd">    URLs used to query the database.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    includedList : `list`</span>
+<span class="sd">        List of ifo,name,version tuples</span>
+<span class="sd">    excludedList : `list`</span>
+<span class="sd">        List of ifo,name,version tuples</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    include_list_string : `string`</span>
+<span class="sd">        Ex: &quot;metadata,known,active&quot;</span>
+<span class="sd">    startTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    endTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">dqsegdb</span> <span class="kn">import</span> <span class="n">apicalls</span>
+    <span class="c1">## Form the results for included and excluded flags</span>
+    <span class="n">includedJSON</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">includedURL</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">excludedJSON</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">excludedURL</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">includedList</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">includedList</span><span class="p">:</span>
+            <span class="n">ifo</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">,</span><span class="n">queryurl</span><span class="o">=</span><span class="n">apicalls</span><span class="o">.</span><span class="n">dqsegdbQueryTimes</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">)</span>
+            <span class="n">includedURL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">queryurl</span><span class="p">)</span>
+            <span class="n">includedJSON</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">excludedList</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">excludedList</span><span class="p">:</span>
+            <span class="n">ifo</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">,</span><span class="n">queryurl</span><span class="o">=</span><span class="n">apicalls</span><span class="o">.</span><span class="n">dqsegdbQueryTimes</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">)</span>
+            <span class="n">excludedURL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">queryurl</span><span class="p">)</span>
+            <span class="n">excludedJSON</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">includedJSON</span><span class="p">,</span><span class="n">includedURL</span><span class="p">,</span><span class="n">excludedJSON</span><span class="p">,</span><span class="n">excludedURL</span><span class="p">,</span><span class="n">ifo</span></div>
+
+<div class="viewcode-block" id="calculate_combined_result"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.calculate_combined_result">[docs]</a><span class="k">def</span> <span class="nf">calculate_combined_result</span><span class="p">(</span><span class="n">includedJSON</span><span class="p">,</span><span class="n">excludedJSON</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">,</span><span class="n">ifo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the result of the union of the active times for the included flag less the intersection of that result with the union of the excluded flags</span>
+<span class="sd">    Inputs are 2 lists of python dictionaries representing the JSON (already have run json.loads() on the JSON), a start time, and end time, and the ifo name (it does not make sense to include/exclude across multiple ifos)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    startTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    endTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total_active_list</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([])</span>
+    <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">includedJSON</span><span class="p">:</span>
+        <span class="c1">#result=json.loads(flag)</span>
+        <span class="c1">#flagDict=result[&#39;flags&#39;][0]</span>
+        <span class="n">active_list</span><span class="o">=</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">]</span>
+        <span class="n">active_segments</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">active_list</span><span class="p">])</span>
+        <span class="n">total_active_list</span><span class="o">=</span><span class="n">total_active_list</span><span class="o">+</span><span class="n">active_segments</span>
+        <span class="n">total_active_list</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">excludedJSON</span><span class="p">:</span>
+        <span class="c1">#result=json.loads(flag)</span>
+        <span class="c1">#flagDict=result[&#39;flags&#39;][0]</span>
+        <span class="n">active_list</span><span class="o">=</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">]</span>
+        <span class="n">active_segments</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">active_list</span><span class="p">])</span>
+        <span class="n">total_active_list</span><span class="o">=</span><span class="n">total_active_list</span><span class="o">-</span><span class="n">active_segments</span>
+        <span class="n">total_active_list</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+    <span class="c1"># Now, total_active_list contains a segmentlist object with segments spanning the expected result     # includedJSON and excludedJSON contain lists of JSON text blobs (not parsed with json.loads yet)</span>
+
+    <span class="c1">## Note:  About known segments for the result:  We just report the start and end time of the period queried!  If you wanted to report the actual validity of multiple segments, it&#39;s somewhat undefined if the excluded ones and/or some of the included flags aren&#39;t known about for a time when the included ones are;  Technically since exclusion trumps all inclusions, if an excluded segment is known and active at any given time, the result is known for that time explicitly.</span>
+    <span class="n">result_known_segment_list</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">)])</span>
+
+    <span class="c1">## Now we have to build the JSON for this flag</span>
+    <span class="c1"># JSON flag objects looks like this (each is a dictionary!):</span>
+    <span class="c1">#  {</span>
+    <span class="c1">#    &quot;ifo&quot; : &quot;ifo&quot;,</span>
+    <span class="c1">#    &quot;name&quot; : &quot;flag&quot;,</span>
+    <span class="c1">#    &quot;version&quot; : n,</span>
+    <span class="c1">#    &quot;comment&quot; : &quot;description&quot;,     #    &quot;provenance_url&quot; : &quot;aLog URL&quot;,</span>
+    <span class="c1">#    &quot;deactivated&quot; : false|true,</span>
+    <span class="c1">#    &quot;active_indicates_ifo_badness&quot; : true|false|null,</span>
+    <span class="c1">#    // known segments returned for both /active and /known URIs, no segments are returned for the /metadata or /report/flags queries</span>
+    <span class="c1">#    // aka S6 summary segments</span>
+    <span class="c1">#    &quot;known&quot; : [ [ts,te], [ts,te], ... ]</span>
+    <span class="c1">#    // active segments returned only for /active URI:</span>
+    <span class="c1">#    &quot;active&quot; : [ [ts,te], [ts,te], ... ]</span>
+    <span class="c1">#    // \textcolor{red}{Comment: or &quot;segment&quot; : [ [ts,te,value], [ts,te,value], ...] (where value can be -1,0 or +1)}</span>
+    <span class="c1">#    // inactive == (known - active)</span>
+    <span class="c1">#    // unknown == (all_time - known)</span>
+    <span class="c1">#  },</span>
+    <span class="c1">## Make the json-ready flag dictionary for the combined result:</span>
+    <span class="n">ifo</span><span class="o">=</span><span class="n">ifo</span> <span class="c1"># replicating old behavoir from ligolw_segment_query</span>
+    <span class="c1"># Note: This just uses the ifo of the last excluded flag!</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;RESULT&#39;</span>
+    <span class="n">version</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">known_segments</span><span class="o">=</span><span class="n">result_known_segment_list</span>
+    <span class="n">active_segments</span><span class="o">=</span><span class="n">total_active_list</span>
+    <span class="n">result_flag</span><span class="o">=</span><span class="n">jsonhelper</span><span class="o">.</span><span class="n">buildFlagDict</span><span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">known_segments</span><span class="p">,</span><span class="n">active_segments</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result_flag</span></div>
+
+<div class="viewcode-block" id="calculate_versionless_result"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.calculate_versionless_result">[docs]</a><span class="k">def</span> <span class="nf">calculate_versionless_result</span><span class="p">(</span><span class="n">jsonResults</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">,</span><span class="n">ifo_input</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct output segments lists from multiple JSON objects.</span>
+<span class="sd">    The jsonResults input is a list of json ojbects and</span>
+<span class="sd">    are expected to be in order of decreasing versions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span>
+    <span class="n">active_results</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">segment_known_results</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">affected_results</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">total_active_list</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([])</span>
+    <span class="n">total_query_time</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">)])</span>
+    <span class="n">total_known_list</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([])</span>
+    <span class="k">for</span> <span class="n">resultin</span> <span class="ow">in</span> <span class="n">jsonResults</span><span class="p">:</span>
+        <span class="c1">#result=json.loads(resultin)</span>
+        <span class="n">result</span><span class="o">=</span><span class="n">resultin</span>
+        <span class="c1"># old : flagDict=result[&#39;flags&#39;][0] # Our queries above each return 1 flag</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">])</span>
+        <span class="n">deactivated_state</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;deactivated&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">deactivated_state</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;False&quot;</span><span class="p">,</span><span class="s2">&quot;false&quot;</span><span class="p">]:</span>
+            <span class="n">known_list</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;known&#39;</span><span class="p">]</span>
+            <span class="n">known_segments</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">known_list</span><span class="p">])</span> <span class="c1"># make a segment list object to do arithmetic</span>
+            <span class="n">known_segments</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+            <span class="n">segment_known_results</span><span class="p">[</span><span class="n">version</span><span class="p">]</span><span class="o">=</span><span class="n">known_segments</span>
+            <span class="n">active_list</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">]</span>
+            <span class="n">active_segments</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">active_list</span><span class="p">])</span> <span class="c1"># make a segment list object to do arithmetic</span>
+            <span class="n">active_segments</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+            <span class="n">active_results</span><span class="p">[</span><span class="n">version</span><span class="p">]</span><span class="o">=</span><span class="n">active_segments</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Active results for version </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">version</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">active_results</span><span class="p">[</span><span class="n">version</span><span class="p">])</span>
+            <span class="c1"># Now I have 2 dictionaries of known and active segments with versions as keys in case I want/need them later...</span>
+            <span class="c1"># This next step might seem a bit confusing:</span>
+            <span class="c1"># We need to take the active segments for this version only during times that were not known by higher segment versions</span>
+            <span class="c1"># Thus we need to take the intersection (&amp; operator) of the unknown segments across all higher versions with the known segments for this version, then take the intersection of that result with the active segments for this version, and then add that to the current list of total active segments... phew:</span>
+            <span class="n">total_active_list</span> <span class="o">|=</span> <span class="p">(</span><span class="n">total_query_time</span><span class="o">-</span><span class="n">total_known_list</span><span class="p">)</span><span class="o">&amp;</span><span class="n">known_segments</span><span class="o">&amp;</span><span class="n">active_segments</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">pdb</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running pdb to see what is in total_active_list&quot;</span><span class="p">)</span>
+                <span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span>
+            <span class="n">total_active_list</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+            <span class="c1"># The S6 clients want to know about the range of times affected by a given version explicitly, so those are calculated here:</span>
+            <span class="n">affected_results</span><span class="p">[</span><span class="n">version</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="n">total_query_time</span><span class="o">-</span><span class="n">total_known_list</span><span class="p">)</span><span class="o">&amp;</span><span class="n">known_segments</span>
+            <span class="c1"># Note that the order matters here!  we use the total_known_list from the previous iteration of the loop step to figure out which active segments to use in this iteration of the loop, so the above line must come before the next</span>
+            <span class="n">total_known_list</span> <span class="o">|=</span> <span class="n">known_segments</span>
+            <span class="n">total_known_list</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ifo_input</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">jsonResults</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">exceptions</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No versions for flag in versionless query&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ifo</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;ifo&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1">#Only use ifo_input if we can&#39;t extract the ifo from the json result (usually because json result is empty)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ifo</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;ifo&#39;</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">ifo</span><span class="o">=</span><span class="n">ifo_input</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;RESULT&#39;</span> <span class="c1"># Fix!!! Executive decision to make this clear that this is not a specific IFO:FLAG:VERSION resource, but rather a contrived result</span>
+    <span class="n">version</span><span class="o">=</span><span class="mi">1</span> <span class="c1"># Fix!!! Executive decision to make this match what old clients expect</span>
+    <span class="c1"># I would prefer that this is more clear that this is not a specific IFO:FLAG:VERSION resource, but rather a contrived result, possibly by making it version 0</span>
+    <span class="n">total_active_list</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+    <span class="n">total_known_list</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+    <span class="n">result_flag</span><span class="o">=</span><span class="n">jsonhelper</span><span class="o">.</span><span class="n">buildFlagDict</span><span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">total_known_list</span><span class="p">,</span><span class="n">total_active_list</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result_flag</span><span class="p">,</span><span class="n">affected_results</span></div>
+
+<span class="c1">################################</span>
+<span class="c1">#</span>
+<span class="c1">#  S6 Client Utilities</span>
+<span class="c1">#</span>
+<span class="c1">################################</span>
+
+<div class="viewcode-block" id="seg_spec_to_sql"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.seg_spec_to_sql">[docs]</a><span class="k">def</span> <span class="nf">seg_spec_to_sql</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given a string of the form ifo:name:version, ifo:name:* or ifo:name</span>
+<span class="sd">    constructs a SQL caluse to restrict a search to that segment definer&quot;&quot;&quot;</span>
+
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+    <span class="n">sql</span>   <span class="o">=</span> <span class="s2">&quot;(segment_definer.ifos = &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+        <span class="n">sql</span> <span class="o">+=</span> <span class="s2">&quot; AND segment_definer.name = &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+            <span class="n">sql</span> <span class="o">+=</span> <span class="s2">&quot; AND segment_definer.version = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">sql</span> <span class="o">+=</span> <span class="s1">&#39;)&#39;</span>
+
+    <span class="k">return</span> <span class="n">sql</span></div>
+
+
+
+<span class="c1">#</span>
+<span class="c1"># The results of show-types is a join against segment_definer and segment</span>
+<span class="c1"># summary, and so does not fit into an existing table type.  So here we</span>
+<span class="c1"># define a new type so that the ligolw routines can generate the XML</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="ShowTypesResultTable"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.ShowTypesResultTable">[docs]</a><span class="k">class</span> <span class="nc">ShowTypesResultTable</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">Table</span><span class="p">):</span>
+    <span class="n">tableName</span> <span class="o">=</span> <span class="s2">&quot;show_types_result:table&quot;</span>
+
+    <span class="n">validcolumns</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;ifos&quot;</span><span class="p">:</span> <span class="s2">&quot;lstring&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;lstring&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;int_4s&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;segment_definer_comment&quot;</span><span class="p">:</span> <span class="s2">&quot;lstring&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;segment_summary_start_time&quot;</span><span class="p">:</span> <span class="s2">&quot;int_4s&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;segment_summary_end_time&quot;</span><span class="p">:</span> <span class="s2">&quot;int_4s&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;segment_summary_comment&quot;</span><span class="p">:</span> <span class="s2">&quot;lstring&quot;</span>
+        <span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="ShowTypesResult"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.ShowTypesResult">[docs]</a><span class="k">class</span> <span class="nc">ShowTypesResult</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ShowTypesResultTable</span><span class="o">.</span><span class="n">validcolumns</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+<div class="viewcode-block" id="ShowTypesResult.get_pyvalue"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.ShowTypesResult.get_pyvalue">[docs]</a>    <span class="k">def</span> <span class="nf">get_pyvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">ligolwtypes</span><span class="o">.</span><span class="n">ToPyType</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="ow">or</span> <span class="s2">&quot;lstring&quot;</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div></div>
+
+
+<span class="n">ShowTypesResultTable</span><span class="o">.</span><span class="n">RowType</span> <span class="o">=</span> <span class="n">ShowTypesResult</span>
+
+
+
+<span class="c1">#</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#</span>
+<span class="c1">#                          Methods that implement major modes</span>
+<span class="c1">#</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="run_show_types"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.run_show_types">[docs]</a><span class="k">def</span> <span class="nf">run_show_types</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">gps_start_time</span><span class="p">,</span> <span class="n">gps_end_time</span><span class="p">,</span> <span class="n">included_segments_string</span><span class="p">,</span> <span class="n">excluded_segments_string</span><span class="p">):</span>
+    <span class="n">resulttable</span> <span class="o">=</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">ShowTypesResultTable</span><span class="p">)</span>
+    <span class="n">doc</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">resulttable</span><span class="p">)</span>
+
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;SELECT segment_definer.ifos, segment_definer.name, segment_definer.version,</span>
+<span class="s2">                 (CASE WHEN segment_definer.comment IS NULL THEN &#39;-&#39; WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),</span>
+<span class="s2">                 segment_summary.start_time, segment_summary.end_time,</span>
+<span class="s2">                 (CASE WHEN segment_summary.comment IS NULL THEN &#39;-&#39; WHEN segment_summary.comment IS NOT NULL THEN segment_summary.comment END)</span>
+<span class="s2">          FROM  segment_definer, segment_summary</span>
+<span class="s2">          WHERE segment_definer.segment_def_id = segment_summary.segment_def_id</span>
+<span class="s2">          AND   NOT (segment_summary.start_time &gt; </span><span class="si">%d</span><span class="s2"> OR </span><span class="si">%d</span><span class="s2"> &gt; segment_summary.end_time)</span>
+<span class="s2">          &quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">gps_end_time</span><span class="p">,</span> <span class="n">gps_start_time</span><span class="p">)</span>
+
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+    <span class="n">seg_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+        <span class="n">ifos</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">segment_definer_comment</span><span class="p">,</span> <span class="n">segment_summary_start_time</span><span class="p">,</span> <span class="n">segment_summary_end_time</span><span class="p">,</span> <span class="n">segment_summary_comment</span> <span class="o">=</span> <span class="n">row</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">ifos</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">segment_definer_comment</span><span class="p">,</span> <span class="n">segment_summary_comment</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seg_dict</span><span class="p">:</span>
+            <span class="n">seg_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">seg_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">segment_summary_start_time</span><span class="p">,</span> <span class="n">segment_summary_end_time</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">seg_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">segmentlist</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">segmentlist</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">segmentlist</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">ShowTypesResult</span><span class="p">()</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">ifos</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">segment_definer_comment</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">segment_summary_comment</span> <span class="o">=</span> <span class="n">key</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">segment_summary_start_time</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">segment_summary_end_time</span> <span class="o">=</span> <span class="n">segment</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">ifos</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">ifos</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+            <span class="n">resulttable</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="n">engine</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="run_query_types"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.run_query_types">[docs]</a><span class="k">def</span> <span class="nf">run_query_types</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">proc_id</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">gps_start_time</span><span class="p">,</span> <span class="n">gps_end_time</span><span class="p">,</span> <span class="n">included_segments</span><span class="p">):</span>
+    <span class="n">query_segment</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">gps_start_time</span><span class="p">,</span> <span class="n">gps_end_time</span><span class="p">)])</span>
+
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;SELECT segment_definer.ifos, segment_definer.name,segment_definer.version,</span>
+<span class="s2">           (CASE WHEN segment_definer.comment IS NULL THEN &#39;-&#39; WHEN segment_definer.comment IS NOT NULL THEN segment_definer.comment END),</span>
+<span class="s2">           segment_summary.start_time, segment_summary.end_time,</span>
+<span class="s2">           (CASE WHEN segment_summary.comment IS NULL THEN &#39;-&#39; WHEN segment_summary.comment IS NOT NULL THEN segment_summary.comment END)</span>
+<span class="s2">    FROM segment_definer, segment_summary</span>
+<span class="s2">    WHERE segment_definer.segment_def_id = segment_summary.segment_def_id</span>
+<span class="s2">    AND NOT(</span><span class="si">%d</span><span class="s2"> &gt; segment_summary.end_time OR segment_summary.start_time &gt; </span><span class="si">%d</span><span class="s2">)</span>
+<span class="s2">    &quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">gps_start_time</span><span class="p">,</span> <span class="n">gps_end_time</span><span class="p">)</span>
+
+    <span class="n">type_clauses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">seg_spec_to_sql</span><span class="p">,</span> <span class="n">included_segments</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">type_clauses</span> <span class="o">!=</span> <span class="p">[]:</span>
+        <span class="n">sql</span> <span class="o">+=</span> <span class="s2">&quot; AND (&quot;</span> <span class="o">+</span> <span class="s2">&quot;OR &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">type_clauses</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+
+
+    <span class="n">segment_types</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">engine</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">sql</span><span class="p">):</span>
+        <span class="n">sd_ifo</span><span class="p">,</span> <span class="n">sd_name</span><span class="p">,</span> <span class="n">sd_vers</span><span class="p">,</span> <span class="n">sd_comment</span><span class="p">,</span> <span class="n">ss_start</span><span class="p">,</span> <span class="n">ss_end</span><span class="p">,</span> <span class="n">ss_comment</span> <span class="o">=</span> <span class="n">row</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">sd_ifo</span><span class="p">,</span> <span class="n">sd_name</span><span class="p">,</span> <span class="n">sd_vers</span><span class="p">,</span> <span class="n">sd_comment</span><span class="p">,</span> <span class="n">ss_comment</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">segment_types</span><span class="p">:</span>
+            <span class="n">segment_types</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([])</span>
+        <span class="n">segment_types</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">|=</span> <span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">ss_start</span><span class="p">,</span> <span class="n">ss_end</span><span class="p">)])</span>
+
+    <span class="n">engine</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># Create segment definer and segment_summary tables</span>
+    <span class="n">seg_def_table</span> <span class="o">=</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">lsctables</span><span class="o">.</span><span class="n">SegmentDefTable</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;process_id&quot;</span><span class="p">,</span> <span class="s2">&quot;segment_def_id&quot;</span><span class="p">,</span> <span class="s2">&quot;ifos&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;comment&quot;</span><span class="p">])</span>
+    <span class="n">doc</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">seg_def_table</span><span class="p">)</span>
+
+    <span class="n">seg_sum_table</span> <span class="o">=</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">lsctables</span><span class="o">.</span><span class="n">SegmentSumTable</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;process_id&quot;</span><span class="p">,</span> <span class="s2">&quot;segment_sum_id&quot;</span><span class="p">,</span> <span class="s2">&quot;start_time&quot;</span><span class="p">,</span> <span class="s2">&quot;start_time_ns&quot;</span><span class="p">,</span> <span class="s2">&quot;end_time&quot;</span><span class="p">,</span> <span class="s2">&quot;end_time_ns&quot;</span><span class="p">,</span> <span class="s2">&quot;comment&quot;</span><span class="p">,</span> <span class="s2">&quot;segment_def_id&quot;</span><span class="p">])</span>
+
+    <span class="n">doc</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">seg_sum_table</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">segment_types</span><span class="p">:</span>
+        <span class="c1"># Make sure the intervals fall within the query window and coalesce</span>
+        <span class="n">segment_types</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+        <span class="n">segment_types</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="n">query_segment</span>
+
+        <span class="n">seg_def_id</span>                     <span class="o">=</span> <span class="n">seg_def_table</span><span class="o">.</span><span class="n">get_next_id</span><span class="p">()</span>
+        <span class="n">segment_definer</span>                <span class="o">=</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">SegmentDef</span><span class="p">()</span>
+        <span class="n">segment_definer</span><span class="o">.</span><span class="n">process_id</span>     <span class="o">=</span> <span class="n">proc_id</span>
+        <span class="n">segment_definer</span><span class="o">.</span><span class="n">segment_def_id</span> <span class="o">=</span> <span class="n">seg_def_id</span>
+        <span class="n">segment_definer</span><span class="o">.</span><span class="n">ifos</span>           <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">segment_definer</span><span class="o">.</span><span class="n">name</span>           <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">segment_definer</span><span class="o">.</span><span class="n">version</span>        <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">segment_definer</span><span class="o">.</span><span class="n">comment</span>        <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+        <span class="n">seg_def_table</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">segment_definer</span><span class="p">)</span>
+
+        <span class="c1"># add each segment summary to the segment_summary_table</span>
+
+        <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segment_types</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+            <span class="n">segment_sum</span>            <span class="o">=</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">SegmentSum</span><span class="p">()</span>
+            <span class="n">segment_sum</span><span class="o">.</span><span class="n">comment</span>    <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+            <span class="n">segment_sum</span><span class="o">.</span><span class="n">process_id</span> <span class="o">=</span> <span class="n">proc_id</span>
+            <span class="n">segment_sum</span><span class="o">.</span><span class="n">segment_def_id</span> <span class="o">=</span> <span class="n">seg_def_id</span>
+            <span class="n">segment_sum</span><span class="o">.</span><span class="n">segment_sum_id</span> <span class="o">=</span> <span class="n">seg_sum_table</span><span class="o">.</span><span class="n">get_next_id</span><span class="p">()</span>
+            <span class="n">segment_sum</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">seg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">segment_sum</span><span class="o">.</span><span class="n">start_time_ns</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">segment_sum</span><span class="o">.</span><span class="n">end_time</span>   <span class="o">=</span> <span class="n">seg</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">segment_sum</span><span class="o">.</span><span class="n">end_time_ns</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">seg_sum_table</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">segment_sum</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="run_query_segments"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.run_query_segments">[docs]</a><span class="k">def</span> <span class="nf">run_query_segments</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">process_id</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">gps_start_time</span><span class="p">,</span> <span class="n">gps_end_time</span><span class="p">,</span> <span class="n">include_segments</span><span class="p">,</span> <span class="n">exclude_segments</span><span class="p">,</span> <span class="n">result_name</span><span class="p">):</span>
+    <span class="n">segdefs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">included</span> <span class="ow">in</span> <span class="n">include_segments</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">included</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Included segements must be of the form ifo:name:version or ifo:name:*&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">ifo</span>     <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">name</span>    <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="ow">is</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">spec</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Segment version numbers must be greater than zero&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span>
+
+        <span class="n">segdefs</span> <span class="o">+=</span> <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">expand_version_number</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="p">(</span><span class="n">ifo</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">gps_start_time</span><span class="p">,</span> <span class="n">gps_end_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">)</span>
+
+    <span class="n">found_segments</span> <span class="o">=</span> <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">query_segments</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="s1">&#39;segment&#39;</span><span class="p">,</span> <span class="n">segdefs</span><span class="p">)</span>
+    <span class="n">found_segments</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">or_</span><span class="p">,</span> <span class="n">found_segments</span><span class="p">)</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+
+    <span class="c1"># We could also do:</span>
+    <span class="n">segment_summaries</span> <span class="o">=</span> <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">query_segments</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="s1">&#39;segment_summary&#39;</span><span class="p">,</span> <span class="n">segdefs</span><span class="p">)</span>
+
+    <span class="c1"># And we could write out everything we found</span>
+    <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">add_segment_info</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">process_id</span><span class="p">,</span> <span class="n">segdefs</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">segment_summaries</span><span class="p">)</span>
+
+
+    <span class="c1"># Do the same for excluded</span>
+    <span class="k">if</span> <span class="n">exclude_segments</span><span class="p">:</span>
+        <span class="n">ex_segdefs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">excluded</span> <span class="ow">in</span> <span class="n">exclude_segments</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+            <span class="n">spec</span> <span class="o">=</span> <span class="n">excluded</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Excluded segements must be of the form ifo:name:version or ifo:name:*&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">ifo</span>     <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">name</span>    <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">spec</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">or</span> <span class="s1">&#39;*&#39;</span>
+
+            <span class="n">ex_segdefs</span> <span class="o">+=</span> <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">expand_version_number</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="p">(</span><span class="n">ifo</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">gps_start_time</span><span class="p">,</span> <span class="n">gps_end_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">)</span>
+
+
+        <span class="n">excluded_segments</span> <span class="o">=</span> <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">query_segments</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="s1">&#39;segment&#39;</span><span class="p">,</span> <span class="n">ex_segdefs</span><span class="p">)</span>
+        <span class="n">excluded_segments</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">or_</span><span class="p">,</span> <span class="n">excluded_segments</span><span class="p">)</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+
+        <span class="n">found_segments</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+        <span class="n">found_segments</span> <span class="o">-=</span> <span class="n">excluded_segments</span>
+
+
+
+    <span class="c1"># Add the result type to the segment definer table</span>
+    <span class="n">seg_name</span>   <span class="o">=</span> <span class="n">result_name</span>
+    <span class="n">seg_def_id</span> <span class="o">=</span> <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">add_to_segment_definer</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">process_id</span><span class="p">,</span> <span class="n">ifo</span><span class="p">,</span> <span class="n">seg_name</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># and segment summary</span>
+    <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">add_to_segment_summary</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">process_id</span><span class="p">,</span> <span class="n">seg_def_id</span><span class="p">,</span> <span class="p">[[</span><span class="n">gps_start_time</span><span class="p">,</span> <span class="n">gps_end_time</span><span class="p">]])</span>
+
+    <span class="c1"># and store the segments</span>
+    <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">add_to_segment</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">process_id</span><span class="p">,</span> <span class="n">seg_def_id</span><span class="p">,</span> <span class="n">found_segments</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Made it to the end of the query code&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span></div>
+           
+
+<span class="c1">#</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#</span>
+<span class="c1">#                                 XML/File routines</span>
+<span class="c1">#</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#</span>
+
+
+<div class="viewcode-block" id="setup_files"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.setup_files">[docs]</a><span class="k">def</span> <span class="nf">setup_files</span><span class="p">(</span><span class="n">dir_name</span><span class="p">,</span> <span class="n">gps_start_time</span><span class="p">,</span> <span class="n">gps_end_time</span><span class="p">):</span>
+    <span class="c1"># Filter out the ones that are outside our time range</span>
+    <span class="n">xml_files</span> <span class="o">=</span> <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">get_all_files_in_range</span><span class="p">(</span><span class="n">dir_name</span><span class="p">,</span> <span class="n">gps_start_time</span><span class="p">,</span> <span class="n">gps_end_time</span><span class="p">)</span>
+
+    <span class="n">handle</span><span class="p">,</span> <span class="n">temp_db</span>  <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.sqlite&#39;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+
+    <span class="n">target</span>     <span class="o">=</span> <span class="n">dbtables</span><span class="o">.</span><span class="n">get_connection_filename</span><span class="p">(</span><span class="n">temp_db</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">connection</span> <span class="o">=</span> <span class="n">ligolw_sqlite</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+
+    <span class="n">ligolw_sqlite</span><span class="o">.</span><span class="n">insert_from_urls</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">xml_files</span><span class="p">)</span> <span class="c1"># [temp_xml])</span>
+
+    <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">ensure_segment_table</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">temp_db</span><span class="p">,</span> <span class="n">connection</span></div>
+
+<div class="viewcode-block" id="add_to_segment_ns"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.add_to_segment_ns">[docs]</a><span class="k">def</span> <span class="nf">add_to_segment_ns</span><span class="p">(</span><span class="n">xmldoc</span><span class="p">,</span> <span class="n">proc_id</span><span class="p">,</span> <span class="n">seg_def_id</span><span class="p">,</span> <span class="n">sgmtlist</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">segtable</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">xmldoc</span><span class="p">,</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">SegmentTable</span><span class="o">.</span><span class="n">tableName</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">segtable</span> <span class="o">=</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">lsctables</span><span class="o">.</span><span class="n">SegmentTable</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;process_id&quot;</span><span class="p">,</span> <span class="s2">&quot;segment_def_id&quot;</span><span class="p">,</span> <span class="s2">&quot;segment_id&quot;</span><span class="p">,</span> <span class="s2">&quot;start_time&quot;</span><span class="p">,</span> <span class="s2">&quot;start_time_ns&quot;</span><span class="p">,</span> <span class="s2">&quot;end_time&quot;</span><span class="p">,</span> <span class="s2">&quot;end_time_ns&quot;</span><span class="p">])</span>
+        <span class="n">xmldoc</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">segtable</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sgmtlist</span><span class="p">:</span>
+        <span class="n">segment</span>                <span class="o">=</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">Segment</span><span class="p">()</span>
+        <span class="n">segment</span><span class="o">.</span><span class="n">process_id</span>     <span class="o">=</span> <span class="n">proc_id</span>
+        <span class="n">segment</span><span class="o">.</span><span class="n">segment_def_id</span> <span class="o">=</span> <span class="n">seg_def_id</span>
+        <span class="n">segment</span><span class="o">.</span><span class="n">segment_id</span>     <span class="o">=</span> <span class="n">segtable</span><span class="o">.</span><span class="n">get_next_id</span><span class="p">()</span>
+        <span class="n">seconds</span><span class="p">,</span><span class="n">nanoseconds</span><span class="o">=</span><span class="n">output_microseconds</span><span class="p">(</span><span class="n">seg</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">segment</span><span class="o">.</span><span class="n">start_time</span>     <span class="o">=</span> <span class="n">seconds</span>
+        <span class="n">segment</span><span class="o">.</span><span class="n">start_time_ns</span>  <span class="o">=</span> <span class="n">nanoseconds</span>
+        <span class="n">seconds</span><span class="p">,</span><span class="n">nanoseconds</span><span class="o">=</span><span class="n">output_microseconds</span><span class="p">(</span><span class="n">seg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">segment</span><span class="o">.</span><span class="n">end_time</span>       <span class="o">=</span> <span class="n">seconds</span>
+        <span class="n">segment</span><span class="o">.</span><span class="n">end_time_ns</span>    <span class="o">=</span> <span class="n">nanoseconds</span>
+
+        <span class="n">segtable</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">segment</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="add_to_segment_summary_ns"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.add_to_segment_summary_ns">[docs]</a><span class="k">def</span> <span class="nf">add_to_segment_summary_ns</span><span class="p">(</span><span class="n">xmldoc</span><span class="p">,</span> <span class="n">proc_id</span><span class="p">,</span> <span class="n">seg_def_id</span><span class="p">,</span> <span class="n">sgmtlist</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">seg_sum_table</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">xmldoc</span><span class="p">,</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">SegmentSumTable</span><span class="o">.</span><span class="n">tableName</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">seg_sum_table</span> <span class="o">=</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">lsctables</span><span class="o">.</span><span class="n">SegmentSumTable</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;process_id&quot;</span><span class="p">,</span> <span class="s2">&quot;segment_def_id&quot;</span><span class="p">,</span> <span class="s2">&quot;segment_sum_id&quot;</span><span class="p">,</span> <span class="s2">&quot;start_time&quot;</span><span class="p">,</span> <span class="s2">&quot;start_time_ns&quot;</span><span class="p">,</span> <span class="s2">&quot;end_time&quot;</span><span class="p">,</span> <span class="s2">&quot;end_time_ns&quot;</span><span class="p">,</span> <span class="s2">&quot;comment&quot;</span><span class="p">])</span>
+        <span class="n">xmldoc</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">seg_sum_table</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sgmtlist</span><span class="p">:</span>
+        <span class="n">segment_sum</span>                <span class="o">=</span> <span class="n">lsctables</span><span class="o">.</span><span class="n">SegmentSum</span><span class="p">()</span>
+        <span class="n">segment_sum</span><span class="o">.</span><span class="n">process_id</span>     <span class="o">=</span> <span class="n">proc_id</span>
+        <span class="n">segment_sum</span><span class="o">.</span><span class="n">segment_def_id</span> <span class="o">=</span> <span class="n">seg_def_id</span>
+        <span class="n">segment_sum</span><span class="o">.</span><span class="n">segment_sum_id</span> <span class="o">=</span> <span class="n">seg_sum_table</span><span class="o">.</span><span class="n">get_next_id</span><span class="p">()</span>
+        <span class="n">seconds</span><span class="p">,</span><span class="n">nanoseconds</span><span class="o">=</span><span class="n">output_microseconds</span><span class="p">(</span><span class="n">seg</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">segment_sum</span><span class="o">.</span><span class="n">start_time</span>     <span class="o">=</span> <span class="n">seconds</span>
+        <span class="n">segment_sum</span><span class="o">.</span><span class="n">start_time_ns</span>  <span class="o">=</span> <span class="n">nanoseconds</span>
+        <span class="n">seconds</span><span class="p">,</span><span class="n">nanoseconds</span><span class="o">=</span><span class="n">output_microseconds</span><span class="p">(</span><span class="n">seg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">segment_sum</span><span class="o">.</span><span class="n">end_time</span>       <span class="o">=</span> <span class="n">seconds</span>
+        <span class="n">segment_sum</span><span class="o">.</span><span class="n">end_time_ns</span>    <span class="o">=</span> <span class="n">nanoseconds</span>
+        <span class="c1">#segment_sum.start_time     = seg[0]</span>
+        <span class="c1">#segment_sum.start_time_ns  = 0</span>
+        <span class="c1">#segment_sum.end_time       = seg[1]</span>
+        <span class="c1">#segment_sum.end_time_ns    = 0</span>
+        <span class="n">segment_sum</span><span class="o">.</span><span class="n">comment</span>        <span class="o">=</span> <span class="n">comment</span>
+
+        <span class="n">seg_sum_table</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">segment_sum</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="add_segment_info_ns"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.add_segment_info_ns">[docs]</a><span class="k">def</span> <span class="nf">add_segment_info_ns</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">proc_id</span><span class="p">,</span> <span class="n">segdefs</span><span class="p">,</span> <span class="n">segments</span><span class="p">,</span> <span class="n">segment_summaries</span><span class="p">):</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">segdefs</span><span class="p">)):</span>
+        <span class="n">ifo</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">start_pad</span><span class="p">,</span> <span class="n">end_pad</span> <span class="o">=</span> <span class="n">segdefs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="n">seg_def_id</span> <span class="o">=</span> <span class="n">segmentdb_utils</span><span class="o">.</span><span class="n">add_to_segment_definer</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">proc_id</span><span class="p">,</span> <span class="n">ifo</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+
+        <span class="n">add_to_segment_summary_ns</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">proc_id</span><span class="p">,</span> <span class="n">seg_def_id</span><span class="p">,</span> <span class="n">segment_summaries</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">segments</span><span class="p">:</span>
+            <span class="n">add_to_segment_ns</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">proc_id</span><span class="p">,</span> <span class="n">seg_def_id</span><span class="p">,</span> <span class="n">segments</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="output_microseconds"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.clientutils.output_microseconds">[docs]</a><span class="k">def</span> <span class="nf">output_microseconds</span><span class="p">(</span><span class="n">input_time</span><span class="p">):</span>
+    <span class="c1"># Says it outputs nanoseconds, but really is only good to microsecond precision!!!</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_time</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">ns</span><span class="p">,</span> <span class="n">seconds</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">modf</span><span class="p">(</span><span class="n">input_time</span><span class="p">)</span>
+        <span class="n">seconds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">input_time</span><span class="p">)</span>
+        <span class="n">nanoseconds</span> <span class="o">=</span> <span class="n">ns</span> <span class="o">*</span> <span class="mf">1e9</span>
+        <span class="n">nanoseconds</span><span class="o">=</span><span class="nb">round</span><span class="p">((</span><span class="n">nanoseconds</span><span class="o">/</span><span class="mf">1e+3</span><span class="p">))</span><span class="o">*</span><span class="mf">1e3</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">seconds</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">input_time</span><span class="p">)</span>
+        <span class="n">nanoseconds</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">return</span> <span class="n">seconds</span><span class="p">,</span> <span class="n">nanoseconds</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dqsegdb 1.6.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014,2020 Ryan Fisher.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.3.
+    </div>
+  </body>
+</html>

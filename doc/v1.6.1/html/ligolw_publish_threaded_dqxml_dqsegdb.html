@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ligolw_publish_threaded_dqxml_dqsegdb &#8212; dqsegdb 1.6.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="ligolw_segments_from_cats_dqsegdb" href="ligolw_segments_from_cats_dqsegdb.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ligolw_segments_from_cats_dqsegdb.html" title="ligolw_segments_from_cats_dqsegdb"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dqsegdb 1.6.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ligolw-publish-threaded-dqxml-dqsegdb">
+<h1>ligolw_publish_threaded_dqxml_dqsegdb<a class="headerlink" href="#ligolw-publish-threaded-dqxml-dqsegdb" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Publishing client used to publish DQMXML (usually produced by DMT) from a set
+of directories to the DQSEGDB server.  This publisher supports grouping
+multiple input files together, and then pushing data to the database either
+one flag:version at a time or pushing data in a threaded manner.</p>
+<p>Also supports a start time and end time argument to restrict the range of input data accepted.</p>
+<p>Please see Python help documentation for all input arguments.</p>
+<p>Example call to function:</p>
+<p>ligolw_publish_threaded_dqxml_dqsegdb –segment-url <a class="reference external" href="http://slwebtest.virgo.infn.it">http://slwebtest.virgo.infn.it</a> –state-file=/home/rfisher/DQSEGDB/DQSEGDBClient/var/spool/L-DQ_Segments_long_test.xml –pid-file=/home/rfisher/DQSEGDB/DQSEGDBClient/var/run/L-DQ_Segments.pid –log-file=/home/rfisher/DQSEGDB/DQSEGDBClient/var/log/L-DQ_Segments.log –input-directory=/archive/frames/dmt/ER4/DQ/L1 –log-level DEBUG -m 60 -c 20 -e 105819443</p>
+</div>
+<div class="section" id="help-message">
+<h2>Help message<a class="headerlink" href="#help-message" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ ligolw_publish_threaded_dqxml_dqsegdb --help
+Usage: ligolw_publish_threaded_dqxml_dqsegdb [OPTIONS]
+
+Publishes XML files into the segment database
+
+Options:
+  --version             show program&#39;s version number and exit
+  -h, --help            show this help message and exit
+  -t PROTOCOL://HOST, --segment-url=PROTOCOL://HOST
+                        connect to ldbd on PROTOCOL://HOST
+  -s FILE, --state-file=FILE
+                        read published and excluded segments from FILE
+  -f FILE, --segments-file=FILE
+                        read list of segments to publish from FILE
+  -P FILE, --pid-file=FILE
+                        use FILE as process lock file
+  -D DIR, --input-directory=DIR
+                        look for input files in DIR
+  -l FILE, --log-file=FILE
+                        use FILE as log file
+  -L LEVEL, --log-level=LEVEL
+                        set logging level to LEVEL
+  -d, --dry-run         
+  -b start_time, --start-time=start_time
+                        Manual start time window, used with state file to
+                        determine publish window by start=max(manual start
+                        time, state file start time)
+  -e end_time, --end-time=end_time
+                        Manual end time window, used with state file to
+                        determine publish window by end=min(manual end time,
+                        current time)
+  -m multiple_files, --multiple-files=multiple_files
+                        Setting to control the number of DQXML files batched
+                        together before the data is sent to the dqsegdb,
+                        defaults to 1.
+  -c thread_count, --thread-count=thread_count
+                        Setting to control the number of threads used when the
+                        data is sent to the dqsegdb, defaults to 1.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ligolw_publish_threaded_dqxml_dqsegdb</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#help-message">Help message</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ligolw_segments_from_cats_dqsegdb.html"
+                        title="previous chapter">ligolw_segments_from_cats_dqsegdb</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ligolw_publish_threaded_dqxml_dqsegdb.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ligolw_segments_from_cats_dqsegdb.html" title="ligolw_segments_from_cats_dqsegdb"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dqsegdb 1.6.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014,2020 Ryan Fisher.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.3.
+    </div>
+  </body>
+</html>

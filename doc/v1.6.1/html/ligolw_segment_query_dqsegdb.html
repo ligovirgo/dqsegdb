@@ -1,0 +1,232 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ligolw_segment_query_dqsegdb &#8212; dqsegdb 1.6.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ligolw_segments_from_cats_dqsegdb" href="ligolw_segments_from_cats_dqsegdb.html" />
+    <link rel="prev" title="dqsegdb Package" href="dqsegdb.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ligolw_segments_from_cats_dqsegdb.html" title="ligolw_segments_from_cats_dqsegdb"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dqsegdb.html" title="dqsegdb Package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dqsegdb 1.6.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ligolw-segment-query-dqsegdb">
+<h1>ligolw_segment_query_dqsegdb<a class="headerlink" href="#ligolw-segment-query-dqsegdb" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>This provides the means to answer several questions posed against either the
+segment database or a collection of DMT XML files.  Output should match
+exactly the format returned by S6 style segment database tools.</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>(Not yet operational): What DQ flags exist in the database? ligolw_segment_query –show-types</dt><dd><ul>
+<li><dl class="simple">
+<dt>(Not yet operational): When was a given DQ flag defined? ligolw_segment_query –query-types</dt><dd><ul>
+<li><dl class="simple">
+<dt>When was a given flag active? ligolw_segment_query –query-segments</dt><dd><ul>
+<li><p>Example: ligolw_segment_query_dqsegdb –segment-url=http://slwebtest.virgo.infn.it –query-segments –gps-start-time 1070612448 –gps-end-time 1070613448 –include-segments=”H1:ODC-PSL_SUMMARY:1” -o example.xml</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="help-message">
+<h2>Help message<a class="headerlink" href="#help-message" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ ligolw_segment_query_dqsegdb --help
+Usage: ligolw_segment_query_dqsegdb [ --version | --ping | --show-types | --query-types | --query-segments ]  [ --segment | --database | --dmt-files ] options 
+
+Performs a number of queries against either a set of DMT files or a segment
+database
+
+Options:
+  --version             show program&#39;s version number and exit
+  -h, --help            show this help message and exit
+  -p, --ping            Ping the target server
+  -y, --show-types      Returns a xml table containing segment type
+                        information: ifos, name, version,
+                        segment_definer.comment, segment_summary.start_time,
+                        segment_summary.end_time, segment_summary.comment
+  -u, --query-types     Returns a ligolw document whose segment_definer table
+                        includes all segment types defined in the given period
+                        and included by include-segments and whose
+                        segment_summary table indicates the times for which
+                        those segments are defined. Warning: Currently only
+                        support unversioned include-segments strings!
+  -q, --query-segments  Returns a ligolw document whose segment table contains
+                        the times included by the include-segments flag and
+                        excluded by exclude-segments
+  -s gps_start_time, --gps-start-time=gps_start_time
+                        Start of GPS time range
+  -e gps_end_time, --gps-end-time=gps_end_time
+                        End of GPS time range
+  -t segment_url, --segment-url=segment_url
+                        Segment URL. Users have to specify either &#39;https://&#39;
+                        for a secure connection or &#39;http://&#39; for an insecure
+                        connection in the segment database url. For example, &#39;
+                        --segment-url=https://segdb.ligo.caltech.edu&#39;. No need
+                        to specify port number.
+  -d, --database        use database specified by environment variable
+                        S6_SEGMENT_SERVER. For example,
+                        &#39;S6_SEGMENT_SERVER=https://segdb.ligo.caltech.edu&#39;
+  -f, --dmt-files       use files in directory specified by environment
+                        variable ONLINEDQ, for example,
+                        &#39;ONLINEDQ=file:///path_to_dmt&#39;. &#39;file://&#39; is the
+                        prefix, the acutal directory to DMT xml files starts
+                        with &#39;/&#39;.
+  -a include_segments, --include-segments=include_segments
+                        This option expects a comma separated list of a colon
+                        separated sublist of interferometer, segment type, and
+                        version. The union of segments from all types and
+                        versions specified is returned. Use --show-types to
+                        see what types are available.   For example:
+                        --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-
+                        INJECTION:2 will return the segments for which H1 is
+                        in either SCIENCE version 1 or INJECTION version 2
+                        mode. If version information is not provided, the
+                        union of the segments of the latest version of
+                        requested segment type(s) will be returned.
+  -b exclude_segments, --exclude-segments=exclude_segments
+                        This option has to be used in conjunction with
+                        --include-segment-types and --query-segments.
+                        --exclude-segment-types subtracts the union of
+                        unwanted segments from the specified types from the
+                        results of --include-segment-types. If version
+                        information is not provided, --exclude-segment-types
+                        subtracts the union of segments from the latest
+                        version of the specified segment types. For example,
+                        --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-
+                        INJECTION:2 --exclude-segment-types H1:DMT-
+                        WIND:1,H1:DMT-NOT_LOCKED:2,H2:DMT-NOT_LOCKED:2 will
+                        subtract the union of segments which H1 is in version
+                        1 WIND and H1,H2 is version 2 NOT_LOCKED from the
+                        result of --include-segment-types H1:DMT-
+                        SCIENCE:1,H1:DMT-INJECTION:2
+  -S, --strict-off      The default behavior is to truncate segments so that
+                        returned segments are entirely in the interval [gps-
+                        start-time, gps-end-time).  However if this option is
+                        given, the entire non-truncated segment is returned if
+                        any part of it overlaps the interval.
+  -n result_name, --result-name=result_name
+                        Name for result segment definer (default = RESULT)
+  -o output_file, --output-file=output_file
+                        File to which output should be written.  Defaults to
+                        stdout.
+  -l, --use-s6          Use old s6 style client code.  This is needed to
+                        connect to S6 style segdb servers using DB2.  Note
+                        that this code is duplicated from the old client, and
+                        may become deprecated over time.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ligolw_segment_query_dqsegdb</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#help-message">Help message</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dqsegdb.html"
+                        title="previous chapter">dqsegdb Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ligolw_segments_from_cats_dqsegdb.html"
+                        title="next chapter">ligolw_segments_from_cats_dqsegdb</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ligolw_segment_query_dqsegdb.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ligolw_segments_from_cats_dqsegdb.html" title="ligolw_segments_from_cats_dqsegdb"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dqsegdb.html" title="dqsegdb Package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dqsegdb 1.6.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014,2020 Ryan Fisher.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.3.
+    </div>
+  </body>
+</html>

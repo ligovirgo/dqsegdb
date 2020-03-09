@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ligolw_segments_from_cats_dqsegdb &#8212; dqsegdb 1.6.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ligolw_publish_threaded_dqxml_dqsegdb" href="ligolw_publish_threaded_dqxml_dqsegdb.html" />
+    <link rel="prev" title="ligolw_segment_query_dqsegdb" href="ligolw_segment_query_dqsegdb.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ligolw_publish_threaded_dqxml_dqsegdb.html" title="ligolw_publish_threaded_dqxml_dqsegdb"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ligolw_segment_query_dqsegdb.html" title="ligolw_segment_query_dqsegdb"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dqsegdb 1.6.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ligolw-segments-from-cats-dqsegdb">
+<h1>ligolw_segments_from_cats_dqsegdb<a class="headerlink" href="#ligolw-segments-from-cats-dqsegdb" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Takes one or more segment XML files and a query file, runs the query against
+the segments, and produces veto files as XML.  Produces output to match S6
+style segment database tools.</p>
+</div>
+<div class="section" id="help-message">
+<h2>Help message<a class="headerlink" href="#help-message" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ ligolw_segments_from_cats_dqsegdb --help
+Usage: ligolw_segments_from_cats_dqsegdb -v|--veto-file filename [options]
+
+Reads one or more segment files and a veto file and generates files of veto
+segments
+
+Options:
+  --version             show program&#39;s version number and exit
+  -h, --help            show this help message and exit
+  -v veto_file, --veto-file=veto_file
+                        veto XML file (required).
+  -o output_dir, --output-dir=output_dir
+                        Directory to write output (default=cwd).
+  -k, --keep-db         Keep sqlite database.
+  -r, --remove-definer-table
+                        If set the veto definer table will not be included in
+                        the output.
+  -t segment_url, --segment-url=segment_url
+                        Segment URL
+  -d, --database        use database specified by environment variable
+                        S6_SEGMENT_SERVER
+  -f, --dmt-file        Warning: NOT UPDATED FOR DQSEGDB CLIENT YET! use files
+                        in directory specified by environment variable
+                        ONLINEDQ
+  -c, --cumulative-categories
+                        If set the category N files will contain all segments
+                        in categories &lt;= N
+  -p, --separate-categories
+                        If set the category N files will contain only category
+                        N
+  -i, --individual-results
+                        If set include information on each veto individually.
+  -C VETO_CATEGORIES, --veto-categories=VETO_CATEGORIES
+                        A comma separated list of all veto categories to
+                        consider. If not given then consider all categories in
+                        the veto-definer file.
+  -I IFO_LIST, --ifo-list=IFO_LIST
+                        A comma separated list of all ifos to consider. If not
+                        given then consider all ifos in the veto-definer file.
+  -N, --non-integer     Allow non-integer start and end time
+  -s gps_start_time, --gps-start-time=gps_start_time
+                        Start of GPS time range
+  -e gps_end_time, --gps-end-time=gps_end_time
+                        End of GPS time range
+  -g debug, --debug=debug
+                        Print debug information.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ligolw_segments_from_cats_dqsegdb</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#help-message">Help message</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ligolw_segment_query_dqsegdb.html"
+                        title="previous chapter">ligolw_segment_query_dqsegdb</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ligolw_publish_threaded_dqxml_dqsegdb.html"
+                        title="next chapter">ligolw_publish_threaded_dqxml_dqsegdb</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ligolw_segments_from_cats_dqsegdb.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ligolw_publish_threaded_dqxml_dqsegdb.html" title="ligolw_publish_threaded_dqxml_dqsegdb"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ligolw_segment_query_dqsegdb.html" title="ligolw_segment_query_dqsegdb"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dqsegdb 1.6.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014,2020 Ryan Fisher.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.3.
+    </div>
+  </body>
+</html>

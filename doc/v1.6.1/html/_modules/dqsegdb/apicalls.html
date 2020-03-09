@@ -1,0 +1,1172 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dqsegdb.apicalls &#8212; dqsegdb 1.6.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dqsegdb 1.6.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dqsegdb.apicalls</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2015 Ryan Fisher, Gary Hemming</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU Affero General Public License as</span>
+<span class="c1"># published by the Free Software Foundation, either version 3 of the</span>
+<span class="c1"># License, or (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU Affero General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Affero General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">time</span> <span class="k">as</span> <span class="n">time2</span>
+
+<span class="kn">from</span> <span class="nn">six.moves.urllib.error</span> <span class="kn">import</span> <span class="n">HTTPError</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pyRXPU</span> <span class="k">as</span> <span class="nn">pyRXP</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pyRXP</span>
+
+<span class="kn">from</span> <span class="nn">glue</span> <span class="kn">import</span> <span class="n">ldbd</span>
+<span class="kn">from</span> <span class="nn">ligo</span> <span class="kn">import</span> <span class="n">segments</span>
+<span class="kn">from</span> <span class="nn">glue.ligolw.utils</span> <span class="kn">import</span> <span class="n">process</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">lal</span> <span class="kn">import</span> <span class="n">UTCToGPS</span> <span class="k">as</span> <span class="n">_UTCToGPS</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># lal is optional</span>
+    <span class="kn">from</span> <span class="nn">glue</span> <span class="kn">import</span> <span class="n">gpstime</span>
+    <span class="n">_UTCToGPS</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">utc</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">gpstime</span><span class="o">.</span><span class="n">GpsSecondsFromPyUTC</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">mktime</span><span class="p">(</span><span class="n">utc</span><span class="p">)))</span>
+
+<span class="kn">from</span> <span class="nn">dqsegdb</span> <span class="kn">import</span> <span class="n">urifunctions</span>
+<span class="kn">from</span> <span class="nn">dqsegdb</span> <span class="kn">import</span> <span class="n">clientutils</span>
+<span class="kn">from</span> <span class="nn">dqsegdb.jsonhelper</span> <span class="kn">import</span> <span class="n">InsertFlagVersion</span>
+<span class="kn">from</span> <span class="nn">dqsegdb.jsonhelper</span> <span class="kn">import</span> <span class="n">InsertFlagVersionOld</span>
+<span class="kn">from</span> <span class="nn">dqsegdb.urifunctions</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Ryan Fisher &lt;ryan.fisher@ligo.org&gt;&#39;</span>
+<span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+
+<div class="viewcode-block" id="dqsegdbCheckVersion"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.dqsegdbCheckVersion">[docs]</a><span class="k">def</span> <span class="nf">dqsegdbCheckVersion</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks for existence of a given version of a flag in the db.</span>
+<span class="sd">    Returns true if version exists</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+<span class="sd">    name: `string`</span>
+<span class="sd">        Ex: &#39;DMT-SCIENCE&#39;</span>
+<span class="sd">    version : `string` or `int`</span>
+<span class="sd">        Ex: &#39;1&#39;</span>
+<span class="sd">    warnings : `bool`</span>
+<span class="sd">        show warnings for `HTTPError` (as well as raising exception),</span>
+<span class="sd">        default: `True`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">### Fix!!! This looks wrong:  seems to check if the flag exists, not whether a version on the server matches what was passed to the function</span>
+    <span class="n">queryurl</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">constructVersionQueryURL</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span> <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="o">==</span><span class="mi">404</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span>
+    <span class="n">ult_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="n">version_list</span><span class="o">=</span><span class="n">result_json</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">version_list</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+    <span class="c1">## Optional method: query the version directly, and look for !404:</span>
+    <span class="c1"># Pro:</span>
+    <span class="c1"># No need to actually parse result for this function so just return True</span>
+    <span class="c1"># Con?</span>
+
+<div class="viewcode-block" id="dqsegdbMaxVersion"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.dqsegdbMaxVersion">[docs]</a><span class="k">def</span> <span class="nf">dqsegdbMaxVersion</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks for existence of a flag in the db, returns maximum</span>
+<span class="sd">    version if the flag exists exists, 0 if the flag does not exist.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+<span class="sd">    name: `string`</span>
+<span class="sd">        Ex: &#39;DMT-SCIENCE&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">queryurl</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">constructFlagQueryURL</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">((</span><span class="s2">&quot;e.code: </span><span class="si">%s</span><span class="s2">  FIX!&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">)</span><span class="o">==</span><span class="mi">404</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Print all the messages this time</span>
+            <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">raise</span>
+    <span class="c1"># Now parse result for max version:</span>
+    <span class="n">queryurl</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">constructVersionQueryURL</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">)</span><span class="o">==</span><span class="mi">404</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+    <span class="n">result_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="n">version_list</span><span class="o">=</span><span class="n">result_json</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">version_list</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="dqsegdbFindEndTime"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.dqsegdbFindEndTime">[docs]</a><span class="k">def</span> <span class="nf">dqsegdbFindEndTime</span><span class="p">(</span><span class="n">flag_dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines max end_time from known times in flag_dict</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    flag_dict: `dictionary`</span>
+<span class="sd">        Input dictionary, converted from json using json.loads in previous call</span>
+
+<span class="sd">    Returns max_end_time: `int`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">flag_dict</span><span class="p">[</span><span class="s1">&#39;known&#39;</span><span class="p">])</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">maxEndTime</span><span class="o">=</span><span class="nb">max</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">flag_dict</span><span class="p">[</span><span class="s1">&#39;known&#39;</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">maxEndTime</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">warnings</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Function used to find max known_time from a flag was handed a flag with an empty set of known times.  Returning None&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="dqsegdbQueryTimes"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.dqsegdbQueryTimes">[docs]</a><span class="k">def</span> <span class="nf">dqsegdbQueryTimes</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Issue query to server for ifo:name:version with start and end time</span>
+<span class="sd">    Returns the python loaded JSON response!</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+<span class="sd">    name: `string`</span>
+<span class="sd">        Ex: &#39;DMT-SCIENCE&#39;</span>
+<span class="sd">    version : `string` or `int`</span>
+<span class="sd">        Ex: &#39;1&#39;</span>
+<span class="sd">    include_list_string : `string`</span>
+<span class="sd">        Ex: &quot;metadata,known,active&quot;</span>
+<span class="sd">    startTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    endTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    warnings : `bool`</span>
+<span class="sd">        show warnings for `HTTPError` (as well as raising exception),</span>
+<span class="sd">        default: `True`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">queryurl</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">constructSegmentQueryURLTimeWindow</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">)</span>
+    <span class="n">result_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result_json</span><span class="p">,</span><span class="n">queryurl</span></div>
+
+
+<span class="c1">#dqsegdbQueryTimesCompatible</span>
+<div class="viewcode-block" id="dqsegdbQueryTimesCompatible"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.dqsegdbQueryTimesCompatible">[docs]</a><span class="k">def</span> <span class="nf">dqsegdbQueryTimesCompatible</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Issue query to server for ifo:name:version with start and end time</span>
+<span class="sd">    This is the version that reproduces S6 style query results when the query is empty</span>
+<span class="sd">    Returns the python loaded JSON response!</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+<span class="sd">    name: `string`</span>
+<span class="sd">        Ex: &#39;DMT-SCIENCE&#39;</span>
+<span class="sd">    version : `string` or `int`</span>
+<span class="sd">        Ex: &#39;1&#39;</span>
+<span class="sd">    include_list_string : `string`</span>
+<span class="sd">        Ex: &quot;metadata,known,active&quot;</span>
+<span class="sd">    startTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    endTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    warnings : `bool`</span>
+<span class="sd">        show warnings for `HTTPError` (as well as raising exception),</span>
+<span class="sd">        default: `True`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">queryurl</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">constructSegmentQueryURLTimeWindow</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span> <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">)</span>
+        <span class="n">result_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="o">==</span><span class="mi">404</span><span class="p">:</span>
+            <span class="c1"># For S6 executable compatibility, we need to return something anyway to make ligolw_segments_from_cats and segment_query work properly, in this case, we&#39;ll return a faked up dictionary with empty lists for keys &#39;known&#39; and &#39;active&#39;, which the calling functions will correctly interperet (because it&#39;s the equivalent of asking for a flag outside known time for the S6 calls)</span>
+            <span class="n">result_json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;known&quot;</span><span class="p">:[],</span><span class="s2">&quot;active&quot;</span><span class="p">:[]}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+    <span class="k">return</span> <span class="n">result_json</span><span class="p">,</span><span class="n">queryurl</span></div>
+
+
+<div class="viewcode-block" id="dqsegdbQueryTimeless"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.dqsegdbQueryTimeless">[docs]</a><span class="k">def</span> <span class="nf">dqsegdbQueryTimeless</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Issue query to server for ifo:name:version without start and end time</span>
+<span class="sd">    Returns the python loaded JSON response converted into a dictionary and queryurl!</span>
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [dictionary,string(url)]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+<span class="sd">    name: `string`</span>
+<span class="sd">        Ex: &#39;DMT-SCIENCE&#39;</span>
+<span class="sd">    version : `string` or `int`</span>
+<span class="sd">        Ex: &#39;1&#39;</span>
+<span class="sd">    include_list_string : `string`</span>
+<span class="sd">        Ex: &quot;metadata,known,active&quot;</span>
+<span class="sd">    warnings : `bool`</span>
+<span class="sd">        show warnings for `HTTPError` (as well as raising exception),</span>
+<span class="sd">        default: `True`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">queryurl</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">constructSegmentQueryURL</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span> <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">)</span>
+    <span class="n">result_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result_json</span><span class="p">,</span><span class="n">queryurl</span></div>
+
+<div class="viewcode-block" id="coalesceResultDictionary"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.coalesceResultDictionary">[docs]</a><span class="k">def</span> <span class="nf">coalesceResultDictionary</span><span class="p">(</span><span class="n">result_dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes a dictionary as returned by QueryTimes or QueryTimeless and converts the lists of tuples into actual segment lists (and coalesces them).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    result_dict : `dict`</span>
+<span class="sd">        This is the input result dictionary from the other api calls</span>
+<span class="sd">    out_result_dict : `dict`</span>
+<span class="sd">        This is the output result dictionary with actual segment lists (and coalesced results).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">copy</span>
+    <span class="n">out_result_dict</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">result_dict</span><span class="p">)</span>
+    <span class="n">active_seg_python_list</span><span class="o">=</span><span class="p">[</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">result_dict</span><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">]]</span>
+    <span class="n">active_seg_list</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">(</span><span class="n">active_seg_python_list</span><span class="p">)</span>
+    <span class="n">active_seg_list</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+    <span class="n">out_result_dict</span><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">active_seg_list</span>
+    <span class="n">known_seg_python_list</span><span class="o">=</span><span class="p">[</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">result_dict</span><span class="p">[</span><span class="s1">&#39;known&#39;</span><span class="p">]]</span>
+    <span class="n">known_seg_list</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">(</span><span class="n">known_seg_python_list</span><span class="p">)</span>
+    <span class="n">known_seg_list</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span>
+    <span class="n">out_result_dict</span><span class="p">[</span><span class="s1">&#39;known&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">known_seg_list</span>
+    <span class="k">return</span> <span class="n">out_result_dict</span></div>
+
+<div class="viewcode-block" id="queryAPIVersion"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.queryAPIVersion">[docs]</a><span class="k">def</span> <span class="nf">queryAPIVersion</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">verbose</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct url and issue query to get the reported list of all IFOs</span>
+<span class="sd">    provided by dqsegd and the API version of the server.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    warnings : `bool`</span>
+<span class="sd">        show warnings for `HTTPError` (as well as raising exception),</span>
+<span class="sd">        default: `True`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">queryurl</span><span class="o">=</span><span class="n">protocol</span><span class="o">+</span><span class="s2">&quot;://&quot;</span><span class="o">+</span><span class="n">server</span><span class="o">+</span><span class="s2">&quot;/dq&quot;</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">queryurl</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span> <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">)</span>
+    <span class="n">dictResult</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="n">apiVersion</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">dictResult</span><span class="p">[</span><span class="s1">&#39;query_information&#39;</span><span class="p">][</span><span class="s1">&#39;api_version&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">apiVersion</span></div>
+
+
+<div class="viewcode-block" id="reportFlags"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.reportFlags">[docs]</a><span class="k">def</span> <span class="nf">reportFlags</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">verbose</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct url and issue query to get the reported list of all flags</span>
+<span class="sd">    provided by dqsegdb.</span>
+<span class="sd">    From the API Doc:</span>
+<span class="sd">    Get a JSON formatted string resource describing all the flags in the database. This provides an optimization by returning all flag names and all associated versions in a single call.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    warnings : `bool`</span>
+<span class="sd">        show warnings for `HTTPError` (as well as raising exception),</span>
+<span class="sd">        default: `True`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">queryurl</span><span class="o">=</span><span class="n">protocol</span><span class="o">+</span><span class="s2">&quot;://&quot;</span><span class="o">+</span><span class="n">server</span><span class="o">+</span><span class="s2">&quot;/report/flags&quot;</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">queryurl</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="reportActive"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.reportActive">[docs]</a><span class="k">def</span> <span class="nf">reportActive</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">includeSegments</span><span class="p">,</span><span class="n">verbose</span><span class="p">,</span><span class="n">gps_start_time</span><span class="p">,</span><span class="n">gps_end_time</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct url and issue query to get the reported list of all active segments for all flags in the time window provided.</span>
+<span class="sd">    From the API Doc:</span>
+<span class="sd">    Get a JSON string resource containing the active segments for all flags between t1 and t2. Note that this returns exactly what /dq/IFO/FLAG/VERSION does, except for ALL flags over the query period instead of one flag. The clients must assume that they may get empty active lists for flags that are unactive between times t1 and t2.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    includeSegments : `boolean`</span>
+<span class="sd">        Ex: True</span>
+<span class="sd">    verbose : `boolean`</span>
+<span class="sd">        Ex: True</span>
+<span class="sd">    gps_start_time: `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    gps_end_time: `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    warnings : `bool`</span>
+<span class="sd">        show warnings for `HTTPError` (as well as raising exception),</span>
+<span class="sd">        default: `True`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">includeSegments</span><span class="p">:</span>
+        <span class="n">includeText</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="n">timeText</span><span class="o">=</span><span class="s2">&quot;?s=</span><span class="si">%d</span><span class="s2">&amp;e=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">gps_start_time</span><span class="p">,</span><span class="n">gps_end_time</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">includeText</span><span class="o">=</span><span class="s2">&quot;?include=metadata&quot;</span>
+        <span class="n">timeText</span><span class="o">=</span><span class="s2">&quot;&amp;s=</span><span class="si">%d</span><span class="s2">&amp;e=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">gps_start_time</span><span class="p">,</span><span class="n">gps_end_time</span><span class="p">)</span>
+    <span class="n">queryurl</span><span class="o">=</span><span class="n">protocol</span><span class="o">+</span><span class="s2">&quot;://&quot;</span><span class="o">+</span><span class="n">server</span><span class="o">+</span><span class="s2">&quot;/report/active&quot;</span><span class="o">+</span><span class="n">includeText</span><span class="o">+</span><span class="n">timeText</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">queryurl</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">,</span><span class="n">queryurl</span></div>
+
+<div class="viewcode-block" id="reportKnown"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.reportKnown">[docs]</a><span class="k">def</span> <span class="nf">reportKnown</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">includeSegments</span><span class="p">,</span><span class="n">verbose</span><span class="p">,</span><span class="n">gps_start_time</span><span class="p">,</span><span class="n">gps_end_time</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct url and issue query to get the reported list of all known segments for all flags in the time window provided.</span>
+<span class="sd">    From the API Doc:</span>
+<span class="sd">    Get a JSON string resource containing the known segments for all flags between t1 and t2. Note that this returns exactly what /dq/IFO/FLAG/VERSION/known does, except for ALL flags over the query period instead of one flag. The clients must assume that they may get empty known lists for flags that are unknown between times t1 and t2.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    includeSegments : `boolean`</span>
+<span class="sd">        Ex: True</span>
+<span class="sd">    verbose : `boolean`</span>
+<span class="sd">        Ex: True</span>
+<span class="sd">    gps_start_time: `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    gps_end_time: `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    warnings : `bool`</span>
+<span class="sd">        show warnings for `HTTPError` (as well as raising exception),</span>
+<span class="sd">        default: `True`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">includeSegments</span><span class="p">:</span>
+        <span class="n">includeText</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="n">timeText</span><span class="o">=</span><span class="s2">&quot;?s=</span><span class="si">%d</span><span class="s2">&amp;e=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">gps_start_time</span><span class="p">,</span><span class="n">gps_end_time</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">includeText</span><span class="o">=</span><span class="s2">&quot;?include=metadata&quot;</span>
+        <span class="n">timeText</span><span class="o">=</span><span class="s2">&quot;&amp;s=</span><span class="si">%d</span><span class="s2">&amp;e=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">gps_start_time</span><span class="p">,</span><span class="n">gps_end_time</span><span class="p">)</span>
+    <span class="n">queryurl</span><span class="o">=</span><span class="n">protocol</span><span class="o">+</span><span class="s2">&quot;://&quot;</span><span class="o">+</span><span class="n">server</span><span class="o">+</span><span class="s2">&quot;/report/known&quot;</span><span class="o">+</span><span class="n">includeText</span><span class="o">+</span><span class="n">timeText</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">queryurl</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span><span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">,</span><span class="n">queryurl</span></div>
+
+<div class="viewcode-block" id="parseKnown"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.parseKnown">[docs]</a><span class="k">def</span> <span class="nf">parseKnown</span><span class="p">(</span><span class="n">jsonResult</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Accepts jsonResult from reportKnown call and parses into expected format</span>
+<span class="sd">    for ligolw_segment_query client to generate xml.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rows</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">resultDictionary</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">jsonResult</span><span class="p">)</span>
+    <span class="c1">#ifos, name, version, segment_definer_comment, segment_summary_start_time, segment_summary_end_time, segment_summary_comment = row</span>
+    <span class="c1"># json looks like this:</span>
+    <span class="c1">#{</span>
+    <span class="c1">#    &quot;query_information&quot;: {</span>
+    <span class="c1">#        &quot;api_version&quot;: 1,</span>
+    <span class="c1">#        &quot;end&quot;: &quot;1076401264&quot;,</span>
+    <span class="c1">#        &quot;include&quot;: [],</span>
+    <span class="c1">#        &quot;server&quot;: &quot;dqsegdb5.phy.syr.edu&quot;,</span>
+    <span class="c1">#        # Jul 28: api_version replaced server_code_version</span>
+    <span class="c1">#        &quot;server_code_version&quot;: &quot;v1r5&quot;,</span>
+    <span class="c1">#        &quot;server_elapsed_query_time&quot;: 2.3630100000000001,</span>
+    <span class="c1">#        &quot;server_timestamp&quot;: 1079895401,</span>
+    <span class="c1">#        &quot;start&quot;: &quot;1076400544&quot;,</span>
+    <span class="c1">#        &quot;uri&quot;: &quot;/report/known?s=1076400544&amp;e=1076401264&quot;</span>
+    <span class="c1">#    },</span>
+    <span class="c1">#    &quot;results&quot;: [</span>
+    <span class="c1">#        {</span>
+    <span class="c1">#            &quot;ifo&quot;: &quot;L1&quot;,</span>
+    <span class="c1">#            &quot;known&quot;: [</span>
+    <span class="c1">#                [</span>
+    <span class="c1">#                    1076400480,</span>
+    <span class="c1">#                    1076400848</span>
+    <span class="c1">#                ],</span>
+    <span class="c1">#                [</span>
+    <span class="c1">#                    1076400848,</span>
+    <span class="c1">#                    1076401200</span>
+    <span class="c1">#                ],</span>
+    <span class="c1">#                [</span>
+    <span class="c1">#                    1076401200,</span>
+    <span class="c1">#                    1076401568</span>
+    <span class="c1">#                ]</span>
+    <span class="c1">#            ],</span>
+    <span class="c1">#            &quot;metadata&quot;: {</span>
+    <span class="c1">#                &quot;active_indicates_ifo_badness&quot;: false,</span>
+    <span class="c1">#                &quot;comment&quot;: &quot;L1 interferometer Up from h(t) DQ flags&quot;,</span>
+    <span class="c1">#                &quot;deactivated&quot;: false,</span>
+    <span class="c1">#                &quot;provenance_url&quot;: &quot;This is where the url should go&quot;</span>
+    <span class="c1">#            },</span>
+    <span class="c1">#            &quot;name&quot;: &quot;DMT-UP&quot;,</span>
+    <span class="c1">#            &quot;version&quot;: 1</span>
+    <span class="c1">#        },</span>
+    <span class="c1">#        {</span>
+    <span class="c1">#            &quot;ifo&quot;: &quot;L1&quot;,</span>
+    <span class="c1">#            &quot;known&quot;: [</span>
+    <span class="c1">#                [</span>
+    <span class="c1">#                    1076400848,</span>
+    <span class="c1">#                    1076401200</span>
+    <span class="c1">#                ],</span>
+    <span class="c1">#                [</span>
+    <span class="c1">#                    1076401200,</span>
+    <span class="c1">#                    1076401568</span>
+    <span class="c1">#                ],</span>
+    <span class="c1">#                [</span>
+    <span class="c1">#                    1076400480,</span>
+    <span class="c1">#                    1076400848</span>
+    <span class="c1">#                ]</span>
+    <span class="c1">#            ],</span>
+    <span class="c1">#            &quot;metadata&quot;: {</span>
+    <span class="c1">#                &quot;active_indicates_ifo_badness&quot;: false,</span>
+    <span class="c1">#                &quot;comment&quot;: &quot;L1 interferometer Up from h(t) DQ flags&quot;,</span>
+    <span class="c1">#                &quot;deactivated&quot;: false,</span>
+    <span class="c1">#                &quot;provenance_url&quot;: &quot;This is where the url should go&quot;</span>
+    <span class="c1">#            },</span>
+    <span class="c1">#            &quot;name&quot;: &quot;DMT-SCIENCE&quot;,</span>
+    <span class="c1">#            &quot;version&quot;: 1</span>
+    <span class="c1">#        },</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">resultDictionary</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]:</span>
+        <span class="c1"># Ex: &gt;&gt;&gt; resultDict[&#39;results&#39;][0]</span>
+        <span class="c1">#{u&#39;known&#39;: [[1076400480, 1076400848], [1076400848, 1076401200], [1076401200, 1076401568]], u&#39;ifo&#39;: u&#39;L1&#39;, u&#39;name&#39;: u&#39;DMT-UP&#39;, u&#39;version&#39;: 1, u&#39;metadata&#39;: {u&#39;comment&#39;: u&#39;L1 interferometer Up from h(t) DQ flags&#39;, u&#39;provenance_url&#39;: u&#39;This is where the url should go&#39;, u&#39;active_indicates_ifo_badness&#39;: False, u&#39;deactivated&#39;: False}}</span>
+        <span class="c1">#old: row = (&#39;H1          &#39;, &#39;ODC-PSL_FSS_RFPD_LT_TH&#39;, 1, &#39;RPFD check, when above threshold the segment will be off&#39;, 1072880640, 1072880656, &#39;-&#39;)</span>
+        <span class="n">ifo</span><span class="o">=</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;ifo&#39;</span><span class="p">]</span>
+        <span class="n">flag</span><span class="o">=</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">version</span><span class="o">=</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+        <span class="n">comment</span><span class="o">=</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;comment&#39;</span><span class="p">]</span>
+        <span class="n">summary_comment</span><span class="o">=</span><span class="s1">&#39;-&#39;</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;known&#39;</span><span class="p">]:</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">j</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">stop</span><span class="o">=</span><span class="n">j</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">row</span><span class="o">=</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ifo</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">flag</span><span class="p">),</span><span class="nb">int</span><span class="p">(</span><span class="n">version</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">comment</span><span class="p">),</span><span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="p">),</span><span class="nb">float</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">summary_comment</span><span class="p">))</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">rows</span></div>
+
+<div class="viewcode-block" id="dqsegdbCascadedQuery"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.dqsegdbCascadedQuery">[docs]</a><span class="k">def</span> <span class="nf">dqsegdbCascadedQuery</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="n">server</span><span class="p">,</span> <span class="n">ifo</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">include_list_string</span><span class="p">,</span> <span class="n">startTime</span><span class="p">,</span> <span class="n">endTime</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Queries server for needed flag_versions to generate the result of a</span>
+<span class="sd">    cascaded query (was called a versionless query in S6).</span>
+
+<span class="sd">    Returns a python dictionary representing the calculated result &quot;versionless&quot;</span>
+<span class="sd">    flag and also the python dictionaries (in a list) for the flag_versions</span>
+<span class="sd">    necessary to construct the result.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+<span class="sd">    name: `string`</span>
+<span class="sd">        Ex: &#39;DMT-SCIENCE&#39;</span>
+<span class="sd">    version : `string` or `int`</span>
+<span class="sd">        Ex: &#39;1&#39;</span>
+<span class="sd">    include_list_string : `string`</span>
+<span class="sd">        Ex: &quot;metadata,known,active&quot;</span>
+<span class="sd">    startTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    endTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    debug : `bool`</span>
+<span class="sd">        Ex: False</span>
+<span class="sd">    warnings : `bool`</span>
+<span class="sd">        show warnings for `HTTPError` (as well as raising exception),</span>
+<span class="sd">        default: `True`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">debug</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+
+    <span class="c1">## Construct url and issue query to determine highest version from list</span>
+    <span class="c1">## of versions</span>
+    <span class="n">versionQueryURL</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">constructVersionQueryURL</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">versionQueryURL</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">versionResult</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">versionQueryURL</span><span class="p">,</span>
+                                                  <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="o">==</span><span class="mi">404</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">warnings</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Provided IFO:FLAG: </span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2"> not found in database, returning empty result&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">))</span>
+            <span class="n">jsonResults</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Parse the result</span>
+        <span class="c1"># Results should be a JSON object like this:</span>
+        <span class="c1">#{</span>
+        <span class="c1"># &quot;meta&quot;: {</span>
+        <span class="c1">#    query_uri&quot; : &quot;uri&quot;,   // contains the URI specified with the GET HTTP method</span>
+        <span class="c1">#    &quot;query_time&quot; : gpstime,    // when the query was issued</span>
+        <span class="c1">#    // optional query parameters</span>
+        <span class="c1">#    &quot;query_start&quot; : t1,</span>
+        <span class="c1">#    &quot;query_end&quot; : t2</span>
+        <span class="c1">#    },</span>
+        <span class="c1">#  &quot;resource_type&quot; : [&quot;resource_uri_1&quot;, &quot;resource_uri_2&quot;]</span>
+        <span class="c1">#}</span>
+        <span class="n">versionData</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">versionResult</span><span class="p">)</span>  <span class="c1">#JSON is nice... :)</span>
+
+        <span class="c1">## Construct urls and issue queries for the multiple versions and dump the results to disk locally for careful provenance</span>
+        <span class="n">jsonResults</span><span class="o">=</span><span class="p">[]</span>
+        <span class="c1">#urlList=versionData[&#39;resource_type&#39;]</span>
+        <span class="n">version_list</span><span class="o">=</span><span class="n">versionData</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+        <span class="n">urlList</span><span class="o">=</span><span class="p">[</span><span class="n">versionQueryURL</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="k">for</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">version_list</span><span class="p">]</span>
+
+        <span class="c1"># sort list by decreasing version number and call each URL:</span>
+        <span class="n">sortedurlList</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">urlList</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">url</span><span class="p">:</span> <span class="n">url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">versioned_url</span> <span class="ow">in</span> <span class="n">sortedurlList</span><span class="p">:</span>
+            <span class="c1"># I am assuming I need to pull off the versions from the urls to use my existing library function.</span>
+            <span class="c1"># Alternatively, we could make a new library function that starts from the end of the version and takes the include_list_string and start and end times as inputs</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">versioned_url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">queryurl</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">constructSegmentQueryURLTimeWindow</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">queryurl</span><span class="p">)</span>
+            <span class="n">result</span><span class="o">=</span><span class="n">urifunctions</span><span class="o">.</span><span class="n">getDataUrllib2</span><span class="p">(</span><span class="n">queryurl</span><span class="p">,</span> <span class="n">warnings</span><span class="o">=</span><span class="n">warnings</span><span class="p">)</span>
+            <span class="n">result_parsed</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="n">jsonResults</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">)</span>
+            <span class="c1"># Fix!!! Improvement: Executive Decision:  Should we force these intermediate results to hit disk?</span>
+            <span class="c1"># For now, I say yes:</span>
+            <span class="c1"># Fix!!! Improvement: Choose a better location for files to go automatically, so this can be run from other directories</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">queryurl</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.json&#39;</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">tmpfile</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">,</span><span class="n">tmpfile</span><span class="p">)</span>
+                    <span class="n">tmpfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="nb">print</span><span class="p">((</span><span class="s2">&quot;Stored partial result for individual version to disk as </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">))</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t save partial results to disk.... continuing anyway.&quot;</span><span class="p">)</span>
+
+    <span class="c1">## Construct output segments lists from multiple JSON objects</span>
+    <span class="c1"># The jsonResults are in order of decreasing versions,</span>
+    <span class="c1"># thanks to the sorting above</span>
+    <span class="c1"># This generates a results_flag object for dumping to JSON with the</span>
+    <span class="c1"># total_known_list across all versions, cascaded</span>
+    <span class="c1"># and we have the total active list across all versions, cascaded</span>
+    <span class="c1"># so we&#39;re done the math! :</span>
+    <span class="n">result_flag</span><span class="p">,</span><span class="n">affected_results</span><span class="o">=</span><span class="n">clientutils</span><span class="o">.</span><span class="n">calculate_versionless_result</span><span class="p">(</span><span class="n">jsonResults</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">,</span><span class="n">ifo_input</span><span class="o">=</span><span class="n">ifo</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">((</span><span class="s2">&quot;active segments:&quot;</span><span class="p">,</span> <span class="n">result_flag</span><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">((</span><span class="s2">&quot;known segments:&quot;</span><span class="p">,</span> <span class="n">result_flag</span><span class="p">[</span><span class="s1">&#39;known&#39;</span><span class="p">]))</span>
+
+    <span class="c1">### Old before JSON spec change:</span>
+    <span class="c1">### Need to build the client_meta part of the JSON results</span>
+    <span class="c1">#meta={}</span>
+    <span class="c1">#meta[&#39;program_name&#39;]=os.path.basename(__file__)</span>
+    <span class="c1">#meta[&#39;options&#39;]=options</span>
+    <span class="c1">#meta[&#39;start_time&#39;]=startTime</span>
+    <span class="c1">#meta[&#39;end_time&#39;]=endTime</span>
+    <span class="c1">#meta[&#39;query_uris_called&#39;]=sortedurlList</span>
+    <span class="c1">## Note: Using ligolw/utils/process.py method of determining time:</span>
+    <span class="c1">#meta[&#39;query_time&#39;]=query_start</span>
+    <span class="c1">#meta[&#39;query_start&#39;]=query_start</span>
+    <span class="c1">#meta[&#39;query_end&#39;]=_UTCToGPS(time.gmtime())</span>
+
+    <span class="c1">### Now that we have the meta and the flags, which include the result, we need to build up the larger JSON</span>
+    <span class="c1">#json_result={}</span>
+    <span class="c1">#json_result[&#39;client_meta&#39;]=meta</span>
+    <span class="c1">#json_result[&#39;flags&#39;]=[]</span>
+    <span class="c1">#for flag in jsonResults:</span>
+    <span class="c1">#    json_result[&#39;flags&#39;].append(flag)</span>
+    <span class="c1">#json_result[&#39;flags&#39;].append(result_flag)</span>
+
+    <span class="c1"># Now we need to return the reduced results and the intermediate JSON</span>
+    <span class="c1"># responses from the versioned queries</span>
+    <span class="c1"># Note: The result_flag will not have query_metadata</span>
+    <span class="k">return</span> <span class="n">result_flag</span><span class="p">,</span><span class="n">jsonResults</span><span class="p">,</span><span class="n">affected_results</span></div>
+
+<div class="viewcode-block" id="dtd_uri_callback"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.dtd_uri_callback">[docs]</a><span class="k">def</span> <span class="nf">dtd_uri_callback</span><span class="p">(</span><span class="n">uri</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    S6 helper function for XML file writing and parsing using a dtd.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">uri</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;http://www.ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;http://ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt&#39;</span><span class="p">]:</span>
+        <span class="c1"># if the XML file contains a http pointer to the ligolw DTD at CIT then</span>
+        <span class="c1"># return a local copy to avoid any network problems</span>
+        <span class="k">return</span> <span class="s1">&#39;file://localhost&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;GLUE_PREFIX&quot;</span><span class="p">],</span>
+          <span class="s1">&#39;etc/ligolw_dtd.txt&#39;</span> <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># otherwise just use the uri in the file</span>
+        <span class="k">return</span> <span class="n">uri</span></div>
+
+
+
+<div class="viewcode-block" id="waitTill"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.waitTill">[docs]</a><span class="k">def</span> <span class="nf">waitTill</span><span class="p">(</span><span class="n">runTime</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">2400</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    runTime is time in HH:MM (string) format, action is call to a function to</span>
+<span class="sd">    be exceuted at specified time.</span>
+<span class="sd">    Function source: http://stackoverflow.com/a/6579355/2769157</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">startTime</span> <span class="o">=</span> <span class="n">time2</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">runTime</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)))))</span>
+    <span class="n">waitTime</span><span class="o">=</span><span class="mi">0</span> <span class="c1"># Timeout set to 20 minutes</span>
+    <span class="k">while</span> <span class="n">startTime</span> <span class="o">&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="ow">and</span> <span class="n">waitTime</span> <span class="o">&lt;</span> <span class="mi">1200</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">waitTime</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="patchWithFailCases"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.patchWithFailCases">[docs]</a><span class="k">def</span> <span class="nf">patchWithFailCases</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">url</span><span class="p">,</span><span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">inlogger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">testing_options</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Attempts to patch data to a url where the data is in a dictionary format</span>
+<span class="sd">    that can be directly dumped to json that the dqsegdb server expects.</span>
+<span class="sd">    Correctly fails to making a new version or flag in the database as needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1">#patch to the flag/version</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="n">inlogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Trying to patch alone for url: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+            <span class="c1">#print(&quot;Trying to patch alone for url: %s&quot; % url)</span>
+        <span class="k">if</span> <span class="s1">&#39;synchronize&#39;</span> <span class="ow">in</span> <span class="n">testing_options</span><span class="p">:</span>
+            <span class="n">startTime</span><span class="o">=</span><span class="n">testing_options</span><span class="p">[</span><span class="s1">&#39;synchronize&#39;</span><span class="p">]</span>
+            <span class="n">inlogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Trying to patch synchronously at time </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">startTime</span><span class="p">)</span>
+            <span class="n">waitTill</span><span class="p">(</span><span class="n">startTime</span><span class="p">)</span>
+        <span class="n">patchDataUrllib2</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">flagDict</span><span class="p">),</span><span class="n">logger</span><span class="o">=</span><span class="n">inlogger</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="n">inlogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Patch alone succeeded for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+            <span class="c1">#print(&quot;Patch alone succeeded for %s&quot; % url)</span>
+    <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="o">!=</span><span class="mi">404</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1">#put to version</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="n">inlogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Trying to put alone for url: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+                <span class="c1">#print(&quot;Trying to put alone for %s&quot; % url)</span>
+            <span class="n">putDataUrllib2</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">flagDict</span><span class="p">),</span><span class="n">logger</span><span class="o">=</span><span class="n">inlogger</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="n">inlogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Put alone succeeded for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+                <span class="c1">#print(&quot;Put alone succeeded for %s&quot; % url)</span>
+        <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">ee</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ee</span><span class="o">.</span><span class="n">code</span><span class="o">!=</span><span class="mi">404</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ee</span>
+            <span class="c1">#put to flag</span>
+            <span class="n">suburl</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="n">inlogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Trying to PUT flag and version to: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">suburl</span><span class="p">)</span>
+                <span class="c1">#print(&quot;Trying to PUT flag and version to: &quot;+suburl)</span>
+            <span class="n">putDataUrllib2</span><span class="p">(</span><span class="n">suburl</span><span class="p">,</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">flagDict</span><span class="p">),</span><span class="n">logger</span><span class="o">=</span><span class="n">inlogger</span><span class="p">)</span>
+            <span class="c1">#put to version</span>
+            <span class="n">putDataUrllib2</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">flagDict</span><span class="p">),</span><span class="n">logger</span><span class="o">=</span><span class="n">inlogger</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="n">inlogger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Had to PUT flag and version&quot;</span><span class="p">)</span></div>
+                <span class="c1">#print(&quot;Had to PUT flag and version&quot;)</span>
+
+
+<div class="viewcode-block" id="threadedPatchWithFailCases"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.threadedPatchWithFailCases">[docs]</a><span class="k">def</span> <span class="nf">threadedPatchWithFailCases</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">debug</span><span class="p">,</span><span class="n">inputlogger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used by InsertMultipleDQXMLFileThreaded</span>
+<span class="sd">    to patch data to server. (Deprecated/Incomplete error handling)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">i</span><span class="o">=</span><span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">url</span><span class="o">=</span><span class="n">i</span><span class="o">.</span><span class="n">buildURL</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">patchWithFailCases</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">url</span><span class="p">,</span><span class="n">debug</span><span class="p">,</span><span class="n">inlogger</span><span class="o">=</span><span class="n">inputlogger</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;interrupted by user!&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">q</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="setupSegment_md"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.setupSegment_md">[docs]</a><span class="k">def</span> <span class="nf">setupSegment_md</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">xmlparser</span><span class="p">,</span><span class="n">lwtparser</span><span class="p">,</span><span class="n">debug</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function used to setup ligolw parser (S6 xml generation tool).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">segment_md</span> <span class="o">=</span> <span class="n">ldbd</span><span class="o">.</span><span class="n">LIGOMetadata</span><span class="p">(</span><span class="n">xmlparser</span><span class="p">,</span><span class="n">lwtparser</span><span class="p">)</span>
+
+    <span class="c1">#if debug:</span>
+    <span class="c1">#    print(&quot;Inserting file %s.&quot; % filename)</span>
+    <span class="n">fh</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">xmltext</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">segment_md</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">xmltext</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+        <span class="c1">#segment_md.table</span>
+        <span class="nb">list</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">segment_md</span></div>
+
+<div class="viewcode-block" id="InsertMultipleDQXMLFileThreaded"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.apicalls.InsertMultipleDQXMLFileThreaded">[docs]</a><span class="k">def</span> <span class="nf">InsertMultipleDQXMLFileThreaded</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span><span class="n">logger</span><span class="p">,</span><span class="n">server</span><span class="o">=</span><span class="s1">&#39;http://slwebtest.virgo.infn.it&#39;</span><span class="p">,</span><span class="n">hackDec11</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">threads</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">testing_options</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inserts multiple dqxml files of data into the DQSEGDB.</span>
+
+<span class="sd">    Input:</span>
+<span class="sd">    - filenames is a list of string filenames for  DQXML files.</span>
+<span class="sd">    - hackDec11 is deprecated (always should be false): This was used to differentiate function against different server APIs before we used numbering an responses to make decisions.</span>
+<span class="sd">    - testing_options is a dictionary including (optionally):offset(int),synchronize(time in &#39;HH:MM&#39; format (string))</span>
+
+<span class="sd">    Output:</span>
+<span class="sd">    returns True if it completes sucessfully</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Beginning call to InsertMultipleDQXMLFileThreaded.  This message last updated April 14 2015, Ciao da Italia!&quot;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+    <span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+
+    <span class="c1"># Make a call to server+&#39;/dq&#39;:</span>
+    <span class="n">protocol</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">serverfqdn</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">apiResult</span><span class="o">=</span><span class="n">queryAPIVersion</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">serverfqdn</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
+    <span class="c1"># If the API change results in a backwards incompatibility, handle it here with a flag that affects behavior below</span>
+    <span class="k">if</span> <span class="n">apiResult</span> <span class="o">&gt;=</span> <span class="s2">&quot;2.1.0&quot;</span><span class="p">:</span>
+        <span class="c1"># S6 style comments are needed</span>
+        <span class="n">new_comments</span><span class="o">=</span><span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Older server, so don&#39;t want to supply extra comments...</span>
+        <span class="n">new_comments</span><span class="o">=</span><span class="kc">False</span>
+    <span class="k">if</span> <span class="n">apiResult</span> <span class="o">&gt;=</span> <span class="s2">&quot;2.1.15&quot;</span><span class="p">:</span>
+        <span class="c1"># Alteration to insertion_metadata from uri to comment to accomodate s6 data conversion</span>
+        <span class="n">use_new_insertion_metadata</span><span class="o">=</span><span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">use_new_insertion_metadata</span><span class="o">=</span><span class="kc">False</span>
+
+
+    <span class="k">if</span> <span class="s1">&#39;offset&#39;</span> <span class="ow">in</span> <span class="n">testing_options</span><span class="p">:</span>
+        <span class="n">offset</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">testing_options</span><span class="p">[</span><span class="s1">&#39;offset&#39;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">offset</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">if</span> <span class="s1">&#39;synchronize&#39;</span> <span class="ow">in</span> <span class="n">testing_options</span><span class="p">:</span>
+        <span class="n">synchronize</span><span class="o">=</span><span class="n">testing_options</span><span class="p">[</span><span class="s1">&#39;synchronize&#39;</span><span class="p">]</span>
+
+    <span class="n">xmlparser</span> <span class="o">=</span> <span class="n">pyRXP</span><span class="o">.</span><span class="n">Parser</span><span class="p">()</span>
+    <span class="n">lwtparser</span> <span class="o">=</span> <span class="n">ldbd</span><span class="o">.</span><span class="n">LIGOLwParser</span><span class="p">()</span>
+
+    <span class="n">flag_versions</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># flag_versions, filename, server, hackDec11, debug are current variables</span>
+
+    <span class="c1"># This next bunch of code is specific to a given file:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Empty file list sent to InsertMultipleDQXMLFileThreaded&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+
+        <span class="n">segment_md</span> <span class="o">=</span> <span class="n">setupSegment_md</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">xmlparser</span><span class="p">,</span><span class="n">lwtparser</span><span class="p">,</span><span class="n">debug</span><span class="p">)</span>
+
+        <span class="c1"># segment_md, flag_versions, filename, server, hackDec11, debug are current variables</span>
+
+        <span class="n">flag_versions_numbered</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_definer&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">])):</span>
+            <span class="n">flag_versions_numbered</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_definer&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]):</span>
+              <span class="c1">#print(j,entry,segment_md.table[&#39;segment_definer&#39;][&#39;stream&#39;][j][i])</span>
+              <span class="n">flag_versions_numbered</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">entry</span><span class="p">]</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_definer&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+
+
+        <span class="c1"># parse process table and make a dict that corresponds with each</span>
+        <span class="c1"># process, where the keys for the dict are like &quot;process:process_id:1&quot;</span>
+        <span class="c1"># so that we can match</span>
+        <span class="c1"># these to the flag_versions from the segment definer in the next</span>
+        <span class="c1"># section</span>
+
+        <span class="c1"># Note:  Wherever temp_ preceeds a name, it is generally an identifier</span>
+        <span class="c1"># field from the dqxml, that is only good for the single dqxml file</span>
+        <span class="c1"># being parsed</span>
+
+
+        <span class="n">process_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Going to assign process table streams to process_dict with a key</span>
+        <span class="c1"># matching process_id (process:process_id:0 for example)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">])):</span>
+            <span class="n">process_id_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;process_id&#39;</span><span class="p">)</span>
+            <span class="n">temp_process_id</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">process_id_index</span><span class="p">]</span>
+            <span class="c1"># Now we&#39;re going to assign elements to process_dict[process_id]</span>
+            <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]):</span>
+                <span class="c1">#print(j,entry,segment_md.table[&#39;process&#39;][&#39;stream&#39;][j][i])</span>
+                <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="n">entry</span><span class="p">]</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                <span class="c1"># Note that the segment_md.table[&#39;process&#39;][&#39;stream&#39;][0] looks like this:</span>
+                <span class="c1">#0 program SegGener</span>
+                <span class="c1">#0 version 6831</span>
+                <span class="c1">#0 cvs_repository https://redoubt.ligo-wa.caltech.edu/</span>
+                <span class="c1">#0                svn/gds/trunk/Monitors/SegGener/SegGener.cc</span>
+                <span class="c1">#0 cvs_entry_time 1055611021</span>
+                <span class="c1">#0 comment Segment generation from an OSC condition</span>
+                <span class="c1">#0 node l1gds2</span>
+                <span class="c1">#0 username john.zweizig@LIGO.ORG</span>
+                <span class="c1">#0 unix_procid 24286</span>
+                <span class="c1">#0 start_time 1065916603</span>
+                <span class="c1">#0 end_time 1070395521</span>
+                <span class="c1">#0 process_id process:process_id:0</span>
+                <span class="c1">#0 ifos L0L1</span>
+                <span class="c1"># So now I have all of that info stored by the process_id keys</span>
+                <span class="c1"># Eventually I have to map these elements to the process_metadata</span>
+                <span class="c1"># style.. maybe I can do that now:</span>
+            <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">hackDec11</span><span class="p">:</span>
+                <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;process_start_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span> <span class="c1"># This is for the newer server APIs:  (April 24 2015 we checked it (it probably changed before ER6 finally))</span>
+                <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;process_start_timestamp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">new_comments</span><span class="p">:</span>
+                <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;process_comment&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;comment&#39;</span><span class="p">]</span>
+            <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;username&#39;</span><span class="p">]</span>
+            <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;args&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">### Fix!!! dqxml has no args???</span>
+            <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;pid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;unix_procid&#39;</span><span class="p">]</span>
+            <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;program&#39;</span><span class="p">]</span>
+            <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;fqdn&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;node&#39;</span><span class="p">]</span> <span class="c1">### Fix!!! Improvement: not really fqdn, just the node name</span>
+
+        <span class="c1"># So now I have process_dict[temp_process_id][&#39;process_metadata&#39;] for each</span>
+        <span class="c1"># process_id, and can add it to a flag version when it uses it;  really I</span>
+        <span class="c1"># should group it with the segment summary info because that has the</span>
+        <span class="c1"># insertion_metadata start and stop time</span>
+
+        <span class="c1">### Fix!!! Get the args from the *other* process table... yikes</span>
+        <span class="c1">### Double check what is done below works!</span>
+        <span class="c1"># First pass:</span>
+        <span class="c1">#if debug:</span>
+        <span class="c1">#    import pdb</span>
+        <span class="c1">#    pdb.set_trace()</span>
+
+        <span class="n">temp_process_params_process_id</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process_params&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">])</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No process_params table for file: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process_params&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">])):</span>
+                <span class="n">process_id_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process_params&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;process_id&#39;</span><span class="p">)</span>
+                <span class="n">temp_process_params_process_id</span><span class="o">=</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process_params&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">process_id_index</span><span class="p">]</span>
+                <span class="c1">#  This next bit looks a bit strange, but the goal is to pull off only the param and value from each row of the process_params table, and then put them into the process_metadata</span>
+                <span class="c1">#  Thus we loop through the columns in each row and toss out everything but the param and value entries, and then outside the for loop, append them to the args list</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process_params&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">entry</span><span class="o">==</span><span class="s2">&quot;param&quot;</span><span class="p">:</span>
+                        <span class="n">temp_param</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process_params&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">entry</span><span class="o">==</span><span class="s2">&quot;value&quot;</span><span class="p">:</span>
+                        <span class="n">temp_value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;process_params&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_params_process_id</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;args&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">temp_param</span><span class="p">))</span>
+                <span class="n">process_dict</span><span class="p">[</span><span class="n">temp_process_params_process_id</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;args&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">temp_value</span><span class="p">))</span>
+
+        <span class="c1">#if debug:</span>
+        <span class="c1">#    import pdb</span>
+        <span class="c1">#    pdb.set_trace()</span>
+
+        <span class="n">temp_id_to_flag_version</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">flag_versions_numbered</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">ifo</span> <span class="o">=</span> <span class="n">flag_versions_numbered</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;ifos&#39;</span><span class="p">]</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">flag_versions_numbered</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="n">flag_versions_numbered</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">flag_versions</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">new_comments</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
+                    <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span> <span class="o">=</span> <span class="n">InsertFlagVersion</span><span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span> <span class="o">=</span> <span class="n">InsertFlagVersionOld</span><span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_comments</span><span class="p">:</span>
+                    <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">flag_description</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">flag_versions_numbered</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;comment&#39;</span><span class="p">])</span> <span class="c1"># old segment_definer comment = new flag_description</span>
+                    <span class="c1"># OUTDATED PLACEHOLDER: flag_versions[(ifo,name,version)].version_comment=str(flag_versions_numbered[i][&#39;comment&#39;])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">flag_comment</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">flag_versions_numbered</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;comment&#39;</span><span class="p">])</span>
+                    <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">version_comment</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">flag_versions_numbered</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;comment&#39;</span><span class="p">])</span>
+            <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temporary_definer_id</span> <span class="o">=</span> <span class="n">flag_versions_numbered</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;segment_def_id&#39;</span><span class="p">]</span>
+            <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temporary_process_id</span> <span class="o">=</span> <span class="n">flag_versions_numbered</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;process_id&#39;</span><span class="p">]</span>
+            <span class="c1"># Populate reverse lookup dictionary:</span>
+            <span class="n">temp_id_to_flag_version</span><span class="p">[</span><span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temporary_definer_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)</span>
+
+
+        <span class="c1"># ways to solve the metadata problem:</span>
+        <span class="c1"># Associate each insertion_metadata block with a process, then group</span>
+        <span class="c1"># them and take the min insert_data_start and max insert_data_stop</span>
+
+
+        <span class="c1"># parse segment_summary table and associate known segments with</span>
+        <span class="c1"># flag_versions above:</span>
+        <span class="c1">## Note this next line is needed for looping over multiple files</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">flag_versions</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">flag_versions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="o">=</span><span class="p">{}</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">])):</span>
+            <span class="c1">#flag_versions_numbered[j] = {}</span>
+            <span class="n">seg_def_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;segment_def_id&#39;</span><span class="p">)</span>
+            <span class="c1">#print(&quot;associated seg_def_id is: &quot;+ segment_md.table[&#39;segment_summary&#39;][&#39;stream&#39;][j][seg_def_index])</span>
+            <span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)</span> <span class="o">=</span> <span class="n">temp_id_to_flag_version</span><span class="p">[</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">seg_def_index</span><span class="p">]]</span>
+            <span class="n">seg_sum_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;segment_sum_id&#39;</span><span class="p">)</span>
+            <span class="c1"># Unneeded:</span>
+            <span class="c1">#flag_versions[(ifo,name,version)].temporary_segment_sum_id = segment_md.table[&#39;segment_summary&#39;][&#39;stream&#39;][j][seg_sum_index]</span>
+            <span class="n">start_time_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;start_time&#39;</span><span class="p">)</span>
+            <span class="n">end_time_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;end_time&#39;</span><span class="p">)</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">start_time_index</span><span class="p">]</span><span class="o">+</span><span class="n">offset</span>
+            <span class="n">end_time</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">end_time_index</span><span class="p">]</span><span class="o">+</span><span class="n">offset</span>
+            <span class="n">comment_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;comment&#39;</span><span class="p">)</span>
+            <span class="n">seg_sum_comment</span><span class="o">=</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">comment_index</span><span class="p">]</span>
+            <span class="n">new_seg_summary</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span><span class="n">end_time</span><span class="p">)])</span>
+            <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">appendKnown</span><span class="p">(</span><span class="n">new_seg_summary</span><span class="p">)</span>
+            <span class="c1"># Now I need to build up the insertion_metadata dictionary for this</span>
+            <span class="c1"># summary:</span>
+            <span class="c1"># Now I need to associate the right process with the known</span>
+            <span class="c1"># segments here, and put the start and end time into the</span>
+            <span class="c1"># insertion_metadata part of the</span>
+            <span class="c1">#  insert_history dict</span>
+            <span class="c1"># Plan for processes and affected data:</span>
+            <span class="c1"># Loop through segment summaries</span>
+            <span class="c1"># If we haven&#39;t seen the associated process before, create it:</span>
+            <span class="c1"># First, append the temp_process_id to temp_process_ids</span>
+            <span class="c1"># Then, each temp_process_ids entry is a dictionary, where the one</span>
+            <span class="c1"># element is start_affected time, and the other is end_affected</span>
+            <span class="c1"># time, and later we will combine this with the correct</span>
+            <span class="c1"># process_metadata dictionary</span>
+            <span class="n">process_id_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;process_id&#39;</span><span class="p">)</span>
+            <span class="n">temp_process_id</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment_summary&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">process_id_index</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">temp_process_id</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="c1"># We don&#39;t need to append this process metadata, as it already</span>
+                <span class="c1"># exists We do need to extend the affected data start and stop</span>
+                <span class="c1"># to match</span>
+                <span class="k">if</span> <span class="n">start_time</span> <span class="o">&lt;</span> <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;insert_data_start&#39;</span><span class="p">]:</span>
+                    <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;insert_data_start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">start_time</span>
+                <span class="k">if</span> <span class="n">end_time</span> <span class="o">&gt;</span> <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;insert_data_stop&#39;</span><span class="p">]:</span>
+                    <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;insert_data_stop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">end_time</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Need to make the dictionary entry for this process_id</span>
+                <span class="k">if</span> <span class="n">seg_sum_comment</span><span class="o">!=</span><span class="kc">None</span><span class="p">:</span>
+                    <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">provenance_url</span><span class="o">=</span><span class="n">seg_sum_comment</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">provenance_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+                <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;insert_data_start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">start_time</span>
+                <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="p">[</span><span class="n">temp_process_id</span><span class="p">][</span><span class="s1">&#39;insert_data_stop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">end_time</span>
+
+
+        <span class="c1"># Now, I need to append an insert_history element to the flag_versions</span>
+        <span class="c1"># for this ifo,name, version, as I have the correct insertion_metadata</span>
+        <span class="c1"># and the correct</span>
+        <span class="c1"># process_metadata (from the process_dict earlier</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="n">t1</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">flag_versions</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">for</span> <span class="n">pid</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">flag_versions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">flag_versions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="p">[</span><span class="n">pid</span><span class="p">][</span><span class="s1">&#39;insert_data_start&#39;</span><span class="p">]</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">flag_versions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="p">[</span><span class="n">pid</span><span class="p">][</span><span class="s1">&#39;insert_data_stop&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">new_comments</span><span class="p">:</span>
+                    <span class="n">flag_versions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">flag_version_comment</span><span class="o">=</span><span class="n">process_dict</span><span class="p">[</span><span class="n">pid</span><span class="p">][</span><span class="s1">&#39;process_comment&#39;</span><span class="p">]</span>
+                <span class="n">insert_history_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">insert_history_dict</span><span class="p">[</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_dict</span><span class="p">[</span><span class="n">pid</span><span class="p">][</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">]</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">raise</span>
+                <span class="c1">#    import pdb</span>
+                <span class="c1">#    pdb.set_trace()</span>
+                <span class="n">insert_history_dict</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">insert_history_dict</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;insert_data_stop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop</span>
+                <span class="n">insert_history_dict</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;insert_data_start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">start</span>
+                <span class="n">ifo</span> <span class="o">=</span> <span class="n">flag_versions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ifo</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="n">flag_versions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">version</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">flag_versions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">if</span> <span class="n">use_new_insertion_metadata</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
+                    <span class="n">insert_history_dict</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;comment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/dq/&#39;</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">ifo</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">)])</span>  <span class="c1"># FIX make dq a constant string in case we ever change it</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">insert_history_dict</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;uri&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/dq/&#39;</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">ifo</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">)])</span>  <span class="c1"># FIX make dq a constant string in case we ever change it</span>
+                <span class="c1">#print(ifo,name,version)</span>
+                <span class="n">insert_history_dict</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_UTCToGPS</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">())</span>
+                <span class="n">insert_history_dict</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;auth_user&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">process</span><span class="o">.</span><span class="n">get_username</span><span class="p">()</span>
+                <span class="c1">#if hackDec11:</span>
+                <span class="c1">#    # note that this only uses one insert_history...despite</span>
+                <span class="c1">#    all that hard work to get the list right...</span>
+                <span class="c1">#    # so this might break something...</span>
+                <span class="c1">#    flag_versions[i].insert_history=insert_history_dict</span>
+                <span class="c1">#else:</span>
+                <span class="c1">#    flag_versions[i].insert_history.append(insert_history_dict)</span>
+                <span class="n">flag_versions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">insert_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">insert_history_dict</span><span class="p">)</span>
+        
+        <span class="c1"># parse segment table and associate known segments with flag_versions</span>
+        <span class="c1"># above:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">])):</span>
+                <span class="c1">#flag_versions_numbered[j] = {}</span>
+                <span class="n">seg_def_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;segment_def_id&#39;</span><span class="p">)</span>
+                <span class="c1">#print(&quot;associated seg_def_id is: &quot;+</span>
+                <span class="c1">#    segment_md.table[&#39;segment&#39;][&#39;stream&#39;][j][seg_def_index])</span>
+                <span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)</span> <span class="o">=</span> <span class="n">temp_id_to_flag_version</span><span class="p">[</span><span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">seg_def_index</span><span class="p">]]</span>
+                <span class="c1">#seg_sum_index = segment_md.table[&#39;segment&#39;][&#39;orderedcol&#39;].index(&#39;segment_sum_id&#39;)</span>
+                <span class="n">start_time_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;start_time&#39;</span><span class="p">)</span>
+                <span class="n">end_time_index</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">][</span><span class="s1">&#39;orderedcol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;end_time&#39;</span><span class="p">)</span>
+                <span class="n">start_time</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">start_time_index</span><span class="p">]</span><span class="o">+</span><span class="n">offset</span>
+                <span class="n">end_time</span> <span class="o">=</span> <span class="n">segment_md</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">][</span><span class="s1">&#39;stream&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">end_time_index</span><span class="p">]</span><span class="o">+</span><span class="n">offset</span>
+                <span class="n">new_seg</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span><span class="n">end_time</span><span class="p">)])</span>
+                <span class="n">flag_versions</span><span class="p">[(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)]</span><span class="o">.</span><span class="n">appendActive</span><span class="p">(</span><span class="n">new_seg</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No segment table for this file: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">((</span><span class="s2">&quot;No segment table for this file: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">((</span><span class="s2">&quot;Unexpected error:&quot;</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">raise</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">flag_versions</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="n">flag_versions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">coalesceInsertHistory</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">threads</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Call this after the loop over files, and we should be good to go</span>
+        <span class="n">concurrent</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">threads</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="c1"># Fix!!! why did I do len(i) ???</span>
+        <span class="n">q</span><span class="o">=</span><span class="n">Queue</span><span class="p">(</span><span class="n">concurrent</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># Fix!!! Improvement: remove hardcoded concurrency</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">concurrent</span><span class="p">):</span>
+            <span class="n">t</span><span class="o">=</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">threadedPatchWithFailCases</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">q</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">debug</span><span class="p">,</span><span class="n">logger</span><span class="p">])</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">daemon</span><span class="o">=</span><span class="kc">True</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">flag_versions</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">i</span><span class="o">.</span><span class="n">buildFlagDictFromInsertVersion</span><span class="p">()</span>
+            <span class="c1">#i.flagDict</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">i</span><span class="o">.</span><span class="n">buildURL</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;json.dumps(i.flagDict):&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">flagDict</span><span class="p">))</span>
+            <span class="c1">#if hackDec11:</span>
+            <span class="c1">#    if len(i.active)==0:</span>
+            <span class="c1">#        print(&quot;No segments for this url&quot;)</span>
+            <span class="c1">#        continue</span>
+            <span class="n">q</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">q</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">flag_versions</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">i</span><span class="o">.</span><span class="n">buildFlagDictFromInsertVersion</span><span class="p">()</span>
+            <span class="c1">#i.flagDict</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">i</span><span class="o">.</span><span class="n">buildURL</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Url for the following data: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+                <span class="c1">#print(url)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;json.dumps(i.flagDict):&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">flagDict</span><span class="p">))</span>
+            <span class="c1">#if hackDec11:</span>
+            <span class="c1">#    if len(i.active)==0:</span>
+            <span class="c1">#        print(&quot;No segments for this url&quot;)</span>
+            <span class="c1">#        continue</span>
+            <span class="n">patchWithFailCases</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">url</span><span class="p">,</span><span class="n">debug</span><span class="p">,</span><span class="n">logger</span><span class="p">,</span><span class="n">testing_options</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;If we made it this far, no errors were encountered in the inserts.&quot;</span><span class="p">)</span>
+        <span class="c1">#print(&quot;If we made it this far, no errors were encountered in the inserts.&quot;)</span>
+    <span class="c1">### Fix!!! Improvement: Should be more careful about error handling here.</span>
+    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+        <span class="n">t2</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Time elapsed for file </span><span class="si">%s</span><span class="s2"> = </span><span class="si">%d</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">t2</span><span class="o">-</span><span class="n">t1</span><span class="p">))</span>
+        <span class="c1">#print(&quot;Time elapsed for file %s = %d.&quot; % (filename,t2-t1))</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dqsegdb 1.6.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014,2020 Ryan Fisher.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.3.
+    </div>
+  </body>
+</html>
