@@ -4,7 +4,7 @@ This work was packaged for Debian by:
 
 Copyright:
 
-    2014, Ryan Fisher <ryan.fisher@ligo.org>, Gary Hemming <gary.hemming@ego-gw.it>
+    Copyright (C) 2014-2020 Syracuse University, European Gravitational Observatory, and Christopher Newport University.  Written by Ryan Fisher and Gary Hemming. See the NOTICE file distributed with this work for additional information regarding copyright ownership.
 
 License: GPL
  
@@ -26,7 +26,7 @@ License: GPL
 
 The Debian packaging is:
 
-    Copyright (C) 2014 Steffen Grunewald <steffen.grunewald@ligo.org>
+    Copyright (C) 2014 Max Planck Institute for Gravitational Physics (Albert Einstein Institute), Written by Steffen Grunewald <steffen.grunewald@ligo.org>
 
 and is licensed under the GPL version 3,
 see "/usr/share/common-licenses/GPL-3".
