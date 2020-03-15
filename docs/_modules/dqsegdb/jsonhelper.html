@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dqsegdb.jsonhelper &#8212; dqsegdb 1.6.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dqsegdb 1.6.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dqsegdb.jsonhelper</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2015 Ryan Fisher, Gary Hemming</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU Affero General Public License as</span>
+<span class="c1"># published by the Free Software Foundation, either version 3 of the</span>
+<span class="c1"># License, or (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU Affero General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Affero General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">ligo</span> <span class="kn">import</span> <span class="n">segments</span>
+
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#  This module should contain functions that load in the standard JSON formats</span>
+<span class="c1">#  returned by the dqsegdb, and parse them into expected python objects.  Thus</span>
+<span class="c1">#  far, the only anticipated function will be to convert several json flag</span>
+<span class="c1">#  objects into one xml file.  The other JSON parsing for segment computations</span>
+<span class="c1">#  is trivial, as shown here:</span>
+<span class="c1">#</span>
+<span class="c1"># Example from a file:</span>
+<span class="c1">#[rpfisher@sugar-dev2 ~]$ cat test_jsonnocomments.json</span>
+<span class="c1">#{</span>
+<span class="c1"># &quot;meta&quot;: {</span>
+<span class="c1">#    &quot;query_uri&quot; : &quot;uri&quot;,</span>
+<span class="c1">#    &quot;query_time&quot; : 1056789101,</span>
+<span class="c1">#    &quot;query_start&quot; : 1056788101,</span>
+<span class="c1">#    &quot;query_end&quot; : 1056789101</span>
+<span class="c1">#    },</span>
+<span class="c1">#  &quot;resource_type&quot; : [&quot;resource_uri_1&quot;, &quot;resource_uri_2&quot;]</span>
+<span class="c1">#}</span>
+<span class="c1">#python:</span>
+<span class="c1">#&gt;&gt;&gt; blah=open(&#39;test_jsonnocomments.json&#39;,&#39;r&#39;)</span>
+<span class="c1">#&gt;&gt;&gt; a=json.load(blah)</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+<div class="viewcode-block" id="convertJSONtoXML"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.convertJSONtoXML">[docs]</a><span class="k">def</span> <span class="nf">convertJSONtoXML</span><span class="p">(</span><span class="n">json_response</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Incomplete!!</span>
+<span class="sd">    Converts a standard JSON response from the dqsegdb server into a</span>
+<span class="sd">    DQXML format.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Assumes JSON input as defined in API doc (dictionary containing keys</span>
+    <span class="c1"># &quot;meta&quot; and &quot;flags&quot;)</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_response</span><span class="p">)</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">]</span>
+    <span class="n">flag_list</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;flags&#39;</span><span class="p">]</span>
+    <span class="n">flags</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">flag_list</span><span class="p">:</span>
+        <span class="n">ifo</span><span class="o">=</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;ifo&#39;</span><span class="p">]</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">version</span><span class="o">=</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+        <span class="n">comment</span><span class="o">=</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;comment&#39;</span><span class="p">]</span>
+        <span class="n">provenance_url</span><span class="o">=</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;provenance_url&#39;</span><span class="p">]</span>
+        <span class="n">deactivated</span><span class="o">=</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;deactivated&#39;</span><span class="p">]</span>
+        <span class="n">active_indicates_ifo_badness</span><span class="o">=</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;active_indicates_ifo_badness&#39;</span><span class="p">]</span>
+        <span class="n">known_segments</span><span class="o">=</span><span class="n">convert_json_list_to_segmentlist</span><span class="p">(</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;known&#39;</span><span class="p">])</span>
+        <span class="n">active_segments</span><span class="o">=</span><span class="n">convert_json_list_to_segmentlist</span><span class="p">(</span><span class="n">flag</span><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">])</span>
+        <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stuff</span><span class="p">)</span>  <span class="c1">### Fix!!! : Need to make this a class with elements probably to keep things organized.</span></div>
+        <span class="c1">### Alternatively, I could just keep the dictionary and at least replace the json list segments with segmentlist objects?</span>
+        <span class="c1">### What&#39;s the use case?  I need to put the information about this flag into the DQXML file:  So, I should look at what the old tools did with the information before writing it out to the file/screen!</span>
+
+
+    <span class="c1">### Fix!!! Incomplete</span>
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#  Helper function to build a flag_version dictionary object for JSON output</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+<div class="viewcode-block" id="buildFlagDict"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.buildFlagDict">[docs]</a><span class="k">def</span> <span class="nf">buildFlagDict</span><span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">known_segments</span><span class="p">,</span><span class="n">active_segments</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to build a flag_version dictionary for JSON production.</span>
+
+<span class="sd">    known_segments and active_segments are assumed to be segmentlist objects</span>
+<span class="sd">    Note that this currently does not generate a false &quot;query_metadata&quot; block</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">flag</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">flag</span><span class="p">[</span><span class="s1">&#39;ifo&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">ifo</span>
+    <span class="n">flag</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">name</span>
+    <span class="n">flag</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">version</span>
+    <span class="n">flag</span><span class="p">[</span><span class="s1">&#39;known&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">convert_segmentlist_to_json</span><span class="p">(</span><span class="n">known_segments</span><span class="p">)</span>
+    <span class="n">flag</span><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">convert_segmentlist_to_json</span><span class="p">(</span><span class="n">active_segments</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flag</span></div>
+
+
+
+<div class="viewcode-block" id="FlagVersion"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.FlagVersion">[docs]</a><span class="k">class</span> <span class="nc">FlagVersion</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to set up a flag version object for parsing into JSON</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">known</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([])</span>
+<span class="c1">#        self.metadata={}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="o">=</span><span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ifo</span><span class="o">=</span><span class="n">ifo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="o">=</span><span class="n">version</span>
+<div class="viewcode-block" id="FlagVersion.buildURL"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.FlagVersion.buildURL">[docs]</a>    <span class="k">def</span> <span class="nf">buildURL</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">server</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="n">url</span><span class="o">=</span><span class="n">server</span><span class="o">+</span><span class="s1">&#39;/dq/&#39;</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ifo</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">url</span></div>
+<div class="viewcode-block" id="FlagVersion.appendKnown"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.FlagVersion.appendKnown">[docs]</a>    <span class="k">def</span> <span class="nf">appendKnown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">known_segments</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Appends a segmentlist of known segments to the existing known</span>
+<span class="sd">        segments for the object, and coalesces.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># known_segments must be a segmentlist object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">known</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">known</span><span class="o">+</span><span class="n">known_segments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">known</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span></div>
+<div class="viewcode-block" id="FlagVersion.appendActive"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.FlagVersion.appendActive">[docs]</a>    <span class="k">def</span> <span class="nf">appendActive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">active_segments</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Appends a segmentlist of active segments to the existing active</span>
+<span class="sd">        segments for the object, and coalesces.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># active_segments must be a segmentlist object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="o">+</span><span class="n">active_segments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">coalesce</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FlagVersion.buildFlagDictFromVersion"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.FlagVersion.buildFlagDictFromVersion">[docs]</a>    <span class="k">def</span> <span class="nf">buildFlagDictFromVersion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="o">=</span><span class="n">buildFlagDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ifo</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">known</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="PatchFlagVersion"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.PatchFlagVersion">[docs]</a><span class="k">class</span> <span class="nc">PatchFlagVersion</span><span class="p">(</span><span class="n">FlagVersion</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">FlagVersion</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">+</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Class to extend basic flag version class to include insert_history</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">hackDec11</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">known</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([])</span>
+<span class="c1">#        self.metadata={}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="o">=</span><span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ifo</span><span class="o">=</span><span class="n">ifo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="o">=</span><span class="n">version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_process_ids</span><span class="o">=</span><span class="p">{}</span> <span class="c1"># Used to hold the data</span>
+        <span class="c1">#                         # associated with a process_id</span>
+        <span class="k">if</span> <span class="n">hackDec11</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">insert_history</span><span class="o">=</span><span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">insert_history</span><span class="o">=</span><span class="p">[]</span> <span class="c1"># holds the process_metadatas and insertion_metadatas    # Note that this assumes that proper dictionaries are appended to this list</span>
+        <span class="c1">#self.process_metadata={}</span>
+        <span class="c1"># self.process_metadata.keys() should be process_start_timestamp(or process_start_time for old server hack for Dec 11),uid,args,pid,fqdn,name</span>
+        <span class="c1">#self.insertion_metadata={}</span>
+        <span class="c1"># self.insertion_metadata.keys() should be insert_data_stop,insert_data_start,uri,timestamp,auth_user,insert_data_start</span>
+<div class="viewcode-block" id="PatchFlagVersion.buildFlagDictFromPatchVersion"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.PatchFlagVersion.buildFlagDictFromPatchVersion">[docs]</a>    <span class="k">def</span> <span class="nf">buildFlagDictFromPatchVersion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildFlagDictFromVersion</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;insert_history&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">insert_history</span></div>
+<div class="viewcode-block" id="PatchFlagVersion.coalesceInsertHistory"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.PatchFlagVersion.coalesceInsertHistory">[docs]</a>    <span class="k">def</span> <span class="nf">coalesceInsertHistory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">final_history</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">first</span><span class="o">=</span><span class="kc">True</span>
+        <span class="n">debug</span><span class="o">=</span><span class="kc">False</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Printing insert history&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">insert_history</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;length:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">insert_history</span><span class="p">)))</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">insert_history</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;self.insert_history element:&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                <span class="n">final_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first!&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">process_name</span><span class="o">=</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="n">process_pid</span><span class="o">=</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;pid&#39;</span><span class="p">]</span>
+                <span class="n">process_uid</span><span class="o">=</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span>
+                <span class="n">matched</span><span class="o">=</span><span class="kc">False</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">final_history</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;printing i&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;printing j for comparison&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">process_name</span><span class="o">==</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">process_pid</span><span class="o">==</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;pid&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">process_uid</span><span class="o">==</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;process_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;uid&#39;</span><span class="p">]:</span>  <span class="c1"># FIX!!! Should we sort these by time order and then match end time of file_history element to start_time of insert_history element?</span>
+                        <span class="n">j</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;insert_data_stop&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;insert_data_stop&#39;</span><span class="p">],</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;insert_data_stop&#39;</span><span class="p">])</span>
+                        <span class="n">j</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;insert_data_start&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;insert_data_start&#39;</span><span class="p">],</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;insertion_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;insert_data_start&#39;</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;i matched j&quot;</span><span class="p">)</span>
+                            <span class="n">matched</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;i didn&#39;t match j&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">matched</span><span class="p">:</span>
+                    <span class="n">final_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Printing final history:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">final_history</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">final_history</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">insert_history</span><span class="o">=</span><span class="n">final_history</span></div></div>
+
+
+<div class="viewcode-block" id="InsertFlagVersion"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.InsertFlagVersion">[docs]</a><span class="k">class</span> <span class="nc">InsertFlagVersion</span><span class="p">(</span><span class="n">PatchFlagVersion</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">PatchFlagVersion</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">+</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Adds metadata for initial inserts</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InsertFlagVersion</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">=</span><span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_version_comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_description</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">provenance_url</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deactivated</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_indicates_ifo_badness</span><span class="o">=</span><span class="kc">True</span>
+<div class="viewcode-block" id="InsertFlagVersion.buildFlagDictFromInsertVersion"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.InsertFlagVersion.buildFlagDictFromInsertVersion">[docs]</a>    <span class="k">def</span> <span class="nf">buildFlagDictFromInsertVersion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">### Fix!!! I think I should make this a function that takes the self.x arguments</span>
+        <span class="c1">### as inputs and returns a modified flagDict object, so I can use it other</span>
+        <span class="c1">### places</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildFlagDictFromPatchVersion</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;flag_description&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">flag_description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;flag_version_comment&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">flag_version_comment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;further_info_url&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">provenance_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;deactivated&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">deactivated</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;active_indicates_ifo_badness&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">active_indicates_ifo_badness</span></div></div>
+
+<div class="viewcode-block" id="InsertFlagVersionOld"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.InsertFlagVersionOld">[docs]</a><span class="k">class</span> <span class="nc">InsertFlagVersionOld</span><span class="p">(</span><span class="n">PatchFlagVersion</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">PatchFlagVersion</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">+</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Adds metadata for initial inserts</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InsertFlagVersionOld</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">=</span><span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">provenance_url</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deactivated</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_indicates_ifo_badness</span><span class="o">=</span><span class="kc">True</span>
+<div class="viewcode-block" id="InsertFlagVersionOld.buildFlagDictFromInsertVersion"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.InsertFlagVersionOld.buildFlagDictFromInsertVersion">[docs]</a>    <span class="k">def</span> <span class="nf">buildFlagDictFromInsertVersion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">### Fix!!! I think I should make this a function that takes the self.x arguments</span>
+        <span class="c1">### as inputs and returns a modified flagDict object, so I can use it other</span>
+        <span class="c1">### places</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildFlagDictFromPatchVersion</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;flag_comment&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">flag_comment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;version_comment&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">version_comment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;provenance_url&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">provenance_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;deactivated&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">deactivated</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagDict</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="s1">&#39;active_indicates_ifo_badness&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">active_indicates_ifo_badness</span></div></div>
+
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#  Helper functions to convert segmentlist to json list of lists type object</span>
+<span class="c1">#  and vice versa</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+<div class="viewcode-block" id="convert_segmentlist_to_json"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.convert_segmentlist_to_json">[docs]</a><span class="k">def</span> <span class="nf">convert_segmentlist_to_json</span><span class="p">(</span><span class="n">segmentlist_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function used to convert segmentlist to json list of lists type</span>
+<span class="sd">    object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">json_list</span><span class="o">=</span><span class="p">[[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">segmentlist_input</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">json_list</span></div>
+
+<div class="viewcode-block" id="convert_json_list_to_segmentlist"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.convert_json_list_to_segmentlist">[docs]</a><span class="k">def</span> <span class="nf">convert_json_list_to_segmentlist</span><span class="p">(</span><span class="n">jsonlist</span><span class="p">):</span>
+     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Helper function used to convert json list of lists type object to a</span>
+<span class="sd">     segmentlist object</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+     <span class="n">segment_list</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">jsonlist</span><span class="p">])</span>
+     <span class="k">return</span> <span class="n">segment_list</span></div>
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#  Conversions from JSON to user requested formats</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+<div class="viewcode-block" id="generated_vdb_ascii"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.generated_vdb_ascii">[docs]</a><span class="k">def</span> <span class="nf">generated_vdb_ascii</span><span class="p">(</span><span class="n">json_str</span><span class="p">,</span><span class="n">filepath</span><span class="p">):</span>
+    <span class="n">res_dict</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
+    <span class="n">active_list</span><span class="o">=</span><span class="n">res_dict</span><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">]</span>
+    <span class="n">active_segments</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">active_list</span><span class="p">])</span>
+    <span class="n">known_list</span><span class="o">=</span><span class="n">res_dict</span><span class="p">[</span><span class="s1">&#39;known&#39;</span><span class="p">]</span>
+    <span class="n">known_segments</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">known_list</span><span class="p">])</span>
+    <span class="n">query_start</span><span class="o">=</span><span class="n">res_dict</span><span class="p">[</span><span class="s1">&#39;query_information&#39;</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
+    <span class="n">query_stop</span><span class="o">=</span><span class="n">res_dict</span><span class="p">[</span><span class="s1">&#39;query_information&#39;</span><span class="p">][</span><span class="s1">&#39;end&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">query_start</span><span class="o">!=</span><span class="mi">0</span> <span class="ow">and</span> <span class="n">query_stop</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">requested_span</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">query_start</span><span class="p">,</span><span class="n">query_stop</span><span class="p">)])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">requested_span</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">9999999999</span><span class="p">)])</span>
+    <span class="n">active_segments_string</span><span class="o">=</span><span class="s1">&#39;,1 </span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">active_segments</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;,1 </span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">unknown_segments</span><span class="o">=</span><span class="n">requested_span</span><span class="o">-</span><span class="n">known_segments</span>
+    <span class="n">unknown_segments_string</span><span class="o">=</span><span class="s1">&#39;,-1 </span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">unknown_segments</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;,-1 </span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">known_not_active_segments</span><span class="o">=</span><span class="n">known_segments</span><span class="o">-</span><span class="n">active_segments</span>
+    <span class="n">known_not_active_segments_string</span><span class="o">=</span><span class="s1">&#39;,0 </span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">known_not_active_segments</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;,0 </span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">output_fileh</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="s1">&#39;w+&#39;</span><span class="p">)</span>
+    <span class="n">query_info_string</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">res_dict</span><span class="p">[</span><span class="s1">&#39;query_information&#39;</span><span class="p">],</span> <span class="n">indent</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">output_fileh</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">query_info_string</span><span class="p">)</span>
+    <span class="n">output_fileh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">output_fileh</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">active_segments_string</span><span class="p">)</span>
+    <span class="n">output_fileh</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">unknown_segments_string</span><span class="p">)</span>
+    <span class="n">output_fileh</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">known_not_active_segments_string</span><span class="p">)</span>
+    <span class="n">output_fileh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">filepath</span></div>
+
+<div class="viewcode-block" id="generated_ascii"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.jsonhelper.generated_ascii">[docs]</a><span class="k">def</span> <span class="nf">generated_ascii</span><span class="p">(</span><span class="n">json_str</span><span class="p">,</span><span class="n">filepath</span><span class="p">):</span>
+    <span class="n">res_dict</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
+    <span class="n">active_list</span><span class="o">=</span><span class="n">res_dict</span><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">]</span>
+    <span class="n">active_segments</span><span class="o">=</span><span class="n">segments</span><span class="o">.</span><span class="n">segmentlist</span><span class="p">([</span><span class="n">segments</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">active_list</span><span class="p">])</span>
+    <span class="n">active_segments_string</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">active_segments</span><span class="p">])</span>
+    <span class="n">output_fileh</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="s1">&#39;w+&#39;</span><span class="p">)</span>
+    <span class="n">output_fileh</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">active_segments_string</span><span class="p">)</span>
+    <span class="n">output_fileh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">filepath</span></div>
+
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#  Parse basic list results json objects:</span>
+<span class="c1">#  Example from API Document:</span>
+<span class="c1">#  {</span>
+<span class="c1">#   &quot;meta&quot;: {</span>
+<span class="c1">#      &quot;query_uri&quot; : &quot;uri&quot;,</span>
+<span class="c1">#      &quot;query_time&quot; : 1056789101,</span>
+<span class="c1">#      &quot;query_start&quot; : 1056788101,</span>
+<span class="c1">#      &quot;query_end&quot; : 1056789101</span>
+<span class="c1">#      },</span>
+<span class="c1">#    &quot;resource_type&quot; : [&quot;resource_uri_1&quot;, &quot;resource_uri_2&quot;]</span>
+<span class="c1">#  }</span>
+<span class="c1">#</span>
+<span class="c1">#  Fix!!! NOTE: I just realized that the above format isn&#39;t very programmatic:  you</span>
+<span class="c1">#  can&#39;t look for a key that will tell you what you are looking at, e.g. the</span>
+<span class="c1">#  resource_type gets replaced by &quot;version&quot;, but there is no key with a value</span>
+<span class="c1">#  of &quot;version&quot;.  Having that last part would make for cleaner parsing of</span>
+<span class="c1">#  results.</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Basic Insert Example:</span>
+<span class="c1"># {</span>
+<span class="c1">#   &quot;insert_process&quot; : {</span>
+<span class="c1">#     &quot;insert_uri&quot; : &quot;uri&quot;,   // contains the URI specified with the PUT HTTP method</span>
+<span class="c1">#     &quot;process_id&quot;: pid, // process id number</span>
+<span class="c1">#     &quot;process_full_name&quot;: &quot;process name&quot;,</span>
+<span class="c1">#     &quot;process_fqdn&quot;: &quot;fully qualified domain name&quot;,</span>
+<span class="c1">#     &quot;process_args&quot;: [&quot;arg1&quot;,&quot;arg2&quot;],</span>
+<span class="c1">#     &quot;process_user&quot; : &quot;user&quot; // user who ran the insert process on the client</span>
+<span class="c1">#     &quot;inserted_data_start&quot;: gpstime, // First gpstime of data this insertion describes</span>
+<span class="c1">#     &quot;inserted_data_end&quot;: gpstime, // Last gpstime of data this insertion describes</span>
+<span class="c1">#     &quot;process_start_timestamp&quot;: gpstime, // When the insert process was started, use to determine run time of inserts</span>
+<span class="c1">#     // NOT to be added by client code -- these are server-side annotations, prior to insertion into the DB</span>
+<span class="c1">#     &quot;auth_user&quot; : &quot;user identification&quot; // from the auth infrastructure used to talk to the server</span>
+<span class="c1">#     &quot;insert_timestamp&quot; : gpstime,    // when the insert was committed to the DB</span>
+<span class="c1">#    },</span>
+<span class="c1">#    &quot;flag&quot; : {</span>
+<span class="c1">#         &quot;ifo&quot; : &quot;ifo&quot;,</span>
+<span class="c1">#         &quot;name&quot; : &quot;flag&quot;,</span>
+<span class="c1">#         &quot;comment&quot; : &quot;description&quot;,</span>
+<span class="c1">#         &quot;URL&quot; : &quot;aLog URL&quot;,</span>
+<span class="c1">#         &quot;deactivated&quot; : false|true,</span>
+<span class="c1">#         &quot;active_indicates_ifo_badness&quot; : true|false|null,</span>
+<span class="c1">#         // all of the above will be needed for /dq/IFO/FLAG inserts</span>
+<span class="c1">#         &quot;version&quot; : n,</span>
+<span class="c1">#         // all of the above will be needed for /dq/IFO/FLAG/VERSION inserts</span>
+<span class="c1">#         // all of the below are required for /dq/IFO/FLAG/VERSION/active inserts</span>
+<span class="c1">#         &quot;known&quot; : [ [ts,te], [ts,te], ... ]</span>
+<span class="c1">#         // Note that active segments do not actually have to be included, if the flag was known to be inactive:</span>
+<span class="c1">#         &quot;active&quot; : [ [ts,te], [ts,te], ... ]</span>
+<span class="c1">#         // \textcolor{red}{Comment: or &quot;segment&quot; : [ [ts,te,value], [ts,te,value], ...] (where value can be -1,0 or +1)}</span>
+<span class="c1">#         // inactive == (known - active)</span>
+<span class="c1">#         // unknown == (all_time - known)</span>
+<span class="c1">#    }</span>
+<span class="c1"># }</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dqsegdb 1.6.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014,2020 Ryan Fisher.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.3.
+    </div>
+  </body>
+</html>

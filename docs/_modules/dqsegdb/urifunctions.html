@@ -1,0 +1,389 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dqsegdb.urifunctions &#8212; dqsegdb 1.6.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dqsegdb 1.6.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dqsegdb.urifunctions</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2015 Ryan Fisher, Gary Hemming</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU Affero General Public License as</span>
+<span class="c1"># published by the Free Software Foundation, either version 3 of the</span>
+<span class="c1"># License, or (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU Affero General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Affero General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+
+
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">calendar</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">OpenSSL</span> <span class="kn">import</span> <span class="n">crypto</span>
+
+<span class="kn">from</span> <span class="nn">six.moves.urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span>
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="kn">import</span> <span class="n">http_client</span>
+<span class="kn">from</span> <span class="nn">six.moves.urllib</span> <span class="kn">import</span> <span class="p">(</span><span class="n">request</span> <span class="k">as</span> <span class="n">urllib_request</span><span class="p">,</span>
+                              <span class="n">error</span> <span class="k">as</span> <span class="n">urllib_error</span><span class="p">)</span>
+
+
+<span class="c1">#</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#</span>
+<span class="c1">#                Library for DQSEGDB API Providing URL Functions</span>
+<span class="c1">#</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#</span>
+
+<div class="viewcode-block" id="getDataUrllib2"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.urifunctions.getDataUrllib2">[docs]</a><span class="k">def</span> <span class="nf">getDataUrllib2</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="o">**</span><span class="n">urlopen_kw</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return response from server</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : `str`</span>
+<span class="sd">        remote URL to request (HTTP or HTTPS)</span>
+
+<span class="sd">    timeout : `float`</span>
+<span class="sd">        time (seconds) to wait for reponse</span>
+
+<span class="sd">    logger : `logging.Logger`</span>
+<span class="sd">        logger to print to</span>
+
+<span class="sd">    **urlopen_kw</span>
+<span class="sd">        other keywords are passed to :func:`urllib.request.urlopen`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    response : `str`</span>
+<span class="sd">        the text reponse from the server</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Beginning url call: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;https&#39;</span> <span class="ow">and</span> <span class="s1">&#39;context&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">urlopen_kw</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">ssl</span> <span class="kn">import</span> <span class="n">create_default_context</span>
+        <span class="kn">from</span> <span class="nn">gwdatafind.utils</span> <span class="kn">import</span> <span class="n">find_credential</span>
+        <span class="n">urlopen_kw</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">context</span> <span class="o">=</span> <span class="n">create_default_context</span><span class="p">()</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">load_cert_chain</span><span class="p">(</span><span class="o">*</span><span class="n">find_credential</span><span class="p">())</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">urllib_request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="o">**</span><span class="n">urlopen_kw</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Completed url call: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="constructSegmentQueryURLTimeWindow"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.urifunctions.constructSegmentQueryURLTimeWindow">[docs]</a><span class="k">def</span> <span class="nf">constructSegmentQueryURLTimeWindow</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">,</span><span class="n">startTime</span><span class="p">,</span><span class="n">endTime</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple url construction method for dqsegdb server flag:version queries</span>
+<span class="sd">    including restrictions on time ranges.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+<span class="sd">    name: `string`</span>
+<span class="sd">        Ex: &#39;DMT-SCIENCE&#39;</span>
+<span class="sd">    version : `string` or `int`</span>
+<span class="sd">        Ex: &#39;1&#39;</span>
+<span class="sd">    include_list_string : `string`</span>
+<span class="sd">        Ex: &quot;metadata,known,active&quot;</span>
+<span class="sd">    startTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+<span class="sd">    endTime : `int`</span>
+<span class="sd">        Ex: 999999999</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url1</span><span class="o">=</span><span class="n">protocol</span><span class="o">+</span><span class="s2">&quot;://&quot;</span><span class="o">+</span><span class="n">server</span><span class="o">+</span><span class="s2">&quot;/dq&quot;</span>
+    <span class="n">url2</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">url1</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">)])</span>
+    <span class="c1"># include_list_string should be a comma seperated list expressed as a string for the URL</span>
+    <span class="c1"># Let&#39;s pass it as a python string for now?  Fix!!!</span>
+    <span class="n">start</span><span class="o">=</span><span class="s1">&#39;s=</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">startTime</span>
+    <span class="n">end</span><span class="o">=</span><span class="s1">&#39;e=</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">endTime</span>
+    <span class="n">url3</span><span class="o">=</span><span class="n">url2</span><span class="o">+</span><span class="s1">&#39;?&#39;</span><span class="o">+</span><span class="n">start</span><span class="o">+</span><span class="s1">&#39;&amp;&#39;</span><span class="o">+</span><span class="n">end</span><span class="o">+</span><span class="s1">&#39;&amp;include=&#39;</span><span class="o">+</span><span class="n">include_list_string</span>
+    <span class="k">return</span> <span class="n">url3</span></div>
+
+<div class="viewcode-block" id="constructSegmentQueryURL"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.urifunctions.constructSegmentQueryURL">[docs]</a><span class="k">def</span> <span class="nf">constructSegmentQueryURL</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">include_list_string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple url construction method for dqsegdb server flag:version queries</span>
+<span class="sd">    not including restrictions on time ranges.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+<span class="sd">    name: `string`</span>
+<span class="sd">        Ex: &#39;DMT-SCIENCE&#39;</span>
+<span class="sd">    version : `string` or `int`</span>
+<span class="sd">        Ex: &#39;1&#39;</span>
+<span class="sd">    include_list_string : `string`</span>
+<span class="sd">        Ex: &quot;metadata,known,active&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url1</span><span class="o">=</span><span class="n">protocol</span><span class="o">+</span><span class="s2">&quot;://&quot;</span><span class="o">+</span><span class="n">server</span><span class="o">+</span><span class="s2">&quot;/dq&quot;</span>
+    <span class="n">url2</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">url1</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">version</span><span class="p">])</span>
+    <span class="n">url3</span><span class="o">=</span><span class="n">url2</span><span class="o">+</span><span class="s1">&#39;?&#39;</span><span class="o">+</span><span class="s1">&#39;include=&#39;</span><span class="o">+</span><span class="n">include_list_string</span>
+    <span class="k">return</span> <span class="n">url3</span></div>
+
+<div class="viewcode-block" id="constructVersionQueryURL"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.urifunctions.constructVersionQueryURL">[docs]</a><span class="k">def</span> <span class="nf">constructVersionQueryURL</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple url construction method for dqsegdb server version queries.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+<span class="sd">    name: `string`</span>
+<span class="sd">        Ex: &#39;DMT-SCIENCE&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">## Simple url construction method:</span>
+    <span class="n">url1</span><span class="o">=</span><span class="n">protocol</span><span class="o">+</span><span class="s2">&quot;://&quot;</span><span class="o">+</span><span class="n">server</span><span class="o">+</span><span class="s2">&quot;/dq&quot;</span>
+    <span class="n">url2</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">url1</span><span class="p">,</span><span class="n">ifo</span><span class="p">,</span><span class="n">name</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">url2</span></div>
+
+<div class="viewcode-block" id="constructFlagQueryURL"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.urifunctions.constructFlagQueryURL">[docs]</a><span class="k">def</span> <span class="nf">constructFlagQueryURL</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span><span class="n">server</span><span class="p">,</span><span class="n">ifo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple url construction method for dqsegdb server flag queries.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    protocol : `string`</span>
+<span class="sd">        Ex: &#39;https&#39;</span>
+<span class="sd">    server : `string`</span>
+<span class="sd">        Ex: &#39;dqsegdb5.phy.syr.edu&#39;</span>
+<span class="sd">    ifo : `string`</span>
+<span class="sd">        Ex: &#39;L1&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">## Simple url construction method:</span>
+    <span class="n">url1</span><span class="o">=</span><span class="n">protocol</span><span class="o">+</span><span class="s2">&quot;://&quot;</span><span class="o">+</span><span class="n">server</span><span class="o">+</span><span class="s2">&quot;/dq&quot;</span>
+    <span class="n">url2</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">url1</span><span class="p">,</span><span class="n">ifo</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">url2</span></div>
+
+<div class="viewcode-block" id="putDataUrllib2"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.urifunctions.putDataUrllib2">[docs]</a><span class="k">def</span> <span class="nf">putDataUrllib2</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">payload</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span><span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="o">**</span><span class="n">urlopen_kw</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper method for urllib2 that supports PUTs to a url.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : `string`</span>
+<span class="sd">        Ex: &#39;https://dqsegdb5.phy.syr.edu/L1/DMT-SCIENCE/1&#39;</span>
+<span class="sd">    payload : `string`</span>
+<span class="sd">        JSON formatted string</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">socket</span><span class="o">.</span><span class="n">setdefaulttimeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;https&#39;</span> <span class="ow">and</span> <span class="s1">&#39;context&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">urlopen_kw</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">ssl</span> <span class="kn">import</span> <span class="n">create_default_context</span>
+        <span class="kn">from</span> <span class="nn">gwdatafind.utils</span> <span class="kn">import</span> <span class="n">find_credential</span>
+        <span class="n">urlopen_kw</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">context</span> <span class="o">=</span> <span class="n">create_default_context</span><span class="p">()</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">load_cert_chain</span><span class="p">(</span><span class="o">*</span><span class="n">find_credential</span><span class="p">())</span>
+    <span class="c1">#BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)</span>
+    <span class="c1">#if urlparse(url).scheme == &#39;https&#39;:</span>
+    <span class="c1">#    opener=urllib_request.build_opener(HTTPSClientAuthHandler)</span>
+    <span class="c1">#else:</span>
+    <span class="c1">#    opener = urllib_request.build_opener(urllib_request.HTTPHandler)</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">urllib_request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+    <span class="n">request</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;JSON&#39;</span><span class="p">)</span>
+    <span class="n">request</span><span class="o">.</span><span class="n">get_method</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="s1">&#39;PUT&#39;</span>
+    <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Beginning url call: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">urlreturned</span> <span class="o">=</span> <span class="n">urllib_request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="o">**</span><span class="n">urlopen_kw</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">urllib_error</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">handleHTTPError</span><span class="p">(</span><span class="s2">&quot;PUT&quot;</span><span class="p">,</span><span class="n">url</span><span class="p">,</span><span class="n">e</span><span class="p">)</span>
+        <span class="c1">##print(e.read())</span>
+        <span class="c1">#if int(e.code)==404:</span>
+        <span class="c1">#    print(&quot;Flag does not exist in database yet for url: %s&quot; % url)</span>
+        <span class="c1">#else:</span>
+        <span class="c1">#    print(&quot;Warning: Issue accessing url: %s&quot; % url)</span>
+        <span class="c1">#    print(&quot;Code: &quot;)</span>
+        <span class="c1">#    print(e.code)</span>
+        <span class="c1">#    print(&quot;Message: &quot;)</span>
+        <span class="c1">#    print(e.msg)</span>
+        <span class="c1">#    #print(e.reason)</span>
+        <span class="c1">#    #print(url)</span>
+        <span class="c1">#    print(&quot;May be handled cleanly by calling instance: otherwise will result in an error.&quot;)</span>
+        <span class="c1">##print(e.reason)</span>
+        <span class="c1">##print(urlreturned)</span>
+        <span class="k">raise</span>
+    <span class="k">except</span> <span class="n">urllib_error</span><span class="o">.</span><span class="n">URLError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1">#print(e.read())</span>
+        <span class="n">warnmsg</span><span class="o">=</span><span class="s2">&quot;Warning: Issue accessing url: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span>
+        <span class="n">warnmsg</span><span class="o">+=</span><span class="s2">&quot;; &quot;</span>
+        <span class="n">warnmsg</span><span class="o">+=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span>
+        <span class="n">warnmsg</span><span class="o">+=</span><span class="s2">&quot;; &quot;</span>
+        <span class="n">warnmsg</span><span class="o">+=</span><span class="s2">&quot;May be handled cleanly by calling instance: otherwise will result in an error.&quot;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="n">warnmsg</span><span class="p">)</span>
+        <span class="k">raise</span>
+    <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Completed url call: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">url</span></div>
+
+<div class="viewcode-block" id="patchDataUrllib2"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.urifunctions.patchDataUrllib2">[docs]</a><span class="k">def</span> <span class="nf">patchDataUrllib2</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">payload</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span><span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="o">**</span><span class="n">urlopen_kw</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper method for urllib2 that supports PATCHs to a url.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : `string`</span>
+<span class="sd">        Ex: &#39;https://dqsegdb5.phy.syr.edu/L1/DMT-SCIENCE/1&#39;</span>
+<span class="sd">    payload : `string`</span>
+<span class="sd">        JSON formatted string</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">socket</span><span class="o">.</span><span class="n">setdefaulttimeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="c1">#BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)</span>
+    <span class="k">if</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;https&#39;</span> <span class="ow">and</span> <span class="s1">&#39;context&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">urlopen_kw</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">ssl</span> <span class="kn">import</span> <span class="n">create_default_context</span>
+        <span class="kn">from</span> <span class="nn">gwdatafind.utils</span> <span class="kn">import</span> <span class="n">find_credential</span>
+        <span class="n">urlopen_kw</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">context</span> <span class="o">=</span> <span class="n">create_default_context</span><span class="p">()</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">load_cert_chain</span><span class="p">(</span><span class="o">*</span><span class="n">find_credential</span><span class="p">())</span>
+    <span class="c1">#if urlparse(url).scheme == &#39;https&#39;:</span>
+    <span class="c1">#    opener=urllib_request.build_opener(HTTPSClientAuthHandler)</span>
+    <span class="c1">#else:</span>
+    <span class="c1">#    opener = urllib_request.build_opener(urllib_request.HTTPHandler)</span>
+    <span class="c1">#print(opener.handle_open.items())</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">urllib_request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+    <span class="n">request</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;JSON&#39;</span><span class="p">)</span>
+    <span class="n">request</span><span class="o">.</span><span class="n">get_method</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="s1">&#39;PATCH&#39;</span>
+    <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Beginning url call: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1">#urlreturned = opener.open(request)</span>
+        <span class="n">urlreturned</span> <span class="o">=</span> <span class="n">urllib_request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="o">**</span><span class="n">urlopen_kw</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">urllib_error</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">handleHTTPError</span><span class="p">(</span><span class="s2">&quot;PATCH&quot;</span><span class="p">,</span><span class="n">url</span><span class="p">,</span><span class="n">e</span><span class="p">)</span>
+        <span class="c1">##print(e.read())</span>
+        <span class="c1">#print(&quot;Warning: Issue accessing url: %s&quot; % url)</span>
+        <span class="c1">#print(&quot;Code: &quot;)</span>
+        <span class="c1">#print(e.code)</span>
+        <span class="c1">##print(e.reason)</span>
+        <span class="c1">##print(url)</span>
+        <span class="c1">#print(&quot;May be handled cleanly by calling instance: otherwise will result in an error.&quot;)</span>
+        <span class="k">raise</span>
+    <span class="k">except</span> <span class="n">urllib_error</span><span class="o">.</span><span class="n">URLError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1">#print(e.read()</span>
+        <span class="n">warnmsg</span><span class="o">=</span><span class="s2">&quot;Warning: Issue accessing url: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span>
+        <span class="n">warnmsg</span><span class="o">+=</span><span class="s2">&quot;; &quot;</span>
+        <span class="n">warnmsg</span><span class="o">+=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span>
+        <span class="n">warnmsg</span><span class="o">+=</span><span class="s2">&quot;; &quot;</span>
+        <span class="n">warnmsg</span><span class="o">+=</span><span class="s2">&quot;May be handled cleanly by calling instance: otherwise will result in an error.&quot;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="n">warnmsg</span><span class="p">)</span>
+        <span class="c1">#warn(&quot;Warning: Issue accessing url: %s&quot; % url</span>
+        <span class="c1">#warn(e.reason</span>
+        <span class="c1">#warn(&quot;May be handled cleanly by calling instance: otherwise will result in an error.&quot;</span>
+        <span class="k">raise</span>
+    <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Completed url call: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">url</span></div>
+
+<div class="viewcode-block" id="handleHTTPError"><a class="viewcode-back" href="../../dqsegdb.html#dqsegdb.urifunctions.handleHTTPError">[docs]</a><span class="k">def</span> <span class="nf">handleHTTPError</span><span class="p">(</span><span class="n">method</span><span class="p">,</span><span class="n">url</span><span class="p">,</span><span class="n">e</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">)</span><span class="o">!=</span><span class="mi">404</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Warning: Issue accessing url: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Code: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">))</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">msg</span><span class="p">))</span>
+        <span class="c1">#print(e.reason)</span>
+        <span class="c1">#print(url)</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;May be handled cleanly by calling instance: otherwise will result in an error.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;PUT&quot;</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;PATCH&quot;</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Info: Flag does not exist in database yet for url: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;GET&quot;</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Warning: Issue accessing url: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+            <span class="c1">#print(&quot;yo! FIX!!!&quot;)</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Code: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">))</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">msg</span><span class="p">))</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;May be handled cleanly by calling instance: otherwise will result in an error.&quot;</span><span class="p">)</span></div>
+        <span class="c1"># If method == &quot;QUIET&quot; print nothing:  used for GET checks that don&#39;t need to toss info on a 404</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dqsegdb 1.6.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014,2020 Ryan Fisher.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.3.
+    </div>
+  </body>
+</html>

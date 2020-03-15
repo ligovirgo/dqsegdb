@@ -1,0 +1,949 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dqsegdb Package &#8212; dqsegdb 1.6.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ligolw_segment_query_dqsegdb" href="ligolw_segment_query_dqsegdb.html" />
+    <link rel="prev" title="Welcome to dqsegdb’s documentation!" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ligolw_segment_query_dqsegdb.html" title="ligolw_segment_query_dqsegdb"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to dqsegdb’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dqsegdb 1.6.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dqsegdb-package">
+<h1>dqsegdb Package<a class="headerlink" href="#dqsegdb-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">dqsegdb</span></code> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-dqsegdb.__init__"></span></div>
+<div class="section" id="module-dqsegdb.apicalls">
+<span id="apicalls-module"></span><h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">apicalls</span></code> Module<a class="headerlink" href="#module-dqsegdb.apicalls" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dqsegdb.apicalls.InsertMultipleDQXMLFileThreaded">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">InsertMultipleDQXMLFileThreaded</code><span class="sig-paren">(</span><em class="sig-param">filenames</em>, <em class="sig-param">logger</em>, <em class="sig-param">server='http://slwebtest.virgo.infn.it'</em>, <em class="sig-param">hackDec11=False</em>, <em class="sig-param">debug=True</em>, <em class="sig-param">threads=1</em>, <em class="sig-param">testing_options={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#InsertMultipleDQXMLFileThreaded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.InsertMultipleDQXMLFileThreaded" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts multiple dqxml files of data into the DQSEGDB.</p>
+<p>Input:
+- filenames is a list of string filenames for  DQXML files.
+- hackDec11 is deprecated (always should be false): This was used to differentiate function against different server APIs before we used numbering an responses to make decisions.
+- testing_options is a dictionary including (optionally):offset(int),synchronize(time in ‘HH:MM’ format (string))</p>
+<p>Output:
+returns True if it completes sucessfully</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.coalesceResultDictionary">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">coalesceResultDictionary</code><span class="sig-paren">(</span><em class="sig-param">result_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#coalesceResultDictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.coalesceResultDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a dictionary as returned by QueryTimes or QueryTimeless and converts the lists of tuples into actual segment lists (and coalesces them).</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>result_dict</strong><span class="classifier"><cite>dict</cite></span></dt><dd><p>This is the input result dictionary from the other api calls</p>
+</dd>
+<dt><strong>out_result_dict</strong><span class="classifier"><cite>dict</cite></span></dt><dd><p>This is the output result dictionary with actual segment lists (and coalesced results).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.dqsegdbCascadedQuery">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">dqsegdbCascadedQuery</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">include_list_string</em>, <em class="sig-param">startTime</em>, <em class="sig-param">endTime</em>, <em class="sig-param">debug=False</em>, <em class="sig-param">warnings=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#dqsegdbCascadedQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.dqsegdbCascadedQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries server for needed flag_versions to generate the result of a
+cascaded query (was called a versionless query in S6).</p>
+<p>Returns a python dictionary representing the calculated result “versionless”
+flag and also the python dictionaries (in a list) for the flag_versions
+necessary to construct the result.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+<dt><strong>name: `string`</strong></dt><dd><p>Ex: ‘DMT-SCIENCE’</p>
+</dd>
+<dt><strong>version</strong><span class="classifier"><cite>string</cite> or <cite>int</cite></span></dt><dd><p>Ex: ‘1’</p>
+</dd>
+<dt><strong>include_list_string</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: “metadata,known,active”</p>
+</dd>
+<dt><strong>startTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>endTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>debug</strong><span class="classifier"><cite>bool</cite></span></dt><dd><p>Ex: False</p>
+</dd>
+<dt><strong>warnings</strong><span class="classifier"><cite>bool</cite></span></dt><dd><p>show warnings for <cite>HTTPError</cite> (as well as raising exception),
+default: <cite>True</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.dqsegdbCheckVersion">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">dqsegdbCheckVersion</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em>, <em class="sig-param">warnings=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#dqsegdbCheckVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.dqsegdbCheckVersion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks for existence of a given version of a flag in the db.
+Returns true if version exists</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+<dt><strong>name: `string`</strong></dt><dd><p>Ex: ‘DMT-SCIENCE’</p>
+</dd>
+<dt><strong>version</strong><span class="classifier"><cite>string</cite> or <cite>int</cite></span></dt><dd><p>Ex: ‘1’</p>
+</dd>
+<dt><strong>warnings</strong><span class="classifier"><cite>bool</cite></span></dt><dd><p>show warnings for <cite>HTTPError</cite> (as well as raising exception),
+default: <cite>True</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.dqsegdbFindEndTime">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">dqsegdbFindEndTime</code><span class="sig-paren">(</span><em class="sig-param">flag_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#dqsegdbFindEndTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.dqsegdbFindEndTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines max end_time from known times in flag_dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag_dict: `dictionary`</strong></dt><dd><p>Input dictionary, converted from json using json.loads in previous call</p>
+</dd>
+<dt><strong>Returns max_end_time: `int`</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.dqsegdbMaxVersion">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">dqsegdbMaxVersion</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">ifo</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#dqsegdbMaxVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.dqsegdbMaxVersion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks for existence of a flag in the db, returns maximum
+version if the flag exists exists, 0 if the flag does not exist.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+<dt><strong>name: `string`</strong></dt><dd><p>Ex: ‘DMT-SCIENCE’</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.dqsegdbQueryTimeless">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">dqsegdbQueryTimeless</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em>, <em class="sig-param">include_list_string</em>, <em class="sig-param">warnings=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#dqsegdbQueryTimeless"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.dqsegdbQueryTimeless" title="Permalink to this definition">¶</a></dt>
+<dd><p>Issue query to server for ifo:name:version without start and end time
+Returns the python loaded JSON response converted into a dictionary and queryurl!
+Returns
+———-
+[dictionary,string(url)]</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+<dt><strong>name: `string`</strong></dt><dd><p>Ex: ‘DMT-SCIENCE’</p>
+</dd>
+<dt><strong>version</strong><span class="classifier"><cite>string</cite> or <cite>int</cite></span></dt><dd><p>Ex: ‘1’</p>
+</dd>
+<dt><strong>include_list_string</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: “metadata,known,active”</p>
+</dd>
+<dt><strong>warnings</strong><span class="classifier"><cite>bool</cite></span></dt><dd><p>show warnings for <cite>HTTPError</cite> (as well as raising exception),
+default: <cite>True</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.dqsegdbQueryTimes">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">dqsegdbQueryTimes</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em>, <em class="sig-param">include_list_string</em>, <em class="sig-param">startTime</em>, <em class="sig-param">endTime</em>, <em class="sig-param">warnings=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#dqsegdbQueryTimes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.dqsegdbQueryTimes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Issue query to server for ifo:name:version with start and end time
+Returns the python loaded JSON response!</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+<dt><strong>name: `string`</strong></dt><dd><p>Ex: ‘DMT-SCIENCE’</p>
+</dd>
+<dt><strong>version</strong><span class="classifier"><cite>string</cite> or <cite>int</cite></span></dt><dd><p>Ex: ‘1’</p>
+</dd>
+<dt><strong>include_list_string</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: “metadata,known,active”</p>
+</dd>
+<dt><strong>startTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>endTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>warnings</strong><span class="classifier"><cite>bool</cite></span></dt><dd><p>show warnings for <cite>HTTPError</cite> (as well as raising exception),
+default: <cite>True</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.dqsegdbQueryTimesCompatible">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">dqsegdbQueryTimesCompatible</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em>, <em class="sig-param">include_list_string</em>, <em class="sig-param">startTime</em>, <em class="sig-param">endTime</em>, <em class="sig-param">warnings=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#dqsegdbQueryTimesCompatible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.dqsegdbQueryTimesCompatible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Issue query to server for ifo:name:version with start and end time
+This is the version that reproduces S6 style query results when the query is empty
+Returns the python loaded JSON response!</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+<dt><strong>name: `string`</strong></dt><dd><p>Ex: ‘DMT-SCIENCE’</p>
+</dd>
+<dt><strong>version</strong><span class="classifier"><cite>string</cite> or <cite>int</cite></span></dt><dd><p>Ex: ‘1’</p>
+</dd>
+<dt><strong>include_list_string</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: “metadata,known,active”</p>
+</dd>
+<dt><strong>startTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>endTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>warnings</strong><span class="classifier"><cite>bool</cite></span></dt><dd><p>show warnings for <cite>HTTPError</cite> (as well as raising exception),
+default: <cite>True</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.dtd_uri_callback">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">dtd_uri_callback</code><span class="sig-paren">(</span><em class="sig-param">uri</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#dtd_uri_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.dtd_uri_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>S6 helper function for XML file writing and parsing using a dtd.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.parseKnown">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">parseKnown</code><span class="sig-paren">(</span><em class="sig-param">jsonResult</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#parseKnown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.parseKnown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accepts jsonResult from reportKnown call and parses into expected format
+for ligolw_segment_query client to generate xml.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.patchWithFailCases">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">patchWithFailCases</code><span class="sig-paren">(</span><em class="sig-param">i</em>, <em class="sig-param">url</em>, <em class="sig-param">debug=True</em>, <em class="sig-param">inlogger=None</em>, <em class="sig-param">testing_options={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#patchWithFailCases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.patchWithFailCases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempts to patch data to a url where the data is in a dictionary format
+that can be directly dumped to json that the dqsegdb server expects.
+Correctly fails to making a new version or flag in the database as needed.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.queryAPIVersion">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">queryAPIVersion</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">verbose</em>, <em class="sig-param">warnings=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#queryAPIVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.queryAPIVersion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct url and issue query to get the reported list of all IFOs
+provided by dqsegd and the API version of the server.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>warnings</strong><span class="classifier"><cite>bool</cite></span></dt><dd><p>show warnings for <cite>HTTPError</cite> (as well as raising exception),
+default: <cite>True</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.reportActive">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">reportActive</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">includeSegments</em>, <em class="sig-param">verbose</em>, <em class="sig-param">gps_start_time</em>, <em class="sig-param">gps_end_time</em>, <em class="sig-param">warnings=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#reportActive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.reportActive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct url and issue query to get the reported list of all active segments for all flags in the time window provided.
+From the API Doc:
+Get a JSON string resource containing the active segments for all flags between t1 and t2. Note that this returns exactly what /dq/IFO/FLAG/VERSION does, except for ALL flags over the query period instead of one flag. The clients must assume that they may get empty active lists for flags that are unactive between times t1 and t2.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>includeSegments</strong><span class="classifier"><cite>boolean</cite></span></dt><dd><p>Ex: True</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier"><cite>boolean</cite></span></dt><dd><p>Ex: True</p>
+</dd>
+<dt><strong>gps_start_time: `int`</strong></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>gps_end_time: `int`</strong></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>warnings</strong><span class="classifier"><cite>bool</cite></span></dt><dd><p>show warnings for <cite>HTTPError</cite> (as well as raising exception),
+default: <cite>True</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.reportFlags">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">reportFlags</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">verbose</em>, <em class="sig-param">warnings=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#reportFlags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.reportFlags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct url and issue query to get the reported list of all flags
+provided by dqsegdb.
+From the API Doc:
+Get a JSON formatted string resource describing all the flags in the database. This provides an optimization by returning all flag names and all associated versions in a single call.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>warnings</strong><span class="classifier"><cite>bool</cite></span></dt><dd><p>show warnings for <cite>HTTPError</cite> (as well as raising exception),
+default: <cite>True</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.reportKnown">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">reportKnown</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">includeSegments</em>, <em class="sig-param">verbose</em>, <em class="sig-param">gps_start_time</em>, <em class="sig-param">gps_end_time</em>, <em class="sig-param">warnings=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#reportKnown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.reportKnown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct url and issue query to get the reported list of all known segments for all flags in the time window provided.
+From the API Doc:
+Get a JSON string resource containing the known segments for all flags between t1 and t2. Note that this returns exactly what /dq/IFO/FLAG/VERSION/known does, except for ALL flags over the query period instead of one flag. The clients must assume that they may get empty known lists for flags that are unknown between times t1 and t2.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>includeSegments</strong><span class="classifier"><cite>boolean</cite></span></dt><dd><p>Ex: True</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier"><cite>boolean</cite></span></dt><dd><p>Ex: True</p>
+</dd>
+<dt><strong>gps_start_time: `int`</strong></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>gps_end_time: `int`</strong></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>warnings</strong><span class="classifier"><cite>bool</cite></span></dt><dd><p>show warnings for <cite>HTTPError</cite> (as well as raising exception),
+default: <cite>True</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.setupSegment_md">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">setupSegment_md</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">xmlparser</em>, <em class="sig-param">lwtparser</em>, <em class="sig-param">debug</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#setupSegment_md"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.setupSegment_md" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function used to setup ligolw parser (S6 xml generation tool).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.threadedPatchWithFailCases">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">threadedPatchWithFailCases</code><span class="sig-paren">(</span><em class="sig-param">q</em>, <em class="sig-param">server</em>, <em class="sig-param">debug</em>, <em class="sig-param">inputlogger=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#threadedPatchWithFailCases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.threadedPatchWithFailCases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used by InsertMultipleDQXMLFileThreaded
+to patch data to server. (Deprecated/Incomplete error handling)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.apicalls.waitTill">
+<code class="sig-prename descclassname">dqsegdb.apicalls.</code><code class="sig-name descname">waitTill</code><span class="sig-paren">(</span><em class="sig-param">runTime</em>, <em class="sig-param">timeout=2400</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/apicalls.html#waitTill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.apicalls.waitTill" title="Permalink to this definition">¶</a></dt>
+<dd><p>runTime is time in HH:MM (string) format, action is call to a function to
+be exceuted at specified time.
+Function source: http://stackoverflow.com/a/6579355/2769157</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dqsegdb.clientutils">
+<span id="clientutils-module"></span><h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">clientutils</span></code> Module<a class="headerlink" href="#module-dqsegdb.clientutils" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dqsegdb.clientutils.ShowTypesResult">
+<em class="property">class </em><code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">ShowTypesResult</code><a class="reference internal" href="_modules/dqsegdb/clientutils.html#ShowTypesResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="dqsegdb.clientutils.ShowTypesResult.get_pyvalue">
+<code class="sig-name descname">get_pyvalue</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#ShowTypesResult.get_pyvalue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResult.get_pyvalue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dqsegdb.clientutils.ShowTypesResult.ifos">
+<code class="sig-name descname">ifos</code><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResult.ifos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dqsegdb.clientutils.ShowTypesResult.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResult.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dqsegdb.clientutils.ShowTypesResult.segment_definer_comment">
+<code class="sig-name descname">segment_definer_comment</code><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResult.segment_definer_comment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dqsegdb.clientutils.ShowTypesResult.segment_summary_comment">
+<code class="sig-name descname">segment_summary_comment</code><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResult.segment_summary_comment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dqsegdb.clientutils.ShowTypesResult.segment_summary_end_time">
+<code class="sig-name descname">segment_summary_end_time</code><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResult.segment_summary_end_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dqsegdb.clientutils.ShowTypesResult.segment_summary_start_time">
+<code class="sig-name descname">segment_summary_start_time</code><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResult.segment_summary_start_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dqsegdb.clientutils.ShowTypesResult.version">
+<code class="sig-name descname">version</code><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResult.version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dqsegdb.clientutils.ShowTypesResultTable">
+<em class="property">class </em><code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">ShowTypesResultTable</code><span class="sig-paren">(</span><em class="sig-param">*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#ShowTypesResultTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResultTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">glue.ligolw.table.Table</span></code></p>
+<dl class="attribute">
+<dt id="dqsegdb.clientutils.ShowTypesResultTable.RowType">
+<code class="sig-name descname">RowType</code><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResultTable.RowType" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#dqsegdb.clientutils.ShowTypesResult" title="dqsegdb.clientutils.ShowTypesResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShowTypesResult</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dqsegdb.clientutils.ShowTypesResultTable.tableName">
+<code class="sig-name descname">tableName</code><em class="property"> = 'show_types_result:table'</em><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResultTable.tableName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dqsegdb.clientutils.ShowTypesResultTable.validcolumns">
+<code class="sig-name descname">validcolumns</code><em class="property"> = {'ifos': 'lstring', 'name': 'lstring', 'segment_definer_comment': 'lstring', 'segment_summary_comment': 'lstring', 'segment_summary_end_time': 'int_4s', 'segment_summary_start_time': 'int_4s', 'version': 'int_4s'}</em><a class="headerlink" href="#dqsegdb.clientutils.ShowTypesResultTable.validcolumns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.add_segment_info_ns">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">add_segment_info_ns</code><span class="sig-paren">(</span><em class="sig-param">doc</em>, <em class="sig-param">proc_id</em>, <em class="sig-param">segdefs</em>, <em class="sig-param">segments</em>, <em class="sig-param">segment_summaries</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#add_segment_info_ns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.add_segment_info_ns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.add_to_segment_ns">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">add_to_segment_ns</code><span class="sig-paren">(</span><em class="sig-param">xmldoc</em>, <em class="sig-param">proc_id</em>, <em class="sig-param">seg_def_id</em>, <em class="sig-param">sgmtlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#add_to_segment_ns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.add_to_segment_ns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.add_to_segment_summary_ns">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">add_to_segment_summary_ns</code><span class="sig-paren">(</span><em class="sig-param">xmldoc</em>, <em class="sig-param">proc_id</em>, <em class="sig-param">seg_def_id</em>, <em class="sig-param">sgmtlist</em>, <em class="sig-param">comment=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#add_to_segment_summary_ns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.add_to_segment_summary_ns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.calculate_combined_result">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">calculate_combined_result</code><span class="sig-paren">(</span><em class="sig-param">includedJSON</em>, <em class="sig-param">excludedJSON</em>, <em class="sig-param">startTime</em>, <em class="sig-param">endTime</em>, <em class="sig-param">ifo</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#calculate_combined_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.calculate_combined_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the result of the union of the active times for the included flag less the intersection of that result with the union of the excluded flags
+Inputs are 2 lists of python dictionaries representing the JSON (already have run json.loads() on the JSON), a start time, and end time, and the ifo name (it does not make sense to include/exclude across multiple ifos)</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>startTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>endTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.calculate_versionless_result">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">calculate_versionless_result</code><span class="sig-paren">(</span><em class="sig-param">jsonResults</em>, <em class="sig-param">startTime</em>, <em class="sig-param">endTime</em>, <em class="sig-param">ifo_input=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#calculate_versionless_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.calculate_versionless_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct output segments lists from multiple JSON objects.
+The jsonResults input is a list of json ojbects and
+are expected to be in order of decreasing versions.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.include_exclude_caller">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">include_exclude_caller</code><span class="sig-paren">(</span><em class="sig-param">includedList</em>, <em class="sig-param">excludedList</em>, <em class="sig-param">startTime</em>, <em class="sig-param">endTime</em>, <em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">include_list_string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#include_exclude_caller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.include_exclude_caller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to query the dqsegdb for lists of included and excluded flags.
+Returns lists of JSON for the included and excluded flags and lists of
+URLs used to query the database.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>includedList</strong><span class="classifier"><cite>list</cite></span></dt><dd><p>List of ifo,name,version tuples</p>
+</dd>
+<dt><strong>excludedList</strong><span class="classifier"><cite>list</cite></span></dt><dd><p>List of ifo,name,version tuples</p>
+</dd>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>include_list_string</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: “metadata,known,active”</p>
+</dd>
+<dt><strong>startTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>endTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.output_microseconds">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">output_microseconds</code><span class="sig-paren">(</span><em class="sig-param">input_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#output_microseconds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.output_microseconds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.run_query_segments">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">run_query_segments</code><span class="sig-paren">(</span><em class="sig-param">doc</em>, <em class="sig-param">process_id</em>, <em class="sig-param">engine</em>, <em class="sig-param">gps_start_time</em>, <em class="sig-param">gps_end_time</em>, <em class="sig-param">include_segments</em>, <em class="sig-param">exclude_segments</em>, <em class="sig-param">result_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#run_query_segments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.run_query_segments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.run_query_types">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">run_query_types</code><span class="sig-paren">(</span><em class="sig-param">doc</em>, <em class="sig-param">proc_id</em>, <em class="sig-param">connection</em>, <em class="sig-param">engine</em>, <em class="sig-param">gps_start_time</em>, <em class="sig-param">gps_end_time</em>, <em class="sig-param">included_segments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#run_query_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.run_query_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.run_show_types">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">run_show_types</code><span class="sig-paren">(</span><em class="sig-param">doc</em>, <em class="sig-param">connection</em>, <em class="sig-param">engine</em>, <em class="sig-param">gps_start_time</em>, <em class="sig-param">gps_end_time</em>, <em class="sig-param">included_segments_string</em>, <em class="sig-param">excluded_segments_string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#run_show_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.run_show_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.seg_spec_to_sql">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">seg_spec_to_sql</code><span class="sig-paren">(</span><em class="sig-param">spec</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#seg_spec_to_sql"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.seg_spec_to_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a string of the form ifo:name:version, ifo:name:* or ifo:name
+constructs a SQL caluse to restrict a search to that segment definer</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.clientutils.setup_files">
+<code class="sig-prename descclassname">dqsegdb.clientutils.</code><code class="sig-name descname">setup_files</code><span class="sig-paren">(</span><em class="sig-param">dir_name</em>, <em class="sig-param">gps_start_time</em>, <em class="sig-param">gps_end_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/clientutils.html#setup_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.clientutils.setup_files" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dqsegdb.jsonhelper">
+<span id="jsonhelper-module"></span><h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">jsonhelper</span></code> Module<a class="headerlink" href="#module-dqsegdb.jsonhelper" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dqsegdb.jsonhelper.FlagVersion">
+<em class="property">class </em><code class="sig-prename descclassname">dqsegdb.jsonhelper.</code><code class="sig-name descname">FlagVersion</code><span class="sig-paren">(</span><em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#FlagVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.FlagVersion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Class to set up a flag version object for parsing into JSON</p>
+<dl class="method">
+<dt id="dqsegdb.jsonhelper.FlagVersion.appendActive">
+<code class="sig-name descname">appendActive</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">active_segments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#FlagVersion.appendActive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.FlagVersion.appendActive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends a segmentlist of active segments to the existing active
+segments for the object, and coalesces.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dqsegdb.jsonhelper.FlagVersion.appendKnown">
+<code class="sig-name descname">appendKnown</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">known_segments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#FlagVersion.appendKnown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.FlagVersion.appendKnown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends a segmentlist of known segments to the existing known
+segments for the object, and coalesces.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dqsegdb.jsonhelper.FlagVersion.buildFlagDictFromVersion">
+<code class="sig-name descname">buildFlagDictFromVersion</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#FlagVersion.buildFlagDictFromVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.FlagVersion.buildFlagDictFromVersion" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dqsegdb.jsonhelper.FlagVersion.buildURL">
+<code class="sig-name descname">buildURL</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">server=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#FlagVersion.buildURL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.FlagVersion.buildURL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dqsegdb.jsonhelper.InsertFlagVersion">
+<em class="property">class </em><code class="sig-prename descclassname">dqsegdb.jsonhelper.</code><code class="sig-name descname">InsertFlagVersion</code><span class="sig-paren">(</span><em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#InsertFlagVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.InsertFlagVersion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dqsegdb.jsonhelper.PatchFlagVersion" title="dqsegdb.jsonhelper.PatchFlagVersion"><code class="xref py py-class docutils literal notranslate"><span class="pre">dqsegdb.jsonhelper.PatchFlagVersion</span></code></a></p>
+<p>Class to set up a flag version object for parsing into JSON</p>
+<p>Class to extend basic flag version class to include insert_history</p>
+<p>Adds metadata for initial inserts</p>
+<dl class="method">
+<dt id="dqsegdb.jsonhelper.InsertFlagVersion.buildFlagDictFromInsertVersion">
+<code class="sig-name descname">buildFlagDictFromInsertVersion</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#InsertFlagVersion.buildFlagDictFromInsertVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.InsertFlagVersion.buildFlagDictFromInsertVersion" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dqsegdb.jsonhelper.InsertFlagVersionOld">
+<em class="property">class </em><code class="sig-prename descclassname">dqsegdb.jsonhelper.</code><code class="sig-name descname">InsertFlagVersionOld</code><span class="sig-paren">(</span><em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#InsertFlagVersionOld"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.InsertFlagVersionOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dqsegdb.jsonhelper.PatchFlagVersion" title="dqsegdb.jsonhelper.PatchFlagVersion"><code class="xref py py-class docutils literal notranslate"><span class="pre">dqsegdb.jsonhelper.PatchFlagVersion</span></code></a></p>
+<p>Class to set up a flag version object for parsing into JSON</p>
+<p>Class to extend basic flag version class to include insert_history</p>
+<p>Adds metadata for initial inserts</p>
+<dl class="method">
+<dt id="dqsegdb.jsonhelper.InsertFlagVersionOld.buildFlagDictFromInsertVersion">
+<code class="sig-name descname">buildFlagDictFromInsertVersion</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#InsertFlagVersionOld.buildFlagDictFromInsertVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.InsertFlagVersionOld.buildFlagDictFromInsertVersion" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dqsegdb.jsonhelper.PatchFlagVersion">
+<em class="property">class </em><code class="sig-prename descclassname">dqsegdb.jsonhelper.</code><code class="sig-name descname">PatchFlagVersion</code><span class="sig-paren">(</span><em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em>, <em class="sig-param">hackDec11=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#PatchFlagVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.PatchFlagVersion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dqsegdb.jsonhelper.FlagVersion" title="dqsegdb.jsonhelper.FlagVersion"><code class="xref py py-class docutils literal notranslate"><span class="pre">dqsegdb.jsonhelper.FlagVersion</span></code></a></p>
+<p>Class to set up a flag version object for parsing into JSON</p>
+<p>Class to extend basic flag version class to include insert_history</p>
+<dl class="method">
+<dt id="dqsegdb.jsonhelper.PatchFlagVersion.buildFlagDictFromPatchVersion">
+<code class="sig-name descname">buildFlagDictFromPatchVersion</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#PatchFlagVersion.buildFlagDictFromPatchVersion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.PatchFlagVersion.buildFlagDictFromPatchVersion" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dqsegdb.jsonhelper.PatchFlagVersion.coalesceInsertHistory">
+<code class="sig-name descname">coalesceInsertHistory</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#PatchFlagVersion.coalesceInsertHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.PatchFlagVersion.coalesceInsertHistory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.jsonhelper.buildFlagDict">
+<code class="sig-prename descclassname">dqsegdb.jsonhelper.</code><code class="sig-name descname">buildFlagDict</code><span class="sig-paren">(</span><em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em>, <em class="sig-param">known_segments</em>, <em class="sig-param">active_segments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#buildFlagDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.buildFlagDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function to build a flag_version dictionary for JSON production.</p>
+<p>known_segments and active_segments are assumed to be segmentlist objects
+Note that this currently does not generate a false “query_metadata” block</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.jsonhelper.convertJSONtoXML">
+<code class="sig-prename descclassname">dqsegdb.jsonhelper.</code><code class="sig-name descname">convertJSONtoXML</code><span class="sig-paren">(</span><em class="sig-param">json_response</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#convertJSONtoXML"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.convertJSONtoXML" title="Permalink to this definition">¶</a></dt>
+<dd><p>Incomplete!!
+Converts a standard JSON response from the dqsegdb server into a
+DQXML format.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.jsonhelper.convert_json_list_to_segmentlist">
+<code class="sig-prename descclassname">dqsegdb.jsonhelper.</code><code class="sig-name descname">convert_json_list_to_segmentlist</code><span class="sig-paren">(</span><em class="sig-param">jsonlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#convert_json_list_to_segmentlist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.convert_json_list_to_segmentlist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function used to convert json list of lists type object to a
+segmentlist object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.jsonhelper.convert_segmentlist_to_json">
+<code class="sig-prename descclassname">dqsegdb.jsonhelper.</code><code class="sig-name descname">convert_segmentlist_to_json</code><span class="sig-paren">(</span><em class="sig-param">segmentlist_input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#convert_segmentlist_to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.convert_segmentlist_to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function used to convert segmentlist to json list of lists type
+object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.jsonhelper.generated_ascii">
+<code class="sig-prename descclassname">dqsegdb.jsonhelper.</code><code class="sig-name descname">generated_ascii</code><span class="sig-paren">(</span><em class="sig-param">json_str</em>, <em class="sig-param">filepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#generated_ascii"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.generated_ascii" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.jsonhelper.generated_vdb_ascii">
+<code class="sig-prename descclassname">dqsegdb.jsonhelper.</code><code class="sig-name descname">generated_vdb_ascii</code><span class="sig-paren">(</span><em class="sig-param">json_str</em>, <em class="sig-param">filepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/jsonhelper.html#generated_vdb_ascii"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.jsonhelper.generated_vdb_ascii" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dqsegdb.urifunctions">
+<span id="urifunctions-module"></span><h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">urifunctions</span></code> Module<a class="headerlink" href="#module-dqsegdb.urifunctions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dqsegdb.urifunctions.constructFlagQueryURL">
+<code class="sig-prename descclassname">dqsegdb.urifunctions.</code><code class="sig-name descname">constructFlagQueryURL</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">ifo</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/urifunctions.html#constructFlagQueryURL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.urifunctions.constructFlagQueryURL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple url construction method for dqsegdb server flag queries.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.urifunctions.constructSegmentQueryURL">
+<code class="sig-prename descclassname">dqsegdb.urifunctions.</code><code class="sig-name descname">constructSegmentQueryURL</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em>, <em class="sig-param">include_list_string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/urifunctions.html#constructSegmentQueryURL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.urifunctions.constructSegmentQueryURL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple url construction method for dqsegdb server flag:version queries
+not including restrictions on time ranges.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+<dt><strong>name: `string`</strong></dt><dd><p>Ex: ‘DMT-SCIENCE’</p>
+</dd>
+<dt><strong>version</strong><span class="classifier"><cite>string</cite> or <cite>int</cite></span></dt><dd><p>Ex: ‘1’</p>
+</dd>
+<dt><strong>include_list_string</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: “metadata,known,active”</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.urifunctions.constructSegmentQueryURLTimeWindow">
+<code class="sig-prename descclassname">dqsegdb.urifunctions.</code><code class="sig-name descname">constructSegmentQueryURLTimeWindow</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">ifo</em>, <em class="sig-param">name</em>, <em class="sig-param">version</em>, <em class="sig-param">include_list_string</em>, <em class="sig-param">startTime</em>, <em class="sig-param">endTime</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/urifunctions.html#constructSegmentQueryURLTimeWindow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.urifunctions.constructSegmentQueryURLTimeWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple url construction method for dqsegdb server flag:version queries
+including restrictions on time ranges.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+<dt><strong>name: `string`</strong></dt><dd><p>Ex: ‘DMT-SCIENCE’</p>
+</dd>
+<dt><strong>version</strong><span class="classifier"><cite>string</cite> or <cite>int</cite></span></dt><dd><p>Ex: ‘1’</p>
+</dd>
+<dt><strong>include_list_string</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: “metadata,known,active”</p>
+</dd>
+<dt><strong>startTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+<dt><strong>endTime</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Ex: 999999999</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.urifunctions.constructVersionQueryURL">
+<code class="sig-prename descclassname">dqsegdb.urifunctions.</code><code class="sig-name descname">constructVersionQueryURL</code><span class="sig-paren">(</span><em class="sig-param">protocol</em>, <em class="sig-param">server</em>, <em class="sig-param">ifo</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/urifunctions.html#constructVersionQueryURL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.urifunctions.constructVersionQueryURL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple url construction method for dqsegdb server version queries.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>protocol</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘https’</p>
+</dd>
+<dt><strong>server</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘dqsegdb5.phy.syr.edu’</p>
+</dd>
+<dt><strong>ifo</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘L1’</p>
+</dd>
+<dt><strong>name: `string`</strong></dt><dd><p>Ex: ‘DMT-SCIENCE’</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.urifunctions.getDataUrllib2">
+<code class="sig-prename descclassname">dqsegdb.urifunctions.</code><code class="sig-name descname">getDataUrllib2</code><span class="sig-paren">(</span><em class="sig-param">url</em>, <em class="sig-param">timeout=900</em>, <em class="sig-param">logger=None</em>, <em class="sig-param">warnings=True</em>, <em class="sig-param">**urlopen_kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/urifunctions.html#getDataUrllib2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.urifunctions.getDataUrllib2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return response from server</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>url</strong><span class="classifier"><cite>str</cite></span></dt><dd><p>remote URL to request (HTTP or HTTPS)</p>
+</dd>
+<dt><strong>timeout</strong><span class="classifier"><cite>float</cite></span></dt><dd><p>time (seconds) to wait for reponse</p>
+</dd>
+<dt><strong>logger</strong><span class="classifier"><cite>logging.Logger</cite></span></dt><dd><p>logger to print to</p>
+</dd>
+<dt><strong>**urlopen_kw</strong></dt><dd><p>other keywords are passed to <a class="reference external" href="https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">urllib.request.urlopen()</span></code></a></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>response</strong><span class="classifier"><cite>str</cite></span></dt><dd><p>the text reponse from the server</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.urifunctions.handleHTTPError">
+<code class="sig-prename descclassname">dqsegdb.urifunctions.</code><code class="sig-name descname">handleHTTPError</code><span class="sig-paren">(</span><em class="sig-param">method</em>, <em class="sig-param">url</em>, <em class="sig-param">e</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/urifunctions.html#handleHTTPError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.urifunctions.handleHTTPError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.urifunctions.patchDataUrllib2">
+<code class="sig-prename descclassname">dqsegdb.urifunctions.</code><code class="sig-name descname">patchDataUrllib2</code><span class="sig-paren">(</span><em class="sig-param">url</em>, <em class="sig-param">payload</em>, <em class="sig-param">timeout=900</em>, <em class="sig-param">logger=None</em>, <em class="sig-param">**urlopen_kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/urifunctions.html#patchDataUrllib2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.urifunctions.patchDataUrllib2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper method for urllib2 that supports PATCHs to a url.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>url</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘<a class="reference external" href="https://dqsegdb5.phy.syr.edu/L1/DMT-SCIENCE/1">https://dqsegdb5.phy.syr.edu/L1/DMT-SCIENCE/1</a>’</p>
+</dd>
+<dt><strong>payload</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>JSON formatted string</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dqsegdb.urifunctions.putDataUrllib2">
+<code class="sig-prename descclassname">dqsegdb.urifunctions.</code><code class="sig-name descname">putDataUrllib2</code><span class="sig-paren">(</span><em class="sig-param">url</em>, <em class="sig-param">payload</em>, <em class="sig-param">timeout=900</em>, <em class="sig-param">logger=None</em>, <em class="sig-param">**urlopen_kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/urifunctions.html#putDataUrllib2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb.urifunctions.putDataUrllib2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper method for urllib2 that supports PUTs to a url.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>url</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>Ex: ‘<a class="reference external" href="https://dqsegdb5.phy.syr.edu/L1/DMT-SCIENCE/1">https://dqsegdb5.phy.syr.edu/L1/DMT-SCIENCE/1</a>’</p>
+</dd>
+<dt><strong>payload</strong><span class="classifier"><cite>string</cite></span></dt><dd><p>JSON formatted string</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dqsegdb._version">
+<span id="version-module"></span><h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">version</span></code> Module<a class="headerlink" href="#module-dqsegdb._version" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dqsegdb._version.get_versions">
+<code class="sig-prename descclassname">dqsegdb._version.</code><code class="sig-name descname">get_versions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dqsegdb/_version.html#get_versions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dqsegdb._version.get_versions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">dqsegdb Package</a><ul>
+<li><a class="reference internal" href="#id1"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dqsegdb</span></code> Package</a></li>
+<li><a class="reference internal" href="#module-dqsegdb.apicalls"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apicalls</span></code> Module</a></li>
+<li><a class="reference internal" href="#module-dqsegdb.clientutils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">clientutils</span></code> Module</a></li>
+<li><a class="reference internal" href="#module-dqsegdb.jsonhelper"><code class="xref py py-mod docutils literal notranslate"><span class="pre">jsonhelper</span></code> Module</a></li>
+<li><a class="reference internal" href="#module-dqsegdb.urifunctions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">urifunctions</span></code> Module</a></li>
+<li><a class="reference internal" href="#module-dqsegdb._version"><code class="xref py py-mod docutils literal notranslate"><span class="pre">version</span></code> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to dqsegdb’s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ligolw_segment_query_dqsegdb.html"
+                        title="next chapter">ligolw_segment_query_dqsegdb</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dqsegdb.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ligolw_segment_query_dqsegdb.html" title="ligolw_segment_query_dqsegdb"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to dqsegdb’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dqsegdb 1.6.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014,2020 Ryan Fisher.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.3.
+    </div>
+  </body>
+</html>
