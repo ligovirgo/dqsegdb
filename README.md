@@ -7,9 +7,9 @@ dqsegdb
 
 DQSEGDB client library and functions
 
-Please see documentation at (last updated Aug 9 2016): 
+Please see documentation at: 
 
-https://ldas-jobs.ligo.caltech.edu/~rfisher/dqsegdb_doc/
+http://ligovirgo.github.io/dqsegdb/
 
 The DQSEGDB package should be installed and available for use on all LIGO Tier 1 and 2 clusters.  
 
