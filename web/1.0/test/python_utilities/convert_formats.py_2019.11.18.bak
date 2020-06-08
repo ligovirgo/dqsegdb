@@ -1,0 +1,281 @@
+#!/usr/bin/env python
+# Copyright (C) 2014-2020 Syracuse University, European Gravitational Observatory, and Christopher Newport University.  Written by Ryan Fisher and Gary Hemming. See the NOTICE file distributed with this work for additional information regarding copyright ownership.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import argparse
+import json
+import shutil
+from ligo import segments
+
+"""
+Methods used to convert JSON-payload data retrieved from the API server into 
+other user-requested formats.
+
+Formats - also known as 'output formats' - are distinguished as follows:
+  - json:
+    - not coalesced;
+    - has both known and active (active first, then known);
+    - see: https://segments-web.ligo.org/downloads/1552078659.json (787kB).
+  - vdb:
+    - coalesced;
+    - this is a Virgo-defined format;
+    - VDB stands for Virgo DataBase;
+    - has separate datasets: 'known' (not active) and 'active' (which implies 
+      'known') (active-and-known first (field #3 = 1), then search range 
+      (field #3 = -1), then known-only (not active) (field #3 = 0))
+    - so all points in time are part of 1 of 3 sets: unknown, known but not 
+      active, or known and active; cf. coalesced json, where known and active 
+      is a subset of known;
+    - run "awk 'BEGIN { FS = ","; OFS = "," } ; { if ((NF==3) && ($3==1)) 
+      print $1, $2 }'  infile.vdb  >  outfile.txt" to get known-and-active 
+      segments, like in the ascii file format;
+    - see: https://segments-web.ligo.org/downloads/1552078644.vdb (3kB).
+  - ascii:
+    - coalesced;
+    - has only active, not known;
+    - identical to tsv, but comma separated values (ascii) is replaced by a 
+      tab (tsv);
+    - see: https://segments-web.ligo.org/downloads/1552078659.ascii (147kB).
+  - coalesced_json:
+    - coalesced;
+    - has both known and active (known first, then active);
+    - see: https://segments-web.ligo.org/downloads/1552078670.coalesced_json (2kB).
+  - tsv:
+    - coalesced;
+    - has only active, not known;
+    - identical to ascii, but comma separating values (ascii) is replaced by 
+      a tab (tsv);
+    - see: https://segments-web.ligo.org/downloads/1552078679.tsv (147kB)
+    
+Descriptions last updated on the 18th of November, 2019, by Gary Hemming, 
+courtesy of descriptions provided by Robert Bruntz.
+
+History:
+Last update: 19th of November, 2019, by Gary Hemming.
+"""
+
+"""
+* Conversion methods.
+The following methods all handle the conversion of the Flag-Version-Segments 
+JSON payload into another format.
+"""
+
+def generate_vdb(json_dict):
+    """
+    Take a Flag-Version-Segments JSON dictionary and convert it so that it 
+    so that it provides data in a VDB-style format.
+    """
+    # Init.
+    sa = [] 
+    sk = []
+    gps_s = 0
+    gps_e = 9999999999
+    r = ''
+    # Loop through the JSON dictionary.
+    for v in json_dict:
+        # If the active list is not empty.
+        if v['active']:
+            # Get the segments into a LIGO segments structure. 
+            sa = sa + convert_json_list_to_segmentlist(v['active'])
+        # If the known list is not empty.
+        if v['known']:
+            # Get the segments into a LIGO segments structure. 
+            sk = sk + convert_json_list_to_segmentlist(v['known'])
+    # If they have been set, coalesce the segments.
+    if sa:
+        sa.coalesce()
+    if sk:
+        sk.coalesce()
+    # If GPS times have been defined in the JSON dictionary, handle them here.
+    if v['query_information']['start'] != 0:
+        gps_s = v['query_information']['start']
+    if v['query_information']['end'] != 0:
+        gps_e = v['query_information']['end']
+    # Get the requested span.
+    requested_span = segments.segmentlist([segments.segment(gps_s, gps_e)])
+    # Build the active segment list into a string.
+    active_segments_string = ',1 \n'.join([str(i[0])+","+str(i[1]) for i in sa])+",1 \n"
+    # Build the unknown segment list and string. 
+    unknown_segments = requested_span - sk
+    unknown_segments_string = ',-1 \n'.join([str(i[0])+","+str(i[1]) for i in unknown_segments])+",-1 \n"
+    # Build the known-not-active segment list and string. 
+    known_not_active_segments = sk-sa
+    known_not_active_segments_string=',0 \n'.join([str(i[0])+","+str(i[1]) for i in known_not_active_segments])+",0 \n"
+    # Get the query info to write to the header.
+    query_info_string=json.dumps(v['query_information'], indent=1)
+    r = r + query_info_string + '\n'
+    # Write the segment strings and then return the content.
+    r = r + active_segments_string
+    r = r + unknown_segments_string
+    r = r + known_not_active_segments_string
+    return r
+
+def generate_ascii_tsv(json_dict, output_format):
+    """
+    Take a Flag-Version-Segments JSON dictionary and convert it so that it 
+    provides only the active segments in an ASCII or tab-separated-value 
+    format.
+    """
+    # Init.
+    s = ''
+    r = ''
+    # Loop through the JSON dictionary.
+    for v in json_dict:
+        # If the active list is not empty.
+        if v['active']:
+            # Get the segments into a LIGO segments structure.
+            s = s + convert_json_list_to_segmentlist(v['active'])
+    # If the active segment-list has been built.
+    if s:
+        # Coalesce the segments.
+        s.coalesce()
+        # Use a comma to divide the segment times.
+        if output_format == 'ascii':
+            d = ','
+        # Use the tab character to divide the segment times.
+        elif output_format == 'tsv':
+            d = '\t'
+        # Break the segments down by line, using the defined divider.
+        r = '\n'.join([str(i[0]) + d + str(i[1]) for i in s])
+    return r
+
+def generate_coalesced_json(json_dict):
+    """
+    Take a Flag-Version-Segments JSON dictionary, coalesce the segments and 
+    return it as a new JSON dictionary.
+    """
+    # Init.
+    r = ''
+    coalesced_json = json_dict
+    # Loop through the JSON dictionary.
+    for k, v in enumerate(json_dict):
+        # If the active list is not empty.
+        if v['active']:
+            # Get the segments into a LIGO segments structure. 
+            sa = convert_json_list_to_segmentlist(v['active'])
+            # Coalesce segments, convert to JSON and add to coalesced dict.
+            sa.coalesce()
+            coalesced_json[k]['active'] = convert_segmentlist_to_json(sa)
+        # If the known list is not empty.
+        if v['known']:
+            # Get the segments into a LIGO segments structure. 
+            sk = convert_json_list_to_segmentlist(v['known'])
+            # Coalesce segments, convert to JSON and add to coalesced dict.
+            sk.coalesce()
+            coalesced_json[k]['known'] = convert_segmentlist_to_json(sk)
+    # Convert the result to string to be written to the output file. 
+    r = json.dumps(coalesced_json)
+    return r
+    
+"""
+* Auxiliary methods
+The following methods all provide auxiliary methods, used by the main or 
+conversion methods.
+"""
+
+def convert_segmentlist_to_json(segmentlist_input):
+    """ 
+    Helper function used to convert segmentlist to json list of lists type 
+    object.
+    * Utility method, ripped from jsonhelper.py in dqsegdb package, until we 
+    can use it as a dependency.
+    """
+    return [[x[0],x[1]] for x in segmentlist_input]
+
+def convert_json_list_to_segmentlist(jsonlist):
+    """ 
+    Helper function used to convert JSON list of lists-type object to a 
+    segmentlist object-
+    * Utility method, ripped from jsonhelper.py in dqsegdb package, until we 
+    can use it as a dependency.
+    """
+    return segments.segmentlist([segments.segment(x[0],x[1]) for x in jsonlist])
+
+def parse_command_line():
+    """
+    Set the args that can be passed by the user at the command line.
+    """
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('jsonfile', type=str, help="Json input file.")
+    parser.add_argument('-o', '--output', help="Output file path")
+    parser.add_argument('-t', '--type', default='vdb', help='Type of file to ouput, default: %(default)s')
+    args = parser.parse_args()
+    return args
+
+def get_flag_versions_as_string(j):
+    """
+    Get all of the Flag-Versions that have been sent in the JSON payload into 
+    a comma-separated string.
+    """
+    # Init.
+    r = ''
+    # Loop through the JSON dictionary.
+    for k, v in enumerate(json_dict):
+        # Add the name and version to the output string.
+        r = r + "%s:%s:%d, " % (v['ifo'], v['name'], v['version'])
+    # Remove the trailing comma and space and return.
+    return r[:-2]
+
+"""
+* Main.
+"""
+
+if __name__ == "__main__":
+    """
+    The script starts here, parses the args passed by the user and then, 
+    loads in the JSON payload, builds the header, builds the alternative 
+    payload and then writes it to the output file.
+    """
+    # Init.
+    hdr = ''    
+    args = parse_command_line()
+    # Set the accepted formats.
+    output_formats = ['vdb', 'ascii', 'coalesced_json', 'tsv']
+    # Raise an error if an errant output-format has been provided.
+    if args.type not in output_formats:
+        raise Exception('Please provide one of the following types: %s ' % (", ".join(output_formats)))
+    try:
+        json_dict = json.load(open(args.jsonfile))
+    except:
+        raise Exception('Unable to load JSON file: %s' % (args.jsonfile))
+    else:
+        # Get the length of the dictionary passed.
+        json_dict_len = len(json_dict)
+        # Set the header if not in JSON.
+        if not args.type == 'json' and not args.type == 'coalesced_json':
+            # Get the Flag-Versions into a single string.
+            fv = get_flag_versions_as_string(json_dict)
+            # Set the header, dependent upon the length of the dictionary.
+            if json_dict_len == 1:
+                hdr = '# One Flag-Version requested (%s).\n' % (fv)
+            else:
+                hdr = '# %d Flag-Versions requested (%s).\n' % (json_dict_len, fv)
+        # Handle ASCII- and tab-separated-value-type conversion.
+        if args.type == 'ascii' or args.type == 'tsv':
+            s = generate_ascii_tsv(json_dict, args.type)
+        # Handle VDB-type conversion.
+        elif args.type == 'vdb':
+            s = generate_vdb(json_dict)
+        # Handle Coalesced JSON conversion.
+        elif args.type == 'coalesced_json':
+            s = generate_coalesced_json(json_dict)
+        # Open the output file and copy the results to it.
+        try:
+            f = open(args.output.replace('coalesced_json', 'coalesced.json'),'w')
+        except:
+            raise Exception('Problem opening file: %s' % (args.output))
+        else:
+            # Append the header and the results to the file and close off.
+            f.write(hdr + s)
+            f.close()
