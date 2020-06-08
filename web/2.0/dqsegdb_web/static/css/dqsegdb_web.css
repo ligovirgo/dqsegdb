@@ -1,0 +1,447 @@
+/*
+ * REINFORCE Project CSS file.
+*/
+@import url(particles.css);
+
+body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif;}
+body, html {
+  height: 100%;
+  color: #210D0D;
+  line-height: 1.8;
+}
+
+/* Create a Parallax Effect */
+.bgimg-1, .bgimg-2, .bgimg-3 {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.bgimg-1-small{
+  background-image: url('/reinforce/static/resources/atomic_bg_small.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* First image on homepage */
+.bgimg-1 {
+  background-image: url('/reinforce/static/resources/atomic_bg.png');
+  min-height: 100%;
+}
+/* Second image on homepage */
+.bgimg-2 {
+  background-image: url("/reinforce/static/resources/geometric_bg.png");
+  min-height: 550px;
+}
+.bgimg-2-small{
+  background-image: url("/reinforce/static/resources/geometric_bg_small.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.logo-bg{
+  width:50%;
+  margin: 0 auto;
+}
+
+.w3-wide {letter-spacing: 10px;}
+.w3-hover-opacity {cursor: pointer;}
+
+/* Turn off parallax scrolling for tablets and phones */
+@media only screen and (max-device-width: 1000px) {
+  .bgimg-1, .bgimg-2, .bgimg-3 {
+    background-attachment: scroll;
+    min-height: 400px;
+  }
+}
+
+#upcoming{background-color:#575759}
+#footer{color:#fff;background-color:#a5243b}
+.section-header{background-color:#FFF}
+.topbar-reinforce-red{border-top:6px solid #ab2e35}
+.text-reinforce-red{color:#ab2e35!important}
+
+
+/* Link classes. */
+.link,.link:visited{border-bottom:1px solid;padding-bottom:0px;cursor:pointer;text-decoration:none}
+.link:hover,.link:visited:hover{cursor:pointer;border-bottom:0;text-decoration:none;opacity:0.6}
+.link_noline,.link_noline:visited{cursor:pointer;text-decoration:none}
+.link_noline:hover,.link_noline:visited:hover{cursor:pointer;border-bottom:0;text-decoration:none;opacity:0.6}
+
+.margin-40{margin:40px!important}.margin-40-top{margin-top:40px!important}.margin-40-bottom{margin-bottom:40px!important}
+.margin-40-left{margin-left:40px!important}.margin-40-right{margin-right:40px!important}
+
+/* Backgrounds. */
+#holding_div{
+background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NiIgaGVpZ2h0PSIxMDAiPgo8cmVjdCB3aWR0aD0iNTYiIGhlaWdodD0iMTAwIiBmaWxsPSIjZjVmNWY1Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0yOCA2NkwwIDUwTDAgMTZMMjggMEw1NiAxNkw1NiA1MEwyOCA2NkwyOCAxMDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGRiIgc3Ryb2tlLXdpZHRoPSIyIj48L3BhdGg+CjxwYXRoIGQ9Ik0yOCAwTDI4IDM0TDAgNTBMMCA4NEwyOCAxMDBMNTYgODRMNTYgNTBMMjggMzQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VjZWNlYyIgc3Ryb2tlLXdpZHRoPSIyIj48L3BhdGg+Cjwvc3ZnPg==");
+}
+.carbon_bg{
+background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSI+CjxyZWN0IHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgZmlsbD0iIzI4MjgyOCI+PC9yZWN0Pgo8Y2lyY2xlIGN4PSIzIiBjeT0iNC4zIiByPSIxLjgiIGZpbGw9IiMzOTM5MzkiPjwvY2lyY2xlPgo8Y2lyY2xlIGN4PSIzIiBjeT0iMyIgcj0iMS44IiBmaWxsPSJibGFjayI+PC9jaXJjbGU+CjxjaXJjbGUgY3g9IjEwLjUiIGN5PSIxMi41IiByPSIxLjgiIGZpbGw9IiMzOTM5MzkiPjwvY2lyY2xlPgo8Y2lyY2xlIGN4PSIxMC41IiBjeT0iMTEuMyIgcj0iMS44IiBmaWxsPSJibGFjayI+PC9jaXJjbGU+Cjwvc3ZnPg==");
+}
+.cross_stripes_bg{
+background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjNDAzYzNmIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDBMOCA4Wk04IDBMMCA4WiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2U9IiMxZTI5MmQiPjwvcGF0aD4KPC9zdmc+");
+}
+.dance_bg{
+background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cGF0aCBkPSJNLTIgMTBMMTAgLTJaTTEwIDZMNiAxMFpNLTIgMkwyIC0yIiBzdHJva2U9IiMyMjIiIHN0cm9rZS13aWR0aD0iNC41Ij48L3BhdGg+Cjwvc3ZnPg=="),url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgyPSIxIiB5Mj0iMSI+CjxzdG9wIHN0b3AtY29sb3I9IiM0ZTQxNzIiPjwvc3RvcD4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjYTUyNDNiIj48L3N0b3A+CjwvbGluZWFyR3JhZGllbnQ+CjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZykiPjwvcmVjdD4KPC9zdmc+");
+}
+.chevron_bg{
+background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNjAiIGhlaWdodD0iMzAiPgo8ZGVmcz4KPHJlY3QgaWQ9InIiIHdpZHRoPSIzMCIgaGVpZ2h0PSIxNSIgZmlsbD0iI0ZGRiIgc3Ryb2tlLXdpZHRoPSIwLjEiIHN0cm9rZT0iI2E1MjQzYiI+PC9yZWN0Pgo8ZyBpZD0icCI+Cjx1c2UgeGxpbms6aHJlZj0iI3IiPjwvdXNlPgo8dXNlIHk9IjE1IiB4bGluazpocmVmPSIjciI+PC91c2U+Cjx1c2UgeT0iMzAiIHhsaW5rOmhyZWY9IiNyIj48L3VzZT4KPHVzZSB5PSI0NSIgeGxpbms6aHJlZj0iI3IiPjwvdXNlPgo8L2c+CjwvZGVmcz4KPHVzZSB4bGluazpocmVmPSIjcCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCAtMjUpIHNrZXdZKDQwKSI+PC91c2U+Cjx1c2UgeGxpbms6aHJlZj0iI3AiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMwIDApIHNrZXdZKC00MCkiPjwvdXNlPgo8L3N2Zz4=");}
+.diagonal_bg{
+background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjZjljY2MzIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiNGRkYiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");}
+.speckled_noise_bg{
+background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCI+CjxmaWx0ZXIgaWQ9Im4iPgo8ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjciIG51bU9jdGF2ZXM9IjEwIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIj48L2ZlVHVyYnVsZW5jZT4KPC9maWx0ZXI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWxsPSIjMDAwIj48L3JlY3Q+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWx0ZXI9InVybCgjbikiIG9wYWNpdHk9IjAuNCI+PC9yZWN0Pgo8L3N2Zz4=");
+}
+.white_carbon_bg{
+background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNiIgaGVpZ2h0PSI2Ij4KPHJlY3Qgd2lkdGg9IjYiIGhlaWdodD0iNiIgZmlsbD0iI2VlZSI+PC9yZWN0Pgo8ZyBpZD0iYyI+CjxyZWN0IHdpZHRoPSIzIiBoZWlnaHQ9IjMiIGZpbGw9IiNlNmU2ZTYiPjwvcmVjdD4KPHJlY3QgeT0iMSIgd2lkdGg9IjMiIGhlaWdodD0iMiIgZmlsbD0iI2Q4ZDhkOCI+PC9yZWN0Pgo8L2c+Cjx1c2UgeGxpbms6aHJlZj0iI2MiIHg9IjMiIHk9IjMiPjwvdXNlPgo8L3N2Zz4=");
+}
+.slate_grey_bg{
+background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3NSIgaGVpZ2h0PSIxMDAiPgo8cmVjdCB3aWR0aD0iNzUiIGhlaWdodD0iMTAwIiBmaWxsPSIjZThlOGU4Ij48L3JlY3Q+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNTAiIHI9IjI4LjMlIiBzdHJva2Utd2lkdGg9IjEyIiBzdHJva2U9IiNmMGYwZjAiIGZpbGw9Im5vbmUiPjwvY2lyY2xlPgo8Y2lyY2xlIGN4PSIwIiByPSIyOC4zJSIgc3Ryb2tlLXdpZHRoPSIxMiIgc3Ryb2tlPSIjZDVkNWQ1IiBmaWxsPSJub25lIj48L2NpcmNsZT4KPGNpcmNsZSBjeT0iMTAwIiByPSIyOC4zJSIgc3Ryb2tlLXdpZHRoPSIxMiIgc3Ryb2tlPSIjRkZGIiBmaWxsPSJub25lIj48L2NpcmNsZT4KPC9zdmc+");
+}
+.weave_bg{
+background:
+linear-gradient(135deg, #ebebeb 21px, #d1d1d1 22px, #131313 24px, transparent 24px, transparent 67px, #737373 67px, #d1d1d1 69px, transparent 69px),
+linear-gradient(225deg, #ebebeb 21px, #d1d1d1 22px, #131313 24px, transparent 24px, transparent 67px, #737373 67px, #d1d1d1 69px, transparent 69px)0 64px;
+background-color:#ebebeb;
+background-size: 64px 128px;
+}
+.carbon_bg{
+background:
+linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
+linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
+linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
+linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
+linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
+}
+.stairs_bg{
+background:
+linear-gradient(63deg, #e9e9e9 23%, transparent 23%) 7px 0,
+linear-gradient(63deg, transparent 74%, #e9e9e9 78%),
+linear-gradient(63deg, transparent 34%, #e9e9e9 38%, #999 58%, transparent 62%),
+#c1c1c1;
+background-size: 16px 48px;
+}
+.fifth{float:left;width:100%}
+@media (min-width:601px){.fifth{width:19.99999%}}
+.w3-row-padding>.fifth{padding:0 8px}
+
+/* Borders. */
+.box{
+  transform: translate(-0%, -0%);
+  background: #111845a6;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgb(23, 32, 90);
+  border: 2px solid #2a3cad;
+}
+.box:before{
+  content: '';
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background: rgba(255,255,255,0.1);
+  transition:0.5s;
+  pointer-events: none;
+}
+
+.box:hover:before{
+  left:-50%;
+  transform: skewX(-5deg);
+}
+
+
+.box .content{
+  border:1px solid #f0a591;
+  padding:20px;
+  text-align:center;
+  box-shadow: 0 5px 10px rgba(9,0,0,0.5);
+  
+}
+
+.box span{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  box-sizing: border-box;
+  
+}
+
+.box span:nth-child(1)
+{
+  transform:rotate(0deg);
+}
+
+.box span:nth-child(2)
+{
+  transform:rotate(90deg);
+}
+
+.box span:nth-child(3)
+{
+  transform:rotate(180deg);
+}
+
+.box span:nth-child(4)
+{
+  transform:rotate(270deg);
+}
+
+.box span:before
+{
+  content: '';
+  position: absolute;
+  width:100%;
+  height: 2px;
+  background: #50dfdb;
+  animation: animate 4s linear infinite;
+}
+
+@keyframes animate {
+  0% {
+  transform:scaleX(0);
+  transform-origin: left;
+  }
+  50%
+  {
+    transform:scaleX(1);
+  transform-origin: left;
+  }
+  50.1%
+  {
+    transform:scaleX(1);
+  transform-origin: right;
+    
+  }
+  
+  100%
+  {
+    transform:scaleX(0);
+  transform-origin: right;
+    
+  }
+  
+  
+}
+
+/* Additional colour libraries. */
+.w3-highway-brown{color:#fff;background-color:#633517}
+.w3-highway-red{color:#fff;background-color:#a6001a}
+.w3-highway-orange{color:#fff;background-color:#e06000}
+.w3-highway-schoolbus{color:#fff;background-color:#ee9600}
+.w3-highway-yellow{color:#fff;background-color:#ffab00}
+.w3-highway-green{color:#fff;background-color:#004d33}
+.w3-highway-blue{color:#fff;background-color:#00477e}
+.w3-safety-red{color:#fff;background-color:#bd1e24}
+.w3-safety-orange{color:#fff;background-color:#e97600}
+.w3-safety-yellow{color:#fff;background-color:#f6c700}
+.w3-safety-green{color:#fff;background-color:#007256}
+.w3-safety-blue{color:#fff;background-color:#0067a7}
+.w3-safety-purple{color:#fff;background-color:#964f8e}
+.w3-signal-yellow{color:#fff;background-color:#f7ba0b}
+.w3-signal-orange{color:#fff;background-color:#d4652f}
+.w3-signal-red{color:#fff;background-color:#a02128}
+.w3-signal-violet{color:#fff;background-color:#904684}
+.w3-signal-blue{color:#fff;background-color:#154889}
+.w3-signal-green{color:#fff;background-color:#317f43}
+.w3-signal-grey{color:#fff;background-color:#9b9b9b}
+.w3-signal-brown{color:#fff;background-color:#7b5141}
+.w3-signal-white{color:#000;background-color:#f4f4f4}
+.w3-signal-black{color:#fff;background-color:#282828}
+.w3-2019-fiesta{color:#fff;background-color:#DD4132}
+.w3-2019-jester-red{color:#fff;background-color:#9E1030}
+.w3-2019-turmeric{color:#fff;background-color:#FE840E}
+.w3-2019-living-coral{color:#fff;background-color:#FF6F61}
+.w3-2019-pink-peacock{color:#fff;background-color:#C62168}
+.w3-2019-pepper-stem{color:#fff;background-color:#8D9440}
+.w3-2019-aspen-gold{color:#000;background-color:#FFD662}
+.w3-2019-princess-blue{color:#fff;background-color:#00539C}
+.w3-2019-toffee{color:#fff;background-color:#755139}
+.w3-2019-mango-mojito{color:#000;background-color:#D69C2F}
+.w3-2019-terrarium-moss{color:#fff;background-color:#616247}
+.w3-2019-sweet-lilac{color:#000;background-color:#E8B5CE}
+.w3-2019-soybean{color:#000;background-color:#D2C29D}
+.w3-2019-eclipse{color:#fff;background-color:#343148}
+.w3-2019-sweet-corn{color:#000;background-color:#F0EAD6}
+.w3-2019-brown-granite{color:#fff;background-color:#615550}
+.w3-2019-chili-pepper{color:#fff;background-color:#9B1B30}
+.w3-2019-biking-red{color:#fff;background-color:#77212E}
+.w3-2019-creme-de-peche{color:#000;background-color:#F5D6C6}
+.w3-2019-peach-pink{color:#fff;background-color:#FA9A85}
+.w3-2019-rocky-road{color:#fff;background-color:#5A3E36}
+.w3-2019-fruit-dove{color:#fff;background-color:#CE5B78}
+.w3-2019-sugar-almond{color:#fff;background-color:#935529}
+.w3-2019-dark-cheddar{color:#fff;background-color:#E08119}
+.w3-2019-galaxy-blue{color:#fff;background-color:#2A4B7C}
+.w3-2019-bluestone{color:#fff;background-color:#577284}
+.w3-2019-orange-tiger{color:#fff;background-color:#F96714}
+.w3-2019-eden{color:#fff;background-color:#264E36}
+.w3-2019-vanilla-custard{color:#000;background-color:#F3E0BE}
+.w3-2019-evening-blue{color:#fff;background-color:#2A293E}
+.w3-2019-paloma{color:#fff;background-color:#9F9C99}
+.w3-2019-guacamole{color:#fff;background-color:#797B3A}
+.w3-2019-fiesta{color:#fff;background-color:#DD4132}
+.w3-2019-jester-red{color:#fff;background-color:#9E1030}
+.w3-2019-turmeric{color:#fff;background-color:#FE840E}
+.w3-2019-living-coral{color:#fff;background-color:#FF6F61}
+.w3-2019-pink-peacock{color:#fff;background-color:#C62168}
+.w3-2019-pepper-stem{color:#fff;background-color:#8D9440}
+.w3-2019-aspen-gold{color:#000;background-color:#FFD662}
+.w3-2019-princess-blue{color:#fff;background-color:#00539C}
+.w3-2019-toffee{color:#fff;background-color:#755139}
+.w3-2019-mango-mojito{color:#000;background-color:#D69C2F}
+.w3-2019-terrarium-moss{color:#fff;background-color:#616247}
+.w3-2019-sweet-lilac{color:#000;background-color:#E8B5CE}
+.w3-2019-soybean{color:#000;background-color:#D2C29D}
+.w3-2019-eclipse{color:#fff;background-color:#343148}
+.w3-2019-sweet-corn{color:#000;background-color:#F0EAD6}
+.w3-2019-brown-granite{color:#fff;background-color:#615550}
+.w3-2019-chili-pepper{color:#fff;background-color:#9B1B30}
+.w3-2019-biking-red{color:#fff;background-color:#77212E}
+.w3-2019-creme-de-peche{color:#000;background-color:#F5D6C6}
+.w3-2019-peach-pink{color:#fff;background-color:#FA9A85}
+.w3-2019-rocky-road{color:#fff;background-color:#5A3E36}
+.w3-2019-fruit-dove{color:#fff;background-color:#CE5B78}
+.w3-2019-sugar-almond{color:#fff;background-color:#935529}
+.w3-2019-dark-cheddar{color:#fff;background-color:#E08119}
+.w3-2019-galaxy-blue{color:#fff;background-color:#2A4B7C}
+.w3-2019-bluestone{color:#fff;background-color:#577284}
+.w3-2019-orange-tiger{color:#fff;background-color:#F96714}
+.w3-2019-eden{color:#fff;background-color:#264E36}
+.w3-2019-vanilla-custard{color:#000;background-color:#F3E0BE}
+.w3-2019-evening-blue{color:#fff;background-color:#2A293E}
+.w3-2019-paloma{color:#fff;background-color:#9F9C99}
+.w3-2019-guacamole{color:#fff;background-color:#797B3A}
+.w3-2018-red-pear{color:#fff;background-color:#7F4145}
+.w3-2018-valiant-poppy{color:#fff;background-color:#BD3D3A}
+.w3-2018-nebulas-blue{color:#fff;background-color:#3F69AA}
+.w3-2018-ceylon-yellow{color:#000;background-color:#D5AE41}
+.w3-2018-martini-olive{color:#fff;background-color:#766F57}
+.w3-2018-russet-orange{color:#fff;background-color:#E47A2E}
+.w3-2018-crocus-petal{color:#000;background-color:#BE9EC9}
+.w3-2018-limelight{color:#000;background-color:#F1EA7F}
+.w3-2018-quetzal-green{color:#fff;background-color:#006E6D}
+.w3-2018-sargasso-sea{color:#fff;background-color:#485167}
+.w3-2018-tofu{color:#000;background-color:#EAE6DA}
+.w3-2018-almond-buff{color:#000;background-color:#D1B894}
+.w3-2018-quiet-gray,.w3-2018-quiet-grey{color:#000;background-color:#BCBCBE}
+.w3-2018-meerkat{color:#000;background-color:#95dee3}
+.w3-2018-meadowlark{color:#000;background-color:#ECDB54}
+.w3-2018-cherry-tomato{color:#fff;background-color:#E94B3C}
+.w3-2018-little-boy-blue{color:#000;background-color:#6F9FD8}
+.w3-2018-chili-oil{color:#fff;background-color:#944743}
+.w3-2018-pink-lavender{color:#000;background-color:#DBB1CD}
+.w3-2018-blooming-dahlia{color:#000;background-color:#EC9787}
+.w3-2018-arcadia{color:#fff;background-color:#00A591}
+.w3-2018-emperador{color:#fff;background-color:#6C4F3D}
+.w3-2018-ultra-violet{color:#fff;background-color:#6B5B95}
+.w3-2018-almost-mauve{color:#000;background-color:#EADEDB}
+.w3-2018-spring-crocus{color:#fff;background-color:#BC70A4}
+.w3-2018-lime-punch{color:#000;background-color:#BFD641}
+.w3-2018-sailor-blue{color:#fff;background-color:#2E4A62}
+.w3-2018-harbor-mist{color:#000;background-color:#B4B7BA}
+.w3-2018-warm-sand{color:#000;background-color:#C0AB8E}
+.w3-2018-coconut-milk{color:#000;background-color:#F0EDE5}
+.w3-2017-greenery{color:#fff;background-color:#92B558}
+.w3-2017-grenadine{color:#fff;background-color:#DC4C46}
+.w3-2017-tawny-port{color:#fff;background-color:#672e3b}
+.w3-2017-ballet-slipper{color:#000;background-color:#f3d6e4}
+.w3-2017-butterum{color:#fff;background-color:#c48f65}
+.w3-2017-navy-peony{color:#fff;background-color:#223a5e}
+.w3-2017-neutral-gray,.w3-2017-neutral-grey{color:#fff;background-color:#898e8c}
+.w3-2017-shaded-spruce{color:#fff;background-color:#005960}
+.w3-2017-golden-lime{color:#fff;background-color:#9c9a40}
+.w3-2017-marina{color:#fff;background-color:#4F84C4}
+.w3-2017-autumn-maple{color:#fff;background-color:#d2691e}
+.w3-2017-niagara{color:#fff;background-color:#578CA9}
+.w3-2017-primrose-yellow{color:#000;background-color:#f6d155}
+.w3-2017-lapis-blue{color:#fff;background-color:#004b8d}
+.w3-2017-flame{color:#fff;background-color:#f2552c}
+.w3-2017-island-paradise{color:#000;background-color:#95dee3}
+.w3-2017-pale-dogwood{color:#000;background-color:#edcdc2}
+.w3-2017-pink-yarrow{color:#fff;background-color:#ce3175}
+.w3-2017-kale{color:#fff;background-color:#5a7247}
+.w3-2017-hazelnut{color:#000;background-color:#cfb095}
+.w3-vivid-pink{color:#fff;background-color:#ffb5bA}
+.w3-vivid-red{color:#fff;background-color:#be0032}
+.w3-vivid-orange{color:#fff;background-color:#f38400}
+.w3-vivid-yellow{color:#fff;background-color:#f3c300}
+.w3-vivid-green{color:#fff;background-color:#008856}
+.w3-vivid-blue{color:#fff;background-color:#00a1c2}
+.w3-vivid-black{color:#fff;background-color:#000}
+.w3-vivid-white{color:#000;background-color:#fff}
+.w3-vivid-purple{color:#fff;background-color:#9a4eae}
+.w3-vivid-purple{color:#fff;background-color:#9a4eae}
+.w3-vivid-yellowish-pink{color:#fff;background-color:#ffb7a5}
+.w3-vivid-reddish-orange{color:#fff;background-color:#e25822}
+.w3-vivid-orange-yellow{color:#fff;background-color:#f6a600}
+.w3-vivid-greenish-yellow{color:#fff;background-color:#dcd300}
+.w3-vivid-yellow-green{color:#fff;background-color:#8db600}
+.w3-vivid-yellowish-green{color:#fff;background-color:#27a64c}
+.w3-vivid-bluish-green{color:#fff;background-color:#008882}
+.w3-vivid-greenish-blue{color:#fff;background-color:#0085a1}
+.w3-vivid-purplish-blue{color:#fff;background-color:#30267a}
+.w3-vivid-reddish-purple{color:#fff;background-color:#870074}
+.w3-vivid-purplish-red{color:#fff;background-color:#ce4676}
+.w3-food-apple{color:#000;background-color:#76cd26}
+.w3-food-aspargus{color:#fff;background-color:#77ab56}
+.w3-food-apricot{color:#fff;background-color:#ffb16d}
+.w3-food-aubergine{color:#fff;background-color:#3d0734}
+.w3-food-avocado{color:#fff;background-color:#87a922}
+.w3-food-banana{color:#000;background-color:#fafe4b}
+.w3-food-butter{color:#000;background-color:#ffff81}
+.w3-food-blueberry{color:#fff;background-color:#464196}
+.w3-food-carrot{color:#fff;background-color:#e67e22}
+.w3-food-cherry{color:#fff;background-color:#cf0234}
+.w3-food-chocolate{color:#fff;background-color:#411900}
+.w3-food-cranberry{color:#fff;background-color:#9e003a}
+.w3-food-coffee{color:#fff;background-color:#a6814c}
+.w3-food-egg{color:#000;background-color:#fffcc4}
+.w3-food-grape{color:#fff;background-color:#6c3461}
+.w3-food-kiwi{color:#000;background-color:#8ee53f}
+.w3-food-lemon{color:#000;background-color:#fdff52}
+.w3-food-lime{color:#000;background-color:#bffe28}
+.w3-food-mango{color:#fff;background-color:#ffa62b}
+.w3-food-mushroom{color:#fff;background-color:#ba9e88}
+.w3-food-mustard{color:#fff;background-color:#ceb301}
+.w3-food-mint{color:#000;background-color:#c0fa8b}
+.w3-food-olive{color:#fff;background-color:#6e750e}
+.w3-food-orange{color:#fff;background-color:#f97306}
+.w3-food-pea{color:#fff;background-color:#a4bf20}
+.w3-food-peach{color:#fff;background-color:#ffb07c}
+.w3-food-pear{color:#000;background-color:#cbf85f}
+.w3-food-pistachio{color:#000;background-color:#c0fa8b}
+.w3-food-plum{color:#fff;background-color:#3f012c}
+.w3-food-pomegranate{color:#fff;background-color:#c0392b}
+.w3-food-pumpkin{color:#fff;background-color:#d35400}
+.w3-food-raspberry{color:#fff;background-color:#b00149}
+.w3-food-saffron{color:#fff;background-color:#feb209}
+.w3-food-salmon{color:#fff;background-color:#ff796c}
+.w3-food-spearmint{color:#000;background-color:#1ef876}
+.w3-food-squash{color:#fff;background-color:#f2ab15}
+.w3-food-strawberry{color:#fff;background-color:#fb2943}
+.w3-food-tomato{color:#fff;background-color:#ec2d01}
+.w3-food-wheat{color:#000;background-color:#fbdd7e}
+.w3-food-wine{color:#fff;background-color:#80013f}
+.w3-camo-brown{color:#fff;background-color:#594d45}
+.w3-camo-red{color:#fff;background-color:#79533d}
+.w3-camo-olive{color:#fff;background-color:#595142}
+.w3-camo-field{color:#fff;background-color:#745d46}
+.w3-camo-earth{color:#fff;background-color:#ac7e54}
+.w3-camo-sand{color:#fff;background-color:#a9947b}
+.w3-camo-tan{color:#fff;background-color:#b49d80}
+.w3-camo-sandstone{color:#fff;background-color:#bcab90}
+.w3-camo-dark-green{color:#fff;background-color:#535640}
+.w3-camo-forest{color:#fff;background-color:#54504b}
+.w3-camo-light-green{color:#fff;background-color:#63613e}
+.w3-camo-green{color:#fff;background-color:#4a5444}
+.w3-camo-dark-gray,.w3-camo-dark-grey{color:#fff;background-color:#5c5c5b}
+.w3-camo-gray,.w3-camo-grey{color:#fff;background-color:#9495a5}
+.w3-camo-black{color:#fff;background-color:#373538}
+
+/* Leaflet map styles. */
+#mapid { height: 600px; }

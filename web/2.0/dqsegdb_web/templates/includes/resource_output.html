@@ -1,0 +1,20 @@
+{% if wp %}{% set res = wp['resources'] %}{% endif%}
+{% if d %}{% set res = d['resources'] %}{% endif%}
+{% if m %}{% set res = m['resources'] %}{% endif%}
+{% if e %}{% set res = e['resources'] %}{% endif%}
+{% if res %}
+  {% if not d %}
+  <p><b>Resources:</b></p>
+  <ul>
+  {% endif %}
+{% for r in res %}
+  {% if d %}
+  <a href="{{ r['resource_uri'] }}" class="link">{{ r['resource_title'] }}</a> 
+  {% else %}
+  <li><a href="{{ r['resource_uri'] }}" class="link">{{ r['resource_title'] }}</a></li>
+  {% endif %}
+{%endfor%}
+  {% if not d %}
+</ul>
+{% endif %}
+{% endif %}
