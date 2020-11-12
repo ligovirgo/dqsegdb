@@ -96,6 +96,7 @@ cp ~/dqsegdb/server/src/* .
 cd /root
 
 # Add WSGI script alias to Apache configuration file.
+echo "WSGIPassAuthorization On" >> /etc/httpd/conf.d/wsgi.conf
 echo "WSGIScriptAlias / /opt/dqsegdb/python_server/src/application.py" >> /etc/httpd/conf.d/wsgi.conf
 
 
@@ -177,6 +178,9 @@ cp /etc/grid-security/*.ligo.org.key /etc/pki/tls/private/localhost.key
 yum -y install cilogon-ca-certs
 yum -y install osg-ca-certs
 yum -y install ligo-ca-certs
+
+# Install the scitokens package:
+yum -y install python2-scitokens
 
 # Start Apache server.
 chkconfig httpd on

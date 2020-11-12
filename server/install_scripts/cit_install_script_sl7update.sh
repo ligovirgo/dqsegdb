@@ -156,6 +156,9 @@ if [ $run_block_2 -eq 1 ]; then   # * Apache, MariaDB, etc., installation
   # Install Apache WSGI module.
   yum -y install mod_wsgi
 
+  # Install SciTokens
+  yum -y install python2-scitokens
+
   # Install MariaDB, set it to run on startup, and start it
   yum -y install mariadb-server mariadb mariadb-devel
   ### not started until later - b/c we want to change the buffer pool size first?

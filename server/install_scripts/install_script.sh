@@ -88,6 +88,7 @@ tar -xvf src.tar
 cd /root
 
 # Add WSGI script alias to Apache configuration file.
+echo "WSGIPassAuthorization On" >> /etc/httpd/conf.d/wsgi.conf
 echo "WSGIScriptAlias / /opt/dqsegdb/python_server/src/application.py" >> /etc/httpd/conf.d/wsgi.conf
 
 # Add Web Interface configuration.
@@ -111,6 +112,9 @@ sed -i "s/10\.20\.5\.43/${int_addr}/g" /etc/httpd/conf.d/dqsegdb.conf
 
 # Install M2Crypto library.
 yum -y install M2Crypto
+
+# Install the scitokens package:
+yum -y install python2-scitokens
 
 # Restart Apache.
 /etc/init.d/httpd restart
