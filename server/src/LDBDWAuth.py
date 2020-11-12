@@ -234,26 +234,42 @@ class SciTokensAuthorization():
         else:
             # Init.
             r = [401]
+            if authorise:
+                c=36
+            # If GET.
+            else:
+                c=35
         
             if 'HTTP_AUTHORIZATION' not in environ:
                 raise KeyError("No SciToken in HTTPS headers")
             auth_type, auth_payload = environ['HTTP_AUTHORIZATION'].split(' ')
+
             if auth_type != 'Bearer':
                 raise TypeError("SciTokens authorization requires a bearer token")
-            token = scitokens.SciToken.deserialize(auth_payload, audience=self.constant.scitokens_audience)
+
+            try:
+                token = scitokens.SciToken.deserialize(auth_payload, audience=self.constant.scitokens_audience)
+            except InvalidAudienceError:
+                r = self.admin.log_and_set_http_code(401, c, req_method, "Invalid audience for SciToken", full_uri)
+                return r
+            except ExpiredSignatureError:
+                r = self.admin.log_and_set_http_code(401, c, req_method, "SciToken signature has expired", full_uri)
+                return r
+            except:
+                raise
         
             # If PUT/PATCH.
             if authorise:
                 if self.token_enforcer.test(token, "write", "/DQSegDB"):
                     r = [200]
                 else:
-                    r = self.admin.log_and_set_http_code(401, 36, req_method, "SciToken not valid for write access", full_uri)
+                    r = self.admin.log_and_set_http_code(401, c, req_method, "SciToken not valid for write access", full_uri)
             # GET
             else:
                 if self.token_enforcer.test(token, "read", "/DQSegDB"):
                     r = [200]
                 else:
-                    r = self.admin.log_and_set_http_code(401, 35, req_method, "SciToken not valid for read access", full_uri)
+                    r = self.admin.log_and_set_http_code(401, c, req_method, "SciToken not valid for read access", full_uri)
 
         # Return.
         return r
