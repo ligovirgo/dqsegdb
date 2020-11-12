@@ -75,8 +75,9 @@ class ConstantsHandle():
     ########################
     # SciTokens constants #
     ######################
-    scitokens_issuer = 'https://test.cilogon.org'
+    scitokens_issuer = 'https://demo.scitokens.org'
     scitokens_audience = 'segments.ligo.org'
+    scitokens_cache_dir = '/var/cache/httpd'
 
     #################################
     # Sub-second segment constants #
