@@ -72,6 +72,12 @@ class ConstantsHandle():
     grid_map_get_file = '/etc/grid-security/grid-mapfile'  # Grid Map file used in authentication.
     grid_map_put_patch_file = '/etc/grid-security/grid-mapfile-insert'  # Grid Map file used in authorisation.
 
+    ########################
+    # SciTokens constants #
+    ######################
+    scitokens_issuer = 'https://test.cilogon.org'
+    scitokens_audience = 'segments.ligo.org'
+
     #################################
     # Sub-second segment constants #
     ###############################

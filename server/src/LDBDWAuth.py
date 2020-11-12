@@ -1,27 +1,17 @@
-# Copyright (C) 2014-2020 Syracuse University, European Gravitational Observatory, and Christopher Newport University.  Written by Ryan Fisher and Gary Hemming. See the NOTICE file distributed with this work for additional information regarding copyright ownership.
-
+# Copyright (C) 2014-2020 Syracuse University, European Gravitational Observatory, and Christopher Newport University.
+# Written by Ryan Fisher, Gary Hemming, and Duncan Brown. 
+# See the NOTICE file distributed with this work for additional information regarding copyright ownership.
 # This program is free software: you can redistribute it and/or modify
-
 # it under the terms of the GNU Affero General Public License as
-
 # published by the Free Software Foundation, either version 3 of the
-
 # License, or (at your option) any later version.
-
 #
-
 # This program is distributed in the hope that it will be useful,
-
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-
 # GNU Affero General Public License for more details.
-
 #
-
 # You should have received a copy of the GNU Affero General Public License
-
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 DQSEGDB Python Server
@@ -29,11 +19,13 @@ Grid mapfile authentication and authorisation class.
 '''
 
 # Import.
+import os
 import Admin
 import Constants
 import exceptions
 import M2Crypto
 import re
+import scitokens
 
 class GridMapError(exceptions.Exception):
     """
@@ -222,5 +214,46 @@ class GridmapAuthorization:
                             except Exception, e:
                                 # Set HTTP code and log.
                                 r = admin.log_and_set_http_code(401, c, req_method, "Unable to check authorization in grid-mapfile %s: %s" % (mapfile, e), full_uri)
+        # Return.
+        return r
+
+class SciTokensAuthorization():
+    def __init__(self):
+        self.admin = Admin.AdminHandle()
+        self.constant = Constants.ConstantsHandle()
+        os.environ['XDG_CACHE_HOME'] = self.constant.scitokens_cache_dir
+        self.token_enforcer = scitokens.Enforcer(self.constant.scitokens_issuer, audience=self.constant.scitokens_audience)
+
+    def check_authorization_scitoken(self, environ, req_method, full_uri, authorise):
+        # Instantiate.
+        # If using HTTP.
+        if not self.constant.use_https or str(environ['LocalAccess'])=='True':
+            # Set result to OK and carry on.
+            r = [200]
+        # Otherwise, using HTTPS.
+        else:
+            # Init.
+            r = [401]
+        
+            if 'HTTP_AUTHORIZATION' not in environ:
+                raise KeyError("No SciToken in HTTPS headers")
+            auth_type, auth_payload = environ['HTTP_AUTHORIZATION'].split(' ')
+            if auth_type != 'Bearer':
+                raise TypeError("SciTokens authorization requires a bearer token")
+            token = scitokens.SciToken.deserialize(auth_payload, audience=self.constant.scitokens_audience)
+        
+            # If PUT/PATCH.
+            if authorise:
+                if self.token_enforcer.test(token, "write", "/DQSegDB"):
+                    r = [200]
+                else:
+                    r = self.admin.log_and_set_http_code(401, 36, req_method, "SciToken not valid for write access", full_uri)
+            # GET
+            else:
+                if self.token_enforcer.test(token, "read", "/DQSegDB"):
+                    r = [200]
+                else:
+                    r = self.admin.log_and_set_http_code(401, 35, req_method, "SciToken not valid for read access", full_uri)
+
         # Return.
         return r
