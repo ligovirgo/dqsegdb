@@ -26,6 +26,8 @@ import exceptions
 import M2Crypto
 import re
 import scitokens
+from jwt.exceptions import InvalidAudienceError
+from jwt.exceptions import ExpiredSignatureError
 
 class GridMapError(exceptions.Exception):
     """
@@ -263,13 +265,15 @@ class SciTokensAuthorization():
                 if self.token_enforcer.test(token, "write", "/DQSegDB"):
                     r = [200]
                 else:
-                    r = self.admin.log_and_set_http_code(401, c, req_method, "SciToken not valid for write access", full_uri)
+                    r = self.admin.log_and_set_http_code(401, c, req_method,
+                        "SciToken not valid for write access: %s" % str(token['scope']), full_uri)
             # GET
             else:
                 if self.token_enforcer.test(token, "read", "/DQSegDB"):
                     r = [200]
                 else:
-                    r = self.admin.log_and_set_http_code(401, c, req_method, "SciToken not valid for read access", full_uri)
+                    r = self.admin.log_and_set_http_code(401, c, req_method,
+                        "SciToken not valid for read access: %s" % str(token['scope']) , full_uri)
 
         # Return.
         return r
