@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Syracuse University, European Gravitational Observatory, and Christopher Newport University.  Written by Ryan Fisher and Gary Hemming. See the NOTICE file distributed with this work for additional information regarding copyright ownership.
+# Copyright (C) 2014-2020 Syracuse University, European Gravitational Observatory, and Christopher Newport University.  Written by Ryan Fisher, Gary Hemming, and Duncan Brown. See the NOTICE file distributed with this work for additional information regarding copyright ownership.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,6 +25,7 @@ from OpenSSL import crypto
 
 from six.moves.urllib.parse import urlparse
 from six.moves import http_client
+from six.moves.urllib.request import Request as Request
 from six.moves.urllib import (request as urllib_request,
                               error as urllib_error)
 
@@ -36,6 +37,70 @@ from six.moves.urllib import (request as urllib_request,
 #
 # =============================================================================
 #
+
+def findSciToken(aud,scope):
+    """Look for a scitoken that can be used to talk to a DQSegDB server
+
+    Parameters
+    ----------
+    aud : `str`
+        audience for the token (the hostname of the DQSegDB server)
+
+    scope : `str`
+        check that token contains this scope
+
+    Returns
+    -------
+    token : `str`
+        text string containing the serialized SciToken
+    """
+    token_data = None
+    tok = None
+
+    try:
+        import scitokens
+    except ImportError:
+        return token_data
+
+    authz, path = scope.split(':')
+
+    # look for a condor-created scitoken for the target url
+    if os.environ.get('_CONDOR_CREDS'):
+        for f in os.listdir(os.environ['_CONDOR_CREDS']):
+            if f.endswith(".use"):
+                try:
+                    with open(os.path.join(
+                              os.environ['_CONDOR_CREDS'],f)) as t:
+                        token_data = t.read().strip()
+                        tok = scitokens.SciToken.deserialize(token_data,
+                                                             audience=aud)
+                        break
+                except InvalidTokenFormat, InvalidAudienceError:
+                    # ignore files that do not contain tokens
+                    # or that are for a different audience
+                    pass
+
+    # use the token in the specified file
+    if os.environ.get('SCITOKENS_FILE'):
+        with open(os.environ.get('SCITOKENS_FILE')) as t:
+            token_data = t.read().strip()
+            tok = scitokens.SciToken.deserialize(token_data,
+                                                 audience=aud)
+
+    # use a serialized token in an environment variable
+    if os.environ.get('SCITOKEN'):
+        token_data = os.environ['SCITOKEN'].strip()
+        tok = scitokens.SciToken.deserialize(token_data,
+                                             audience=aud)
+
+    # check that this token has dqsegdb read permissions
+    if token_data:
+        token_enforcer = scitokens.Enforcer(tok['iss'], audience=aud)
+        if token_enforcer.test(token, authz, path) is False:
+            raise ValueError('SciToken does not have read:/DQSegDB scope')
+
+    return token_data
+
 
 def getDataUrllib2(url, timeout=900, logger=None, warnings=True,
                    **urlopen_kw):
@@ -64,12 +129,25 @@ def getDataUrllib2(url, timeout=900, logger=None, warnings=True,
         logger.debug("Beginning url call: %s" % url)
     if urlparse(url).scheme == 'https' and 'context' not in urlopen_kw:
         from ssl import create_default_context
-        from gwdatafind.utils import find_credential
         urlopen_kw['context'] = context = create_default_context()
-        context.load_cert_chain(*find_credential())
-    output = urllib_request.urlopen(url, timeout=timeout, **urlopen_kw)
+        req = Request(url)
+
+        # if we have a token, use it, otherwise look for x590 cert
+        token_data = findSciToken(urlparse(url).hostname, "read:/DQSegSB")
+        if token_data:
+            req.add_header("Authorization", "Bearer " + token_data)
+        else:
+            from gwdatafind.utils import find_credential
+            context.load_cert_chain(*find_credential())
+
+    else:
+        req = Request(url)
+
+    output = urllib_request.urlopen(req, timeout=timeout, **urlopen_kw)
+
     if logger:
         logger.debug("Completed url call: %s" % url)
+
     return output.read()
 
 
@@ -186,15 +264,22 @@ def putDataUrllib2(url,payload,timeout=900,logger=None,
     socket.setdefaulttimeout(timeout)
     if urlparse(url).scheme == 'https' and 'context' not in urlopen_kw:
         from ssl import create_default_context
-        from gwdatafind.utils import find_credential
         urlopen_kw['context'] = context = create_default_context()
-        context.load_cert_chain(*find_credential())
     #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
     #if urlparse(url).scheme == 'https':
     #    opener=urllib_request.build_opener(HTTPSClientAuthHandler)
     #else:
     #    opener = urllib_request.build_opener(urllib_request.HTTPHandler)
     request = urllib_request.Request(url, data=payload)
+
+    # if we have a token, use it, otherwise look for x590 cert
+    token_data = findSciToken(urlparse(url).hostname, "write:/DQSegSB")
+    if token_data:
+        request.add_header("Authorization", "Bearer " + token_data)
+    else:
+        from gwdatafind.utils import find_credential
+        context.load_cert_chain(*find_credential())
+
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PUT'
     if logger:
@@ -248,15 +333,22 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None,
     #BEFORE HTTPS: opener = urllib2.build_opener(urllib2.HTTPHandler)
     if urlparse(url).scheme == 'https' and 'context' not in urlopen_kw:
         from ssl import create_default_context
-        from gwdatafind.utils import find_credential
         urlopen_kw['context'] = context = create_default_context()
-        context.load_cert_chain(*find_credential())
     #if urlparse(url).scheme == 'https':
     #    opener=urllib_request.build_opener(HTTPSClientAuthHandler)
     #else:
     #    opener = urllib_request.build_opener(urllib_request.HTTPHandler)
     #print(opener.handle_open.items())
     request = urllib_request.Request(url, data=payload)
+
+    # if we have a token, use it, otherwise look for x590 cert
+    token_data = findSciToken(urlparse(url).hostname, "write:/DQSegSB")
+    if token_data:
+        request.add_header("Authorization", "Bearer " + token_data)
+    else:
+        from gwdatafind.utils import find_credential
+        context.load_cert_chain(*find_credential())
+
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PATCH'
     if logger:
