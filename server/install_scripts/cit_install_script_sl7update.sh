@@ -98,9 +98,6 @@ if [ $run_block_1 -eq 1 ]; then   # * basic installation items   #basic
   if [ -e ./.bashrc ]; then cp  ./.bashrc  ./.bashrc_$(date +%Y.%m.%d-%H.%M.%S).bak ; fi
   if [ -e ./.vimrc ]; then cp  ./.vimrc  ./.vimrc_$(date +%Y.%m.%d-%H.%M.%S).bak ; fi
   if [ -e ./.pythonrc ]; then cp  ./.pythonrc  ./.pythonrc_$(date +%Y.%m.%d-%H.%M.%S).bak ; fi
-  #rsync -avP /backup/segdb/segments/install_support/.bashrc .
-  #rsync -avP /backup/segdb/segments/install_support/.vimrc .
-  #rsync -avP /backup/segdb/segments/install_support/.pythonrc .
   rsync -avP /backup/segdb/reference/install_support/.bashrc .
   rsync -avP /backup/segdb/reference/install_support/.vimrc .
   rsync -avP /backup/segdb/reference/install_support/.pythonrc .
@@ -108,7 +105,7 @@ if [ $run_block_1 -eq 1 ]; then   # * basic installation items   #basic
   .  ./.bashrc
   mkdir /root/bin/
 
-  yum -y install git nano mlocate screen telnet   ### install python3?
+  yum -y install git nano mlocate screen telnet symlinks redhat-lsb-core   ### install python3?
   mkdir /root/dqsegdb_git
   cd /root/dqsegdb_git
   git clone https://github.com/ligovirgo/dqsegdb.git  
@@ -134,8 +131,8 @@ if [ $run_block_1 -eq 1 ]; then   # * basic installation items   #basic
   # Set LGMM (LIGO Grid-Mapfile Manager) to run on reboot and start it now
   touch /etc/grid-security/whitelist   ### just in case the config file looks for it; missing an expected file crashes lgmm
   touch /etc/grid-security/blacklist   ### just in case the config file looks for it; missing an expected file crashes lgmm
-  cp  /backup/segdb/reference/lgmm/whitelist  /etc/grid-security/
-  cp  /etc/lgmm/lgmm_config.py  /etc/lgmm/lgmm_config.py_$(date +%Y.%m.%d-%H.%M.%S).bak
+  cp /backup/segdb/reference/lgmm/whitelist  /etc/grid-security/
+  cp /etc/lgmm/lgmm_config.py  /etc/lgmm/lgmm_config.py_$(date +%Y.%m.%d-%H.%M.%S).bak
   cp /backup/segdb/reference/install_support/lgmm_config.py  /etc/lgmm/
   touch /etc/grid-security/grid-mapfile
   chown nobody:nobody /etc/grid-security/grid-mapfile
@@ -173,7 +170,7 @@ if [ $run_block_2 -eq 1 ]; then   # * Apache, MariaDB, etc., installation
 
   # Increase innodb buffer pool size.
   echo "[mysqld]" >> /etc/my.cnf
-  # set max_connections to 256 here? - do in /etc/my.cnf ?
+  echo "max_connections=256" >> /etc/my.cnf
   if [ $host == "segments-dev2" ]
   then   # this is only for segments-dev2
     echo "innodb_buffer_pool_size = 20G" >> /etc/my.cnf
@@ -182,11 +179,10 @@ if [ $run_block_2 -eq 1 ]; then   # * Apache, MariaDB, etc., installation
     then   # this is only for segments-web or segments-web2
       echo "innodb_buffer_pool_size = 3G" >> /etc/my.cnf
     else   # this is for anything other than -dev2, -web, or -web2
-      echo "innodb_buffer_pool_size = 40G" >> /etc/my.cnf
+      echo "innodb_buffer_pool_size = 50G" >> /etc/my.cnf
     fi
   fi
-  ### Note: 20 GB for segments-dev2 is b/c it has limited disk space; others should be fine.  
-  ###   (Maybe increase it for some/all others?)
+  ### Note: 20 GB for segments-dev2 is b/c it has limited disk space; others should be fine.
   ### Also: segments-web with SL6 and MySQL only had 6 GB of RAM + swap and would start fine with the 40G setting,
   ###       even though it wasn't using (couldn't use) 40 GB;
   ###       segments-web2 (which will be renamed segments-web), with SL7 and MariaDB and 3.8 GB of RAM + swap
@@ -220,12 +216,10 @@ if [ $run_block_2 -eq 1 ]; then   # * Apache, MariaDB, etc., installation
   mkdir -p /opt/dqsegdb/python_server/src
 
   # Add server files.
-  cd ~
-  git clone https://github.com/ligovirgo/dqsegdb.git
-  cp  ~/dqsegdb/server/src/*  /opt/dqsegdb/python_server/src/
+  cp  ~/dqsegdb_git/dqsegdb/server/src/*  /opt/dqsegdb/python_server/src/
 
   # Add WSGI script alias to Apache configuration file.
-  #echo "WSGIScriptAlias / /opt/dqsegdb/python_server/src/application.py" >> /etc/httpd/conf.d/wsgi.conf
+  echo "WSGIScriptAlias / /opt/dqsegdb/python_server/src/application.py" >> /etc/httpd/conf.d/wsgi.conf
   ### why is this done a few lines before the /etc/httpd/conf.d/ dir is moved and replaced???
   ### turns out that the file copied over later (/etc/httpd/conf.d/wsgi.conf) already has this line
   ### so the above line isn't needed at all; it just creates the file, which is then moved
@@ -245,7 +239,7 @@ if [ $run_block_2 -eq 1 ]; then   # * Apache, MariaDB, etc., installation
   fi
 
   # Install phpMyAdmin
-  ### do we want to do this for every segments machine?
+  ### do we want to do this for every segments* machine?
   if [ $host == "segments" ] || [ $host == "segments-web" ] || [ $host == "segments-backup" ] ||  \
      [ $host == "segments-dev" ] || [ $host == "segments-dev2" ]
   then
@@ -786,8 +780,6 @@ exit
 ### * which shib certificate names do we use?
 ### * verify that the shib installation instructions work
 ### * install python3?
-### * should we increase the "innodb buffer pool size" for non-dev2 systems?
-### * question about "set max_connections to 256 here? - do in /etc/my.cnf ?"
 ### * modify and use code on github, rather than copying 'dqsegdb_September_11_2018.tgz' over and using that
 ### * incorporate 'glue' fix to publisher code into github code; use that, rather than the patch here
 ### * fix the 'state files saved after backup' issue
