@@ -141,6 +141,22 @@ if [ $run_block_1 -eq 1 ]; then   # * basic installation items   #basic
   lgmm -f
   /sbin/chkconfig lgmm on
   systemctl restart lgmm
+
+  # Set ABRT to log info on errors in some of our software (by not requiring software be PGP-signed or installed from a package)
+  abrt_config_file=/etc/abrt/abrt-action-save-package-data.conf
+  if [ -e $abrt_config_file ]
+  then
+    echo "### INFO ### Possibly changing ABRT settings.  Old settings:"
+    grep -e ProcessUnpackaged -e OpenGPGCheck  $abrt_config_file
+    cp -p  $abrt_config_file  ${abrt_config_file}_$(date +%Y.%m.%d-%H.%M.%S).bak
+    old_string="OpenGPGCheck = yes"; new_string="OpenGPGCheck = no"; sed -i "s/$old_string/$new_string/g"  $abrt_config_file
+    old_string="ProcessUnpackaged = no"; new_string="ProcessUnpackaged = yes"; sed -i "s/$old_string/$new_string/g"  $abrt_config_file
+    echo "          ### New settings:"
+    grep -e ProcessUnpackaged -e OpenGPGCheck  $abrt_config_file
+  else
+    echo "### WARNING ### ABRT configuration file ( $abrt_config_file ) was not found, so its settings were not modified."
+    echo "            ### You might want to do this by hand, using commands from the installation file."
+  fi
 fi   # run_block_1
 
 
