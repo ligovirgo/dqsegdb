@@ -23,9 +23,7 @@ from urllib2 import HTTPError
 import time
 import json
 from glue import ldbd
-### changed 2019.11.27 by RJB
-#from glue import segments
-from ligo import segments
+from glue import segments
 from glue.ligolw.utils import process
 import os
 try:
