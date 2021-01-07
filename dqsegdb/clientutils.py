@@ -23,7 +23,9 @@ import tempfile
 
 from six.moves import reduce
 
-import glue.segments
+### changed 2019.11.26 by RJB
+#import glue.segments
+from ligo import segments
 
 from glue.ligolw import table
 from glue.ligolw import lsctables
@@ -33,7 +35,9 @@ from glue.segmentdb import segmentdb_utils
 
 from glue.ligolw.utils import ligolw_sqlite
 from glue.ligolw import dbtables
-from glue import segments
+### changed 2019.11.26 by RJB
+#from glue import segments
+from ligo import segments
 
 from dqsegdb import jsonhelper
 

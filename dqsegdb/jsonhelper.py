@@ -13,8 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
-import glue.segments as segments
-
+### changed by RJB on 2019.11.26
+#import glue.segments as segments
+from ligo import segments
 
 ################################################################################
 #
