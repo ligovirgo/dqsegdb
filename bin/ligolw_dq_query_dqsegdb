@@ -30,8 +30,8 @@ Provides tools to query the DQSEGDB segment database egarding the
 set of flags defined/active at or near a given time:
 
 
-The --report option prints an extensive query of the database for (a) given gps time(s). For the flags which were defined, it reports all active segments within the time span provided as input.
-  * What is the status of all DQ flags at this time? ligolw_dq_query --report
+The only run option (no longer an option actually) prints an extensive query of the database for (a) given gps time(s). For the flags which were defined, it reports all active segments within the time span provided as input.
+  * What is the status of all DQ flags at this time? ligolw_dq_query -t <server> <gps_time>
   * In a custom window (default is +/-10 seconds? ligolw_dq_query --start-pad --end-pad
 """
 
