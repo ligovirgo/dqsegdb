@@ -129,9 +129,7 @@ yum -y install m2crypto
 # Setup ODBC Data Source Name (DSN)
 echo "[DQSEGDB]
 DRIVER=MySQL
-DATABASE=segments-backup
-USER=dqsegdb_user
-PASSWORD=Q6a6jS6L63RtqnDm" >> /etc/odbc.ini
+DATABASE=segments-backup" >> /etc/odbc.ini
 
 # Install repo for phpMyAdmin.
 yum -y install http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
@@ -158,10 +156,6 @@ rsync -e "ssh -o StrictHostKeyChecking=no" -avP segments-backup.ligo.org:/etc/in
 #mysql -e "use dqsegdb"
 #mysql dqsegdb < dqsegdb.sql
 
-
-# Create database users.
-mysql -e "CREATE USER 'dqsegdb_user'@'localhost' IDENTIFIED BY 'Q6a6jS6L63RtqnDm'"
-mysql -e "CREATE USER 'admin'@'localhost' IDENTIFIED BY 'lvdb_11v35'"
 
 # Give user privileges on the database.
 mysql -e "GRANT SELECT, INSERT, UPDATE ON dqsegdb.* TO 'dqsegdb_user'@'localhost'"
