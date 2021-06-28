@@ -1,8 +1,8 @@
 dqsegdb
 =======
 
-[![Build Status](https://travis-ci.org/ligovirgo/dqsegdb.svg?branch=master)](https://travis-ci.org/ligovirgo/dqsegdb)
-[![Coverage Status](https://coveralls.io/repos/github/ligovirgo/dqsegdb/badge.svg?branch=master)](https://coveralls.io/github/ligovirgo/dqsegdb?branch=master)
+[![Build and test](https://github.com/ligovirgo/dqsegdb/actions/workflows/test.yml/badge.svg)](https://github.com/ligovirgo/dqsegdb/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/ligovirgo/dqsegdb/branch/master/graph/badge.svg?token=4q02Rv0Gkw)](https://codecov.io/gh/ligovirgo/dqsegdb)
 
 
 DQSEGDB client library and functions
