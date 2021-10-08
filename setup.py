@@ -125,6 +125,13 @@ else:
     scripts = []
 
 
+# The setting "use_2to3=True" is currently necessary for Python 2 installation (for pyRXP),
+#   but it breaks setuptools >= 58.0.0 (see https://github.com/ligovirgo/dqsegdb/issues/79 
+#   and https://github.com/pypa/setuptools/issues/2769 ), which is what Python 3 uses.
+#   Settings have thus been modified to "use_2to3=False".  If you need to install on Python 2,
+#   you will have to change this setting manually and install manually (or install 
+#   dqsegdb 1.6.1 or earlier - https://pypi.org/project/dqsegdb/#history ).
+
 setup(name=PACKAGENAME,
       cmdclass=cmdclass,
       version=__version__,
@@ -148,5 +155,5 @@ setup(name=PACKAGENAME,
       license=LICENSE,
       long_description=LONG_DESCRIPTION,
       zip_safe=False,
-      use_2to3=True
+      use_2to3=False
       )
