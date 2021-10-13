@@ -148,5 +148,5 @@ setup(name=PACKAGENAME,
       license=LICENSE,
       long_description=LONG_DESCRIPTION,
       zip_safe=False,
-      use_2to3=True
+      use_2to3=False
       )
