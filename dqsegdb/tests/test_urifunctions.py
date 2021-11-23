@@ -36,3 +36,26 @@ def test_constructSegmentQueryURL():
         "https://segments.ligo.org"
         "/dq/L1/TEST-FLAG/1?include=metadata"
     )
+
+
+def test_constructVersionQueryURL():
+    assert urifunctions.constructVersionQueryURL(
+        "https",
+        "segments.ligo.org",
+        "L1",
+        "TEST-FLAG",
+    ) == (
+        "https://segments.ligo.org"
+        "/dq/L1/TEST-FLAG"
+    )
+
+
+def test_constructFlagQueryURL():
+    assert urifunctions.constructFlagQueryURL(
+        "https",
+        "segments.ligo.org",
+        "L1",
+    ) == (
+        "https://segments.ligo.org"
+        "/dq/L1"
+    )
