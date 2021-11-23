@@ -62,13 +62,16 @@ jobs:
         # install LAL (for glue)
         python -m pip install lalsuite
         # install test-only requirements
-        python -m pip install coveralls
+        python -m pip install pytest pytest-cov
 
     - name: Install DQSegDB
       run: python -m pip install --editable . --no-build-isolation -vv
 
     - name: Package list
       run: python -m pip list installed
+
+    - name: Run pytest suite
+      run: python -m pytest -ra --pyargs dqsegdb.tests --cov dqsegdb --junitxml=pytest.xml
 
     - name: Run command line tests
       run: |
