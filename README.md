@@ -13,7 +13,7 @@ http://ligovirgo.github.io/dqsegdb/
 
 The DQSEGDB package should be installed and available for use on all LIGO Tier 1 and 2 clusters.  
 
-Within this project, the bdist directory includes complete (including dependencies) distributible python executables, built with PyInstaller.
+Within this project, the bdist directory includes complete (including dependencies) distributable Python executables, built with PyInstaller.
 
 To use the new client tools as a user, run the following commands:
 
@@ -27,11 +27,11 @@ cd dqsegdb
 # "Build" the package, placing binaries and libraries into standard directories
 python setup.py install --user
 
-# Setup your environment to look at the new directories
+# Set up your environment to look at the new directories
 # Follow instructions provided at end of previous command
 # Example:
 #  source /home/rfisher/.local/etc/dqsegdb-user-env.sh
-# This must be run each time you log in, or put it in your log in scripts (.bashrc)
+# This must be run each time you log in, or put it in your login scripts (.bashrc)
 
 ```
 dqsegdb architecture as used by IGWN

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Copyright (C) 2014-2020 Syracuse University, European Gravitational Observatory, and Christopher Newport University.  Written by Ryan Fisher and Gary Hemming. See the NOTICE file distributed with this work for additional information regarding copyright ownership.
 #
@@ -35,7 +35,7 @@ exactly the format returned by S6 style segment database tools.
   * What DQ flags exist in the database? ligolw_segment_query --show-types
   * When was a given DQ flag defined? ligolw_segment_query --query-types
   * When was a given flag active? ligolw_segment_query --query-segments
-* Example: ligolw_segment_query_dqsegdb --segment-url=http://dqsegdb4.phy.syr.edu --query-segments --gps-start-time 987654321 --gps-end-time 987654333 --include-segments="H1:DMT-SCIENCE:1" -o example.xml
+* Example: ligolw_segment_query_dqsegdb --segment-url=https://segments.ligo.org --query-segments --gps-start-time 987654321 --gps-end-time 987654333 --include-segments="H1:DMT-SCIENCE:1" -o example.xml
 """
 
 from __future__ import print_function
@@ -85,7 +85,7 @@ except:
         USER_NAME = pwd.getpwuid(os.getuid())[0]
 
 
-__author__  = "Ryan Fisher <rpfisher@syr.edu>, Larne Pekowsky <lppekows@physics.syr.edu>, Ping Wei <piwei@syr.edu>"
+__author__  = "Ryan Fisher <ryan.fisher@ligo.org>, Larne Pekowsky <lppekows@physics.syr.edu>, Ping Wei <piwei@syr.edu>"
 __version__ = "git id %s" % git_version.id
 __date__ = git_version.date
 
@@ -123,13 +123,13 @@ def parse_command_line():
 
 
     # Data location options
-    parser.add_option("-t", "--segment-url",    metavar = "segment_url", help = "Segment URL. Users have to specify either 'https://' for a secure connection or 'http://' for an insecure connection in the segment database url. For example, '--segment-url=https://segdb.ligo.caltech.edu'. No need to specify port number. ")
-    parser.add_option("-d", "--database",   metavar = "use_database", action = "store_true", help = "use database specified by environment variable S6_SEGMENT_SERVER. For example, 'S6_SEGMENT_SERVER=https://segdb.ligo.caltech.edu'")
-    parser.add_option("-f", "--dmt-files",   metavar = "use_files", action = "store_true", help = "use files in directory specified by environment variable ONLINEDQ, for example, 'ONLINEDQ=file:///path_to_dmt'. 'file://' is the prefix, the acutal directory to DMT xml files starts with '/'.")
+    parser.add_option("-t", "--segment-url",    metavar = "segment_url", help = "Segment URL. Users have to specify either 'https://' for a secure connection or 'http://' for an insecure connection in the segment database url. For example, '--segment-url=https://segments.ligo.org'. No need to specify port number. ")
+    parser.add_option("-d", "--database",   metavar = "use_database", action = "store_true", help = "Use database specified by environment variable S6_SEGMENT_SERVER. For example, 'S6_SEGMENT_SERVER=https://segdb.ligo.caltech.edu'")
+    parser.add_option("-f", "--dmt-files",   metavar = "use_files", action = "store_true", help = "Use files in directory specified by environment variable ONLINEDQ, for example, 'ONLINEDQ=file:///path_to_dmt'. 'file://' is the prefix, the actual directory to DMT xml files starts with '/'.")
 
 
     # Other options
-    parser.add_option("-a", "--include-segments", metavar = "include_segments", help = "This option expects a comma separated list of a colon separated sublist of interferometer, segment type, and version. The union of segments from all types and versions specified is returned. Use --show-types to see what types are available.   For example: --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-INJECTION:2 will return the segments for which H1 is in either SCIENCE version 1 or INJECTION version 2 mode. If version information is not provided, the union of the segments of the latest version of requested segment type(s) will be returned.")
+    parser.add_option("-a", "--include-segments", metavar = "include_segments", help = "This option expects a comma-separated list of a colon-separated sublist of interferometer, segment type, and version. The union of segments from all types and versions specified is returned. Use --show-types to see what types are available.   For example: --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-INJECTION:2 will return the segments for which H1 is in either SCIENCE version 1 or INJECTION version 2 mode. If version information is not provided, the union of the segments of the latest version of requested segment type(s) will be returned.")
 
     parser.add_option("-b", "--exclude-segments", metavar = "exclude_segments", help = "This option has to be used in conjunction with --include-segment-types and --query-segments.  --exclude-segment-types subtracts the union of unwanted segments from the specified types from the results of --include-segment-types. If version information is not provided, --exclude-segment-types subtracts the union of segments from the latest version of the specified segment types. For example, --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-INJECTION:2 --exclude-segment-types H1:DMT-WIND:1,H1:DMT-NOT_LOCKED:2,H2:DMT-NOT_LOCKED:2 will subtract the union of segments which H1 is in version 1 WIND and H1,H2 is version 2 NOT_LOCKED from the result of --include-segment-types H1:DMT-SCIENCE:1,H1:DMT-INJECTION:2")
 
@@ -140,7 +140,7 @@ def parse_command_line():
     parser.add_option("-o", "--output-file",   metavar = "output_file", help = "File to which output should be written.  Defaults to stdout.")
     #parser.add_option("-v", "--debug", metavar="debug", help= "Turn on debugging.")
 
-    parser.add_option("-l", "--use-s6", metavar="use_s6", action = "store_true", help="Use old s6 style client code.  This is needed to connect to S6 style segdb servers using DB2.  Note that this code is duplicated from the old client, and may become deprecated over time.")
+    parser.add_option("-l", "--use-s6", metavar="use_s6", action = "store_true", help="Use old S6-style client code.  This is needed to connect to S6-style segdb servers using DB2.  Note that this code is duplicated from the old client, and may become deprecated over time.")
 
 
     options, others = parser.parse_args()
