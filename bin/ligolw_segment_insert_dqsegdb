@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # Copyright (C) 2014-2020 Syracuse University, European Gravitational Observatory, and Christopher Newport University.  Written by Ryan Fisher and Gary Hemming. See the NOTICE file distributed with this work for additional information regarding copyright ownership.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,6 +15,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ###################################################################
+
+"""
+This allows the user to publish known and active segments from segment files
+into the data quality segments database (DQSegDB).
+
+Example:
+ligolw_segment_insert_dqsegdb -t https://segments-backup.ligo.org --insert -i G1 --name=TEST_FLAG_007 --version=1 -e 'test explanation' -c 'test comment' -S known.txt -G active.txt
+"""
 
 from __future__ import print_function
 
@@ -68,7 +76,7 @@ Check that glue is correctly installed and in your PYTHONPATH.
 """ % e, file=sys.stderr)
   sys.exit(1)
 ##################################################################
-__author__ = "Ryan Fisher <rpfisher@syr.edu>"
+__author__ = "Ryan Fisher <ryan.fisher@ligo.org>"
 __date__ = git_version.date
 __version__ = git_version.id
 __src__ = git_version.status
@@ -89,22 +97,22 @@ def parse_command_line():
   parser = OptionParser()
 
   parser.add_option("-p", "--ping", action = "store_true", default = None, help = "Ping the target server")
-  parser.add_option("-t", "--segment-url", action = "store", metavar = "URL", default = None, help = "Users have to specify protocol 'https://' for a secure connection in the segment database url. For example, '--segment-url=https://segdb.ligo.caltech.edu'. No need to specify port number'.")
+  parser.add_option("-t", "--segment-url", action = "store", metavar = "URL", default = None, help = "Users have to specify protocol 'https://' for a secure connection in the segment database url. For example, '--segment-url=https://segments.ligo.org '. No need to specify port number'.")
   parser.add_option("-o", "--output", action = "store", metavar = "FILE", default = None,help = "Write segments to FILE rather than the segment database")
   parser.add_option("-j", "--identity", action = "store", metavar = "IDENTITY", default = None,help = "Set the subject line of the server's service certificate to IDENTITY")
-  parser.add_option("-I", "--insert", action = "store_true", default = 0, help = "Insert segments to the segment database")
-  parser.add_option("-A", "--append", action = "store_true", default = 0, help = "Append segments to an existing segment type")
-  parser.add_option("-H", "--ignore-future", action = "store_true", default = 0, help = "Allow insert or append to add segments to future times.")
+  parser.add_option("-I", "--insert", action = "store_true", default = 0, help = "Insert segments to the segment database for a new flag or a new version of an existing flag; note: there is a bug that currently limits segment files to ~24k lines; see https://github.com/ligovirgo/dqsegdb/issues/86")
+  parser.add_option("-A", "--append", action = "store_true", default = 0, help = "Append segments to an existing segment type (existing flag AND version); note: there is a bug that currently limits segment files to ~24k lines; see https://github.com/ligovirgo/dqsegdb/issues/86")
+  parser.add_option("-H", "--ignore-future", action = "store_true", default = 0, help = "Allow insert or append to add segments to future times (i.e., times occurring after the time of segment insertion).")
   parser.add_option("-F", "--ignore-append-check", action = "store_true", default = 0, help = "Allow --append to insert segments prior to the latest existing segment.")
   parser.add_option("-D", "--debug", action = "store_true", default = 0, help = "Set debug flag True")
-  parser.add_option("-i", "--ifos", action = "store", metavar = "IFOS", default = None,  help = "Set the segment interferometer to IFOS (e.g. H1)")
-  parser.add_option("-n", "--name", action = "store", metavar = "NAME", default = None,  help = "Set the name of the segment to NAME (e.g. DMT-BADMONTH)")
-  parser.add_option("-v", "--version", action = "store", metavar = "VERSION", default = None,  help = "Set the numeric version of the segment to VERSION (e.g. 1)")
-  parser.add_option("-e", "--explain", action = "store", metavar = "EXPLAIN", default = None,  help = "Set the segment_definer:comment to COMMENT. This should explaining WHAT this flag mean (e.g. \"Light dip 10%\"). Required when --Insert/-I is specified.")
-  parser.add_option("-c", "--comment", action = "store", metavar = "COMMENT", default = None,  help = "Set the segment_summary:comment to COMMENT. This should explaining WHY these segments were inserted (e.g. \"Created from hveto results\")")
-  parser.add_option("-S", "--summary-file", action = "store", metavar = "FILE", default = None, help = "Read the segment_summary rows from FILE. This should be a file containing the gps start and end times that the flag was defined (i.e. the union of on and off)")
-  parser.add_option("-G", "--segment-file", action = "store", metavar = "FILE", default = None,  help = "Read the segment rows from FILE. This should containin the gps start and end times when the flag was active")
-  parser.add_option("-B", "--active-indicates-ifo-goodness", action = "store_true", default = False,  help = "Sets the variable in the database to indicate that the flag is active when something is good in the ifo state. Default is False, so flags normally indicate something is wrong.")
+  parser.add_option("-i", "--ifos", action = "store", metavar = "IFOS", default = None,  help = "Set the segment interferometer to IFOS (e.g., H1)")
+  parser.add_option("-n", "--name", action = "store", metavar = "NAME", default = None,  help = "Set the name of the segment (flag) to NAME (e.g., DMT-BADMONTH)")
+  parser.add_option("-v", "--version", action = "store", metavar = "VERSION", default = None,  help = "Set the numeric version of the segment (flag) to VERSION (e.g., 1)")
+  parser.add_option("-e", "--explain", action = "store", metavar = "EXPLAIN", default = None,  help = "Set the segment_definer:comment to COMMENT. This should explaining WHAT this flag mean (e.g., \"Light dip 10%\"). Required when --insert/-I is specified.")
+  parser.add_option("-c", "--comment", action = "store", metavar = "COMMENT", default = None,  help = "Set the segment_summary:comment to COMMENT. This should explaining WHY these segments were inserted (e.g., \"Created from hveto results\")")
+  parser.add_option("-S", "--summary-file", action = "store", metavar = "FILE", default = None, help = "Read the segment_summary rows from FILE. This should be a file containing the GPS start and end times over which the flag was defined (known) (i.e., the union of on and off)")
+  parser.add_option("-G", "--segment-file", action = "store", metavar = "FILE", default = None,  help = "Read the segment rows from FILE. This should containin the GPS start and end times over which the flag was active")
+  parser.add_option("-B", "--active-indicates-ifo-goodness", action = "store_true", default = False,  help = "Sets the variable in the database to indicate that the flag is active when something is good in the ifo state. Default is False, so active flags normally indicate something is wrong.")
 
 
   return parser.parse_args()
@@ -213,7 +221,7 @@ segment_md = ldbd.LIGOMetadata(xmlparser,lwtparser)
 ########################################################################
 # Construct local table process, process_params and segment_definer
 ########################################################################
-# Table process and process_params will be popullated by calling the
+# Table process and process_params will be populated by calling the
 # process/process_params utility
 
 #myClient = segmentdb_utils.setup_database(options.segment_url)
@@ -250,30 +258,30 @@ if debug:
   print("Script call provided version=%d" % version)
 
 if version > maxVersion+1:
-  # Should never insert or append to a version that is a 2 steps up from current version in db (including current version in DB = 0 case that is returned when flag does not yet exist in the database)
+  # Should never insert or append to a version that is 2 steps up from current version in DB (including current version in DB = 0 case that is returned when flag does not yet exist in the database)
   raise ValueError("Version in DB is %d. Version supplied, %d, is too high, and should only be equal to highest version in DB for appends or one greater for inserts." % (maxVersion,version))
 
 if maxVersion == 0:
-  # Flag doesn't exist in db
+  # Flag doesn't exist in DB
   # If I use my publisher, this is fine, since it will take care of it for me
   maxEndTime=0 ## Because this flag doesn't exist yet!
 elif maxVersion > version:
   # Fail!
-  print("Version in DB (%d) is greater than that specified (%d), exiting with error." % (maxVersion,version))
+  print("Version in DB (%d) is greater than that specified (%d); exiting with error." % (maxVersion,version))
   raise ValueError
 elif maxVersion == version and options.insert:
   # Fail!
-  print("Version in DB (%d) is equal to that specified (%d) for insertion, exiting with error." % (maxVersion,version))
+  print("Version in DB (%d) is equal to that specified (%d) for insertion; exiting with error." % (maxVersion,version))
   raise ValueError
 else:
   # Proceed to grab maxEndTime from server
   if debug:
-    print("Version approved by checks, determining max end time:")
+    print("Version approved by checks; determining max end time:")
   if options.append:
     data_dict,query_url1=apicalls.dqsegdbQueryTimeless(protocol,server,options.ifos,options.name,options.version,include_list_string='known,metadata')
     maxEndTime=max([i[1] for i in data_dict['known']])
   elif options.insert and version == maxVersion + 1:
-    maxEndTime=0 # The version is greater than the existing versionsi bye one, so we're ok to go forward regardless of what the summary segments are in the payload!
+    maxEndTime=0 # The version is greater than the existing versions by one, so we're ok to go forward, regardless of what the summary segments are in the payload!
   else:
     print("Specified version is not next version available to insert into database;  Existing max version is %d and provided version was %d." % (maxVersion,version))
     raise ValueError

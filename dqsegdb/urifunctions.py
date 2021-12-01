@@ -75,7 +75,7 @@ def getDataUrllib2(url, timeout=900, logger=None, warnings=True,
 
 def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime):
     """
-    Simple url construction method for dqsegdb server flag:version queries
+    Simple URL construction method for dqsegdb server flag:version queries
     including restrictions on time ranges.
 
     Parameters
@@ -83,7 +83,7 @@ def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     ifo : `string`
         Ex: 'L1'
     name: `string`
@@ -100,8 +100,8 @@ def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_
     """
     url1=protocol+"://"+server+"/dq"
     url2='/'.join([url1,ifo,name,str(version)])
-    # include_list_string should be a comma seperated list expressed as a string for the URL
-    # Let's pass it as a python string for now?  Fix!!!
+    # include_list_string should be a comma-separated list expressed as a string for the URL
+    # Let's pass it as a Python string for now?  Fix!!!
     start='s=%i' % startTime
     end='e=%i' % endTime
     url3=url2+'?'+start+'&'+end+'&include='+include_list_string
@@ -109,7 +109,7 @@ def constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_
 
 def constructSegmentQueryURL(protocol,server,ifo,name,version,include_list_string):
     """
-    Simple url construction method for dqsegdb server flag:version queries
+    Simple URL construction method for dqsegdb server flag:version queries
     not including restrictions on time ranges.
 
     Parameters
@@ -117,7 +117,7 @@ def constructSegmentQueryURL(protocol,server,ifo,name,version,include_list_strin
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     ifo : `string`
         Ex: 'L1'
     name: `string`
@@ -134,38 +134,38 @@ def constructSegmentQueryURL(protocol,server,ifo,name,version,include_list_strin
 
 def constructVersionQueryURL(protocol,server,ifo,name):
     """
-    Simple url construction method for dqsegdb server version queries.
+    Simple URL construction method for dqsegdb server version queries.
 
     Parameters
     ----------
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     ifo : `string`
         Ex: 'L1'
     name: `string`
         Ex: 'DMT-SCIENCE'
     """
-    ## Simple url construction method:
+    ## Simple URL construction method:
     url1=protocol+"://"+server+"/dq"
     url2='/'.join([url1,ifo,name])
     return url2
 
 def constructFlagQueryURL(protocol,server,ifo):
     """
-    Simple url construction method for dqsegdb server flag queries.
+    Simple URL construction method for dqsegdb server flag queries.
 
     Parameters
     ----------
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     ifo : `string`
         Ex: 'L1'
     """
-    ## Simple url construction method:
+    ## Simple URL construction method:
     url1=protocol+"://"+server+"/dq"
     url2='/'.join([url1,ifo])
     return url2
@@ -173,12 +173,12 @@ def constructFlagQueryURL(protocol,server,ifo):
 def putDataUrllib2(url,payload,timeout=900,logger=None,
                    **urlopen_kw):
     """
-    Wrapper method for urllib2 that supports PUTs to a url.
+    Wrapper method for urllib2 that supports PUTs to a URL.
 
     Parameters
     ----------
     url : `string`
-        Ex: 'https://dqsegdb5.phy.syr.edu/L1/DMT-SCIENCE/1'
+        Ex: 'https://segments.ligo.org/L1/DMT-SCIENCE/1'
     payload : `string`
         JSON formatted string
 
@@ -220,7 +220,7 @@ def putDataUrllib2(url,payload,timeout=900,logger=None,
         raise
     except urllib_error.URLError as e:
         #print(e.read())
-        warnmsg="Warning: Issue accessing url: %s" % url
+        warnmsg="Warning: Issue accessing URL: %s" % url
         warnmsg+="; "
         warnmsg+=str(e.reason)
         warnmsg+="; "
@@ -228,18 +228,18 @@ def putDataUrllib2(url,payload,timeout=900,logger=None,
         warn(warnmsg)
         raise
     if logger:
-        logger.debug("Completed url call: %s" % url)
+        logger.debug("Completed URL call: %s" % url)
     return url
 
 def patchDataUrllib2(url,payload,timeout=900,logger=None,
                    **urlopen_kw):
     """
-    Wrapper method for urllib2 that supports PATCHs to a url.
+    Wrapper method for urllib2 that supports PATCHs to a URL.
 
     Parameters
     ----------
     url : `string`
-        Ex: 'https://dqsegdb5.phy.syr.edu/L1/DMT-SCIENCE/1'
+        Ex: 'https://segments.ligo.org/L1/DMT-SCIENCE/1'
     payload : `string`
         JSON formatted string
 
@@ -260,7 +260,7 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None,
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PATCH'
     if logger:
-        logger.debug("Beginning url call: %s" % url)
+        logger.debug("Beginning URL call: %s" % url)
     try:
         #urlreturned = opener.open(request)
         urlreturned = urllib_request.urlopen(request, timeout=timeout, **urlopen_kw)
@@ -276,7 +276,7 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None,
         raise
     except urllib_error.URLError as e:
         #print(e.read()
-        warnmsg="Warning: Issue accessing url: %s" % url
+        warnmsg="Warning: Issue accessing URL: %s" % url
         warnmsg+="; "
         warnmsg+=str(e.reason)
         warnmsg+="; "
@@ -287,12 +287,12 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None,
         #warn("May be handled cleanly by calling instance: otherwise will result in an error."
         raise
     if logger:
-        logger.debug("Completed url call: %s" % url)
+        logger.debug("Completed URL call: %s" % url)
     return url
 
 def handleHTTPError(method,url,e):
     if int(e.code)!=404:
-        warn("Warning: Issue accessing url: %s" % url)
+        warn("Warning: Issue accessing URL: %s" % url)
         warn("Code: %s" % str(e.code))
         warn("Message: %s" % str(e.msg))
         #print(e.reason)
@@ -300,9 +300,9 @@ def handleHTTPError(method,url,e):
         warn("May be handled cleanly by calling instance: otherwise will result in an error.")
     else:
         if method == "PUT" or method == "PATCH":
-            warn("Info: Flag does not exist in database yet for url: %s" % url)
+            warn("Info: Flag does not exist in database yet for URL: %s" % url)
         elif method == "GET":
-            warn("Warning: Issue accessing url: %s" % url)
+            warn("Warning: Issue accessing URL: %s" % url)
             #print("yo! FIX!!!")
             warn("Code: %s" % str(e.code))
             warn("Message: %s" % str(e.msg))
