@@ -751,7 +751,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
     """
     logger.info("Beginning call to InsertMultipleDQXMLFileThreaded.  This message last updated April 14 2015, Ciao da Italia!")
     from threading import Thread
-    from Queue import Queue
+    #from Queue import Queue
+    import queue as Queue   ### P3 fix
     import sys
 
     # Make a call to server+'/dq':
