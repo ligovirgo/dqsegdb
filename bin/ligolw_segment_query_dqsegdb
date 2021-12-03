@@ -365,7 +365,7 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
             #sys.exit(1)
         ifo     = spec[0]
         name    = spec[1]        # segdefs are actually segment summaries and need to look like this:
-        if len(spec) is 3 and spec[2] is not '*':
+        if len(spec) == 3 and spec[2] != '*':
             # This is a versioned query
             try:                version = int(spec[2])
             except ValueError:
@@ -498,7 +498,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
         # Of particular note: single version queries just use startTime and endTime, but versionless return the start and end time of the segment summaries that affect the final versionless result
         # This means that I need the versionless query above to return that additional information
 
-        if len(spec) is 3 and spec[2] is not '*':
+        if len(spec) == 3 and spec[2] != '*':
             # This is a versioned query
             try:
                 version = int(spec[2])
@@ -589,7 +589,7 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
             # Of particular note: single version queries just use startTime and endTime, but versionless return the start and end time of the segment summaries that affect the final versionless result
             # This means that I need the versionless query above to return that additional information
 
-            if len(spec) is 3 and spec[2] is not '*':
+            if len(spec) == 3 and spec[2] != '*':
                 version = int(spec[2])
                 if version < 1:
                     print("Segment version numbers must be greater than zero", file=sys.stderr)
