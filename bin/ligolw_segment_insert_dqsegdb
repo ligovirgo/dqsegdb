@@ -97,7 +97,7 @@ def parse_command_line():
   parser = OptionParser()
 
   parser.add_option("-p", "--ping", action = "store_true", default = None, help = "Ping the target server")
-  parser.add_option("-t", "--segment-url", action = "store", metavar = "URL", default = None, help = "Users have to specify protocol 'https://' for a secure connection in the segment database url. For example, '--segment-url=https://segments.ligo.org '. No need to specify port number'.")
+  parser.add_option("-t", "--segment-url", action = "store", metavar = "URL", default = None, help = "Users have to specify protocol 'https://' for a secure connection in the segment database url. For example, '--segment-url=https://segments.ligo.org'. No need to specify port number.")
   parser.add_option("-o", "--output", action = "store", metavar = "FILE", default = None,help = "Write segments to FILE rather than the segment database")
   parser.add_option("-j", "--identity", action = "store", metavar = "IDENTITY", default = None,help = "Set the subject line of the server's service certificate to IDENTITY")
   parser.add_option("-I", "--insert", action = "store_true", default = 0, help = "Insert segments to the segment database for a new flag or a new version of an existing flag; note: there is a bug that currently limits segment files to ~24k lines; see https://github.com/ligovirgo/dqsegdb/issues/86")

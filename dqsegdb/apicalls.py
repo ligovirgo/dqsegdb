@@ -78,7 +78,7 @@ def dqsegdbCheckVersion(protocol,server,ifo,name,version,warnings=True):
             raise
     result_json=json.loads(result)
     version_list=result_json['version']
-    if version in version_list:
+    if int(version) in version_list:
         return True
     else:
         return False
