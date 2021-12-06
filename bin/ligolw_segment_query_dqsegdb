@@ -113,7 +113,7 @@ def parse_command_line():
 
     # Major modes
     parser.add_option("-p", "--ping",           action = "store_true", help = "Ping the target server")
-    parser.add_option("-y", "--show-types",     action = "store_true", help = "Returns a xml table containing segment type information: ifos, name, version, segment_definer.comment, segment_summary.start_time, segment_summary.end_time, segment_summary.comment")
+    parser.add_option("-y", "--show-types",     action = "store_true", help = "Returns an xml table containing segment type information: ifos, name, version, segment_definer.comment, segment_summary.start_time, segment_summary.end_time, segment_summary.comment")
     parser.add_option("-u", "--query-types",    action = "store_true", help = "Returns a ligolw document whose segment_definer table includes all segment types defined in the given period and included by include-segments and whose segment_summary table indicates the times for which those segments are defined. Warning: Currently only support unversioned include-segments strings!")
     parser.add_option("-q", "--query-segments", action = "store_true", help = "Returns a ligolw document whose segment table contains the times included by the include-segments flag and excluded by exclude-segments")
 
@@ -123,7 +123,7 @@ def parse_command_line():
 
 
     # Data location options
-    parser.add_option("-t", "--segment-url",    metavar = "segment_url", help = "Segment URL. Users have to specify either 'https://' for a secure connection or 'http://' for an insecure connection in the segment database url. For example, '--segment-url=https://segments.ligo.org'. No need to specify port number. ")
+    parser.add_option("-t", "--segment-url",    metavar = "segment_url", help = "Segment URL. Users have to specify either 'https://' for a secure connection or 'http://' for an insecure connection to the segment database URL. For example, '--segment-url=https://segments.ligo.org'. No need to specify port number. ")
     parser.add_option("-d", "--database",   metavar = "use_database", action = "store_true", help = "Use database specified by environment variable S6_SEGMENT_SERVER. For example, 'S6_SEGMENT_SERVER=https://segdb.ligo.caltech.edu'")
     parser.add_option("-f", "--dmt-files",   metavar = "use_files", action = "store_true", help = "Use files in directory specified by environment variable ONLINEDQ, for example, 'ONLINEDQ=file:///path_to_dmt'. 'file://' is the prefix, the actual directory to DMT xml files starts with '/'.")
 
