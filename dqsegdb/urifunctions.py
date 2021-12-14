@@ -263,6 +263,7 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None,
         logger.debug("Beginning URL call: %s" % url)
     try:
         #urlreturned = opener.open(request)
+        request.data = request.data.encode()   # P3 fix
         urlreturned = urllib_request.urlopen(request, timeout=timeout, **urlopen_kw)
     except urllib_error.HTTPError as e:
         handleHTTPError("PATCH",url,e)
