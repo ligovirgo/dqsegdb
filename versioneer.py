@@ -349,7 +349,12 @@ https://creativecommons.org/publicdomain/zero/1.0/ .
 """
 
 from __future__ import print_function
-import configparser
+#import configparser   # change to P3 that caused CI to fail; not sure why
+# trying reinstating this P2+P3 code:
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 import errno
 import json
 import os
