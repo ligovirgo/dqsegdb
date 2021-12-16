@@ -649,7 +649,7 @@ def waitTill(runTime,timeout=2400):
     be exceuted at specified time.
     Function source: http://stackoverflow.com/a/6579355/2769157
     """
-    startTime = time2(*(map(int, runTime.split(':'))))
+    startTime = time2(*(list(map(int, runTime.split(':')))))
     waitTime=0 # Timeout set to 20 minutes
     while startTime > datetime.today().time() and waitTime < 1200:
         time.sleep(1)
@@ -734,7 +734,7 @@ def setupSegment_md(filename,xmlparser,lwtparser,debug):
     segment_md.parse(xmltext)
     if debug:
         #segment_md.table
-        segment_md.table.keys()
+        list(segment_md.table.keys())
     return segment_md
 
 def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=False,debug=True,threads=1,testing_options={}):
@@ -895,11 +895,11 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
 
         temp_id_to_flag_version = {}
 
-        for i in flag_versions_numbered.keys():
+        for i in list(flag_versions_numbered.keys()):
             ifo = flag_versions_numbered[i]['ifos']
             name = flag_versions_numbered[i]['name']
             version = flag_versions_numbered[i]['version']
-            if (ifo,name,version) not in flag_versions.keys():
+            if (ifo,name,version) not in list(flag_versions.keys()):
                 if new_comments==True:
                     flag_versions[(ifo,name,version)] = InsertFlagVersion(ifo,name,version)
                 else:
@@ -924,7 +924,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         # parse segment_summary table and associate known segments with
         # flag_versions above:
         ## Note this next line is needed for looping over multiple files
-        for i in flag_versions.keys():
+        for i in list(flag_versions.keys()):
             flag_versions[i].temp_process_ids={}
         for j in range(len(segment_md.table['segment_summary']['stream'])):
             #flag_versions_numbered[j] = {}
@@ -958,7 +958,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             # process_metadata dictionary
             process_id_index = segment_md.table['segment_summary']['orderedcol'].index('process_id')
             temp_process_id = segment_md.table['segment_summary']['stream'][j][process_id_index]
-            if temp_process_id in flag_versions[(ifo,name,version)].temp_process_ids.keys():
+            if temp_process_id in list(flag_versions[(ifo,name,version)].temp_process_ids.keys()):
                 # We don't need to append this process metadata, as it already
                 # exists We do need to extend the affected data start and stop
                 # to match
@@ -983,8 +983,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         # process_metadata (from the process_dict earlier)
         if debug:
             t1=time.time()
-        for i in flag_versions.keys():
-            for pid in flag_versions[i].temp_process_ids.keys():
+        for i in list(flag_versions.keys()):
+            for pid in list(flag_versions[i].temp_process_ids.keys()):
                 start = flag_versions[i].temp_process_ids[pid]['insert_data_start']
                 stop = flag_versions[i].temp_process_ids[pid]['insert_data_stop']
                 if new_comments:
@@ -1042,7 +1042,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             print("Unexpected error:", sys.exc_info()[0])
             raise
 
-    for i in flag_versions.keys():
+    for i in list(flag_versions.keys()):
         flag_versions[i].coalesceInsertHistory()
 
     if threads>1:
@@ -1053,7 +1053,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             t=Thread(target=threadedPatchWithFailCases, args=[q,server,debug,logger])
             t.daemon=True
             t.start()
-        for i in flag_versions.values():
+        for i in list(flag_versions.values()):
             i.buildFlagDictFromInsertVersion()
             #i.flagDict
             url=i.buildURL(server)
@@ -1068,7 +1068,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             q.put(i)
         q.join()
     else:
-        for i in flag_versions.values():
+        for i in list(flag_versions.values()):
             i.buildFlagDictFromInsertVersion()
             #i.flagDict
             url=i.buildURL(server)

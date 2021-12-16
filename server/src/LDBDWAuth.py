@@ -64,7 +64,7 @@ class GridMap(dict):
         # parse the grid-mapfile
         try:
             f = open(self.path, 'r')
-        except Exception, e:
+        except Exception as e:
             msg = "Unable to open %s for reading: %s" % (self.path, e)
             raise GridMapError(msg)
 
@@ -177,7 +177,7 @@ class GridmapAuthorization:
                                 # Find the number of certificates in the client chain.
                                 maximum = None
                                 # Loop through environment keys.
-                                for e in environ.keys():
+                                for e in list(environ.keys()):
                                     # Check if SSL client cert chain.
                                     m = re.search('SSL_CLIENT_CERT_CHAIN_(\d+)', e)
                                     # If client cert chain found.
@@ -212,14 +212,14 @@ class GridmapAuthorization:
                             try:
                                 g = GridMap(mapfile)
                                 # If subject found.
-                                if g.has_key(subject):
+                                if subject in g:
                                     r = [200]
                                 # Otherwise, if subject not found.
                                 else:
                                     # Set HTTP code and log.
                                     r = admin.log_and_set_http_code(401, c, req_method, "Subject not found in Grid mapfile: %s" % (mapfile), full_uri)
                             # If unable to parse Grid mapfile
-                            except Exception, e:
+                            except Exception as e:
                                 # Set HTTP code and log.
                                 r = admin.log_and_set_http_code(401, c, req_method, "Unable to check authorization in grid-mapfile %s: %s" % (mapfile, e), full_uri)
         # Return.

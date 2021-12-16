@@ -33,7 +33,7 @@ import Admin
 import DAO
 import json
 import time
-from urlparse import urlparse, parse_qs #Re-named urllib.parse as of #3.x
+from urllib.parse import urlparse, parse_qs #Re-named urllib.parse as of #3.x
 
 class RequestHandle():
     # Decide which GET URI to serve.
@@ -63,7 +63,7 @@ class RequestHandle():
             # Split the script URL to a list.
             o = script_url.split('/')
             # Filter out empty values.
-            f = filter(None, o)
+            f = [_f for _f in o if _f]
             # Get list size.
             l = len(f)
             # Start serving requests.
@@ -343,7 +343,7 @@ class RequestHandle():
                     # Split the script URL to a list.
                     o = script_url.split('/')
                     # Filter out empty values.
-                    f = filter(None, o)
+                    f = [_f for _f in o if _f]
                     # Get list size.
                     l = len(f)
                     # Start serving requests.

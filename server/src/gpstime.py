@@ -69,6 +69,8 @@ __date__ = '$Date: 2006/02/16 04:36:09 $'
 __version__ = '$Revision: 1.6 $'[11:-2]
 # $Source: /usr/local/cvs/lscsoft/glue/glue/gpstime.py,v $
 
+from __future__ import print_function
+
 import time, math
 
 secsInWeek = 604800
@@ -112,7 +114,10 @@ def wtFromUTCpy(pyUTC, leapSecs=17):
          allows to use python UTC times and
          returns only week and tow"""
     ymdhms = ymdhmsFromPyUTC(pyUTC)
-    wSowDSoD = apply(gpsFromUTC, ymdhms + (leapSecs,))
+    # old version, changed for Python 2	to Python 3 (###P3):
+    #wSowDSoD = apply(gpsFromUTC, ymdhms + (leapSecs,))
+    #wSowDSoD = gpsFromUTC(*ymdhms + (leapSecs,))   # 2to3 version
+    wSowDSoD = gpsFromUTC(ymdhms + (leapSecs,))
     return wSowDSoD[0:2]
 
 def gpsFromUTC(year, month, day, hour, min, sec, leapSecs=17):
@@ -192,47 +197,50 @@ def PyUTCFromGpsSeconds(gpsseconds):
 #===== Tests  =========================================
 
 def testTimeStuff():
-    print "-"*20
-    print
-    print "The GPS Epoch when everything began (1980, 1, 6, 0, 0, 0, leapSecs=0)"
+    print("-"*20)
+    print()
+    print("The GPS Epoch when everything began (1980, 1, 6, 0, 0, 0, leapSecs=0)")
     (w, sow, d, sod) = gpsFromUTC(1980, 1, 6, 0, 0, 0, leapSecs=0)
-    print "**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod)
-    print "     and hopefully back:"
-    print "**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow, leapSecs=0)
+    print("**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod))
+    print("     and hopefully back:")
+    print("**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow, leapSecs=0))
 
-    print "The time of first Rollover of GPS week (1999, 8, 21, 23, 59, 47)"
+    print("The time of first Rollover of GPS week (1999, 8, 21, 23, 59, 47)")
     (w, sow, d, sod) = gpsFromUTC(1999, 8, 21, 23, 59, 47)
-    print "**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod)
-    print "     and hopefully back:"
-    print "**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow, leapSecs=17)
+    print("**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod))
+    print("     and hopefully back:")
+    print("**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow, leapSecs=17))
 
-    print "Today is GPS week 1186, day 3, seems to run ok (2002, 10, 2, 12, 6, 13.56)"
+    print("Today is GPS week 1186, day 3, seems to run ok (2002, 10, 2, 12, 6, 13.56)")
     (w, sow, d, sod) = gpsFromUTC(2002, 10, 2, 12, 6, 13.56)
-    print "**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod)
-    print "     and hopefully back:"
-    print "**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow)
+    print("**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod))
+    print("     and hopefully back:")
+    print("**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow))
 
 def testJulD():
-    print '2002, 10, 11 -> 284  ==??== ', julianDay(2002, 10, 11)
+    print('2002, 10, 11 -> 284  ==??== ', julianDay(2002, 10, 11))
 
 def testGpsWeek():
-    print '2002, 10, 11 -> 1187  ==??== ', gpsWeek(2002, 10, 11)
+    print('2002, 10, 11 -> 1187  ==??== ', gpsWeek(2002, 10, 11))
 
 def testDayOfWeek():
-    print '2002, 10, 12 -> 6  ==??== ', dayOfWeek(2002, 10, 12)
-    print '2002, 10, 6  -> 0  ==??== ', dayOfWeek(2002, 10, 6)
+    print('2002, 10, 12 -> 6  ==??== ', dayOfWeek(2002, 10, 12))
+    print('2002, 10, 6  -> 0  ==??== ', dayOfWeek(2002, 10, 6))
 
 def testPyUtilties():
     ymdhms = (2002, 10, 12, 8, 34, 12.3)
-    print "testing for: ", ymdhms
-    pyUtc = apply(mkUTC, ymdhms)
+    print("testing for: ", ymdhms)
+    # old version, changed for Python 2 to Python 3 (###P3):
+    #pyUtc = apply(mkUTC, ymdhms)
+    #pyUtc = mkUTC(*ymdhms)   # 2to3 version
+    pyUtc = mkUTC(ymdhms)
     back =  ymdhmsFromPyUTC(pyUtc)
-    print "yields     : ", back
+    print("yields     : ", back)
 #*********************** !!!!!!!!    
     #assert(ymdhms == back)
     #! TODO: this works only with int seconds!!! fix!!!
     (w, t) = wtFromUTCpy(pyUtc)
-    print "week and time: ", (w,t)
+    print("week and time: ", (w,t))
 
 
 #===== Main =========================================
