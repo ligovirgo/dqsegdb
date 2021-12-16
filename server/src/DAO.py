@@ -87,7 +87,7 @@ class DAOHandle:
         # Set ODBC cursor.
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -113,7 +113,7 @@ class DAOHandle:
                             + j +
                             """WHERE dq_flag_version_""" + ak + """_""" + el + """_segment_time <> 0 """
                             + iw)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -144,7 +144,7 @@ class DAOHandle:
         # Set ODBC cursor.
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -159,7 +159,7 @@ class DAOHandle:
                 cur.execute("""
                             SELECT SUM(dq_flag_version_""" + ak + """_segment_total) AS 'tot'
                             FROM tbl_dq_flag_versions """ + j  + iw)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -184,7 +184,7 @@ class DAOHandle:
         # Set ODBC cursor.
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -202,7 +202,7 @@ class DAOHandle:
                 cur.execute("""
                             SELECT MAX(insertion_time) AS 'tot'
                             FROM tbl_processes """ + j  + iw)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -227,7 +227,7 @@ class DAOHandle:
         # Set ODBC cursor.
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -240,7 +240,7 @@ class DAOHandle:
                 cur.execute("""
                             SELECT COUNT(dq_flag_id) AS 'tot'
                             FROM tbl_dq_flags """ + iw)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -265,7 +265,7 @@ class DAOHandle:
         # Set ODBC cursor.
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -280,7 +280,7 @@ class DAOHandle:
                 cur.execute("""
                             SELECT COUNT(dq_flag_version_id) AS 'tot'
                             FROM tbl_dq_flag_versions """ + j  + iw)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -324,7 +324,7 @@ class DAOHandle:
                 # Set ODBC cursor.
                 try:
                     cur = cnxn.cursor()
-                except pyodbc.Error, err:
+                except pyodbc.Error as err:
                     # Set HTTP code and log.
                     e = admin.log_and_set_http_code(500, 40, req_method, str(err), full_uri)
                 else:
@@ -340,7 +340,7 @@ class DAOHandle:
                                     (?,?,?,?,?)
                                     """, flag, ifo_id, badness, uid, gps)
                         cnxn.commit()
-                    except pyodbc.Error, err:
+                    except pyodbc.Error as err:
                         # Set HTTP code and log.
                         admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                     else:
@@ -353,7 +353,7 @@ class DAOHandle:
                                         ORDER BY dq_flag_id DESC
                                         LIMIT 1
                                         """, ifo_id, flag)
-                        except pyodbc.Error, err:
+                        except pyodbc.Error as err:
                             # Set HTTP code and log.
                             admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                         else:
@@ -394,7 +394,7 @@ class DAOHandle:
                 try:
                     # Set ODBC cursor.
                     cur = cnxn.cursor()
-                except pyodbc.Error, err:
+                except pyodbc.Error as err:
                     # Set HTTP code and log.
                     e = admin.log_and_set_http_code(500, 40, req_method, str(err), full_uri)
                 else:
@@ -410,7 +410,7 @@ class DAOHandle:
                                     VALUES
                                     (?,?,?,?,?,?,?,?,?)
                                     """, flag_id, comment, version, deactivated, uid, str(data['metadata']['flag_version_comment']), str(data['metadata']['further_info_url']), gps, gps)
-                    except pyodbc.Error, err:
+                    except pyodbc.Error as err:
                         # Set HTTP code and log.
                         admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                     else:
@@ -429,7 +429,7 @@ class DAOHandle:
                                             SET dq_flag_assoc_versions = IF(dq_flag_assoc_versions='',?,CONCAT(dq_flag_assoc_versions,',',?))
                                             WHERE dq_flag_id = ?
                                             """, version, version, flag_id)
-                            except pyodbc.Error, err:
+                            except pyodbc.Error as err:
                                 # Set HTTP code and log.
                                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                     # Close ODBC cursor.
@@ -448,7 +448,7 @@ class DAOHandle:
         admin = Admin.AdminHandle()
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -461,7 +461,7 @@ class DAOHandle:
                             ORDER BY dq_flag_id DESC
                             LIMIT 1
                             """, ifo_id, flag)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -483,7 +483,7 @@ class DAOHandle:
         admin = Admin.AdminHandle()
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -496,7 +496,7 @@ class DAOHandle:
                             ORDER BY dq_flag_version_id DESC
                             LIMIT 1
                             """, flag_id, version)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -522,7 +522,7 @@ class DAOHandle:
             admin = Admin.AdminHandle()
             try:
                 cur = cnxn.cursor()
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
             else:
@@ -534,7 +534,7 @@ class DAOHandle:
                                 WHERE dq_flag_ifo = ?
                                 ORDER BY dq_flag_name
                                 """, ifo_id)
-                except pyodbc.Error, err:
+                except pyodbc.Error as err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                 else:
@@ -566,7 +566,7 @@ class DAOHandle:
                 admin = Admin.AdminHandle()
                 try:
                     cur = cnxn.cursor()
-                except pyodbc.Error, err:
+                except pyodbc.Error as err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
                 else:
@@ -577,7 +577,7 @@ class DAOHandle:
                                     FROM tbl_dq_flags
                                     WHERE dq_flag_id = ?
                                     """, flag_id)
-                    except pyodbc.Error, err:
+                    except pyodbc.Error as err:
                         # Set HTTP code and log.
                         admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                     else:
@@ -608,7 +608,7 @@ class DAOHandle:
         constant = Constants.ConstantsHandle()
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -622,7 +622,7 @@ class DAOHandle:
                             WHERE dq_flag_version_fk = ?
                             ORDER BY tbl_processes.process_id
                             """, vid)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -675,7 +675,7 @@ class DAOHandle:
         try:
             # Set ODBC cursor.
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -689,7 +689,7 @@ class DAOHandle:
                             ORDER BY dq_flag_version_id
                             LIMIT 1
                             """, version_id)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -718,7 +718,7 @@ class DAOHandle:
         try:
             # Set ODBC cursor.
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -730,7 +730,7 @@ class DAOHandle:
                             LEFT JOIN tbl_values ON tbl_dq_flags.dq_flag_ifo = tbl_values.value_id
                             ORDER BY value_txt, dq_flag_name
                             """)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -769,7 +769,7 @@ class DAOHandle:
         try:
             # Set ODBC cursor.
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -782,7 +782,7 @@ class DAOHandle:
                             LEFT JOIN tbl_values ON tbl_dq_flags.dq_flag_ifo = tbl_values.value_id
                             ORDER BY value_txt, dq_flag_name
                             """)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -833,7 +833,7 @@ class DAOHandle:
         try:
             # Set ODBC cursor.
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -844,7 +844,7 @@ class DAOHandle:
                             FROM tbl_values
                             WHERE value_group_fk=? AND value_txt LIKE ?
                             """, g, str(v))
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -867,7 +867,7 @@ class DAOHandle:
         try:
             # Set ODBC cursor.
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -878,7 +878,7 @@ class DAOHandle:
                             FROM tbl_values
                             WHERE value_id = ?
                             """, v)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -901,7 +901,7 @@ class DAOHandle:
         try:
             # Set ODBC cursor.
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -912,7 +912,7 @@ class DAOHandle:
                             FROM tbl_value_groups
                             WHERE value_group_id=?
                             """, g)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -936,7 +936,7 @@ class DAOHandle:
         try:
             # Set ODBC cursor.
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -952,7 +952,7 @@ class DAOHandle:
                                 WHERE value_group_fk LIKE ?
                                 ORDER BY value_txt
                                 """, g)
-                except pyodbc.Error, err:
+                except pyodbc.Error as err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                 else:
@@ -988,7 +988,7 @@ class DAOHandle:
                 try:
                     # Set ODBC cursor.
                     cur = cnxn.cursor()
-                except pyodbc.Error, err:
+                except pyodbc.Error as err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
                 else:
@@ -1001,7 +1001,7 @@ class DAOHandle:
                                     (2,?)
                                     """, str(u))
                         cnxn.commit()
-                    except pyodbc.Error, err:
+                    except pyodbc.Error as err:
                         # Set HTTP code and log.
                         admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                     # Close ODBC cursor.
@@ -1037,7 +1037,7 @@ class DAOHandle:
                     # If database connection established.
                     try:
                         cur = cnxn.cursor()
-                    except pyodbc.Error, err:
+                    except pyodbc.Error as err:
                         # Set HTTP code and log.
                         admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
                     else:
@@ -1094,7 +1094,7 @@ class DAOHandle:
                                              active_seg_stop,
                                              str(key['process_metadata']['process_start_timestamp']),
                                              str(key['process_metadata']['process_start_timestamp']))
-                        except pyodbc.Error, err:
+                        except pyodbc.Error as err:
                             # Set HTTP code and log.
                             admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                         else:
@@ -1114,7 +1114,7 @@ class DAOHandle:
         try:
             # Set ODBC cursor.
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -1146,7 +1146,7 @@ class DAOHandle:
                             ORDER BY process_time_last_used DESC, process_time_started DESC
                             LIMIT 50
                             """)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -1206,7 +1206,7 @@ class DAOHandle:
                 # Initialise ODBC cursor.
                 try:
                     cur = cnxn.cursor()
-                except pyodbc.Error, err:
+                except pyodbc.Error as err:
                     # Set HTTP code and log.
                     e = admin.log_and_set_http_code(500, 40, req_method, str(err), full_uri)
                 else:
@@ -1242,7 +1242,7 @@ class DAOHandle:
                         try:
                             # Insert segment.
                             cur.execute("INSERT INTO tbl_segment" + tbl + " (dq_flag_version_fk, segment_start_time, segment_stop_time) VALUES" + sql)
-                        except pyodbc.Error, err:
+                        except pyodbc.Error as err:
                             # Set HTTP code and log.
                             admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                         else:
@@ -1276,7 +1276,7 @@ class DAOHandle:
         # Initialise ODBC cursor.
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -1290,7 +1290,7 @@ class DAOHandle:
                             FROM tbl_dq_flag_versions
                             WHERE dq_flag_version_id=?
                             """, vid)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -1324,7 +1324,7 @@ class DAOHandle:
                                 SET dq_flag_version_known_segment_total=?, dq_flag_version_known_earliest_segment_time=?, dq_flag_version_known_latest_segment_time=?, dq_flag_version_active_segment_total=?, dq_flag_version_active_earliest_segment_time=?, dq_flag_version_active_latest_segment_time=?, dq_flag_version_date_last_modified=?
                                 WHERE dq_flag_version_id=?
                                 """, known_tot, known_start, known_stop, active_tot, active_start, active_stop, gps, vid)
-                except pyodbc.Error, err:
+                except pyodbc.Error as err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             # Close ODBC cursor.
@@ -1340,7 +1340,7 @@ class DAOHandle:
         # Initialise ODBC cursor.
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -1351,7 +1351,7 @@ class DAOHandle:
                             FROM tbl_dq_flag_versions
                             WHERE dq_flag_version_id=?
                             """, vid)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -1381,7 +1381,7 @@ class DAOHandle:
         # Initialise ODBC cursor.
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -1422,7 +1422,7 @@ class DAOHandle:
                             t2 = int(row.segment_stop_time)
                         # Append segments to list.
                         l.append([t1,t2])
-                except pyodbc.Error, err:
+                except pyodbc.Error as err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                 # Close ODBC cursor.
@@ -1448,7 +1448,7 @@ class DAOHandle:
         # Initialise ODBC cursor.
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -1487,7 +1487,7 @@ class DAOHandle:
                                 LEFT JOIN tbl_values ON tbl_dq_flags.dq_flag_ifo = tbl_values.value_id
                                 """)
 
-                except pyodbc.Error, err:
+                except pyodbc.Error as err:
                     # Set HTTP code and log.
                     admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
                 else:
@@ -1506,7 +1506,7 @@ class DAOHandle:
                             elif request == 'all': 
                                 payload[i]['known']=[]
                                 # Append all the active segments into this flag's payload
-                                if i in active_data_dictionary.keys():
+                                if i in list(active_data_dictionary.keys()):
                                     # Not every flag will have active segments
                                     payload[i]['active']=active_data_dictionary[i]
                         if request == 'all':
@@ -1543,7 +1543,7 @@ class DAOHandle:
         # Set in overall dictionary.
         # Fix? for incompatible API change going to 2.1.10
         # Also hack to fix API change that Ryan didn't handle properly in the parseKnown function in the current client release:
-        payload_vals=payload.values()
+        payload_vals=list(payload.values())
         for i,j in enumerate(payload_vals):
             payload_vals[i]['metadata']['comment']=j['metadata']['flag_description']
         d['results'] = payload_vals
@@ -1562,7 +1562,7 @@ class DAOHandle:
         # Initialise ODBC cursor.
         try:
             cur = cnxn.cursor()
-        except pyodbc.Error, err:
+        except pyodbc.Error as err:
             # Set HTTP code and log.
             admin.log_and_set_http_code(0, 40, req_method, str(err), full_uri)
         else:
@@ -1576,7 +1576,7 @@ class DAOHandle:
                            FROM tbl_segments""" + w + """
                            ORDER BY dq_flag_version_fk
                            """)
-            except pyodbc.Error, err:
+            except pyodbc.Error as err:
                 # Set HTTP code and log.
                 admin.log_and_set_http_code(0, 41, req_method, str(err), full_uri)
             else:
@@ -1585,7 +1585,7 @@ class DAOHandle:
                 # Loop.
                 for row in cur:
                     i = row.dq_flag_version_fk
-                    if i not in output.keys():
+                    if i not in list(output.keys()):
                         output[i] = []
                     # If using sub-second segments.
                     if constant.use_sub_second_segments:

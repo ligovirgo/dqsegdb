@@ -29,6 +29,7 @@ DQSEGDB Regression Test Suite
 Main file.
 '''
 # Import.
+from __future__ import print_function
 import Tests
 import Constants
 import logging
@@ -72,8 +73,8 @@ try:
 # Catch keyboard interrupt.
 except (KeyboardInterrupt, SystemExit):
     # Print warning messages.
-    print '\nKeyboardInterrupt caught'
-    print 'DQSEGDB Regression Test Suite stopped manually'
+    print('\nKeyboardInterrupt caught')
+    print('DQSEGDB Regression Test Suite stopped manually')
     # Log event.
     log.info('Stopped DQSEGDB Regression Test Suite.')
     # Raise exception.

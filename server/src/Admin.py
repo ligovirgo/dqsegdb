@@ -147,7 +147,7 @@ class AdminHandle:
             # Init.
             a = {}
             # Loop payload definition.
-            for key, value in p.iteritems():
+            for key, value in list(p.items()):
                 # Set.
                 add_to_dict = False
                 # If nested dictionary.
@@ -162,7 +162,7 @@ class AdminHandle:
                 # Otherwise, if not dictionary type.
                 else:
                     # If the expected key does not exist in the passed payload. 
-                    if not j.has_key(key):
+                    if key not in j:
                         a[key] = 'MISSING' 
                     else:
                         # If the supplied element type is different to that expected. 
@@ -170,7 +170,7 @@ class AdminHandle:
                             # If a string is expected.
                             if type(p[key]) == str:
                                 # If passed type is incorrect.
-                                if not type(j[key]) in [str, unicode]:
+                                if not type(j[key]) in [str, str]:
                                     # Set.
                                     add_to_dict = True
                             # If expecting Boolean.

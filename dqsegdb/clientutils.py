@@ -259,7 +259,7 @@ class ShowTypesResultTable(table.Table):
 
 
 class ShowTypesResult(object):
-    __slots__ = ShowTypesResultTable.validcolumns.keys()
+    __slots__ = list(ShowTypesResultTable.validcolumns.keys())
 
     def get_pyvalue(self):
         if self.value is None:
@@ -303,7 +303,7 @@ def run_show_types(doc, connection, engine, gps_start_time, gps_end_time, includ
 
         seg_dict[key].append(segments.segment(segment_summary_start_time, segment_summary_end_time))
 
-    for key, value in seg_dict.iteritems():
+    for key, value in list(seg_dict.items()):
         segmentlist = segments.segmentlist(value)
         segmentlist.coalesce()
 
@@ -330,7 +330,7 @@ def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_ti
     AND NOT(%d > segment_summary.end_time OR segment_summary.start_time > %d)
     """ % (gps_start_time, gps_end_time)
 
-    type_clauses = map(seg_spec_to_sql, included_segments.split(','))
+    type_clauses = list(map(seg_spec_to_sql, included_segments.split(',')))
 
     if type_clauses != []:
         sql += " AND (" + "OR ".join(type_clauses) + ")"

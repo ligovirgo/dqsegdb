@@ -40,7 +40,7 @@ class DQSegDBInstall(Install):
     def finalize_options(self):
         Install.finalize_options(self)
         try:
-            etc = zip(*self.distribution.data_files)[0].index('etc')
+            etc = list(zip(*self.distribution.data_files))[0].index('etc')
         except TypeError:
             self.distribution.data_files = [('etc', [])]
             etc = 0

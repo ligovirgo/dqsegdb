@@ -262,7 +262,7 @@ class ShowTypesResultTable(table.Table):
 
 
 class ShowTypesResult(object):
-    __slots__ = ShowTypesResultTable.validcolumns.keys()
+    __slots__ = list(ShowTypesResultTable.validcolumns.keys())
 
     def get_pyvalue(self):
         if self.value is None:
@@ -316,7 +316,7 @@ def run_show_types_dqsegdb(doc, protocol, server, gps_start_time, gps_end_time, 
 
         seg_dict[key].append(segments.segment(segment_summary_start_time, segment_summary_end_time))
 
-    for key, value in seg_dict.iteritems():
+    for key, value in list(seg_dict.items()):
         segmentlist = segments.segmentlist(value)
         segmentlist.coalesce()
 
