@@ -26,60 +26,37 @@ ligolw_segment_insert_dqsegdb -t https://segments-backup.ligo.org --insert -i G1
 
 from __future__ import print_function
 
-import socket
-import os
-import socket
 import atexit
-import pwd
-import time
-import sys
+import json
 import logging
 import logging.handlers
+import os
+import pwd
+import socket
+import sys
+import time
+from io import StringIO
 from optparse import OptionParser
-from dqsegdb import apicalls
-import json
+from urllib.parse import urlparse
 
-from six.moves import StringIO
-from six.moves.urllib.parse import urlparse
+from ligo import segments
 
-try:
-  import pyRXPU as pyRXP
-except ImportError:
-  try:
-    import pyRXP
-  except ImportError as e:
-    print("""
-Error: unable to import the pyRXP module.
+from glue import gpstime
+from glue.ligolw import (
+    ligolw,
+    lsctables,
+    types as ligolwtypes,
+)
+from glue.ligolw.utils import process
 
-You must have pyRXP installed and in your PYTHONPATH to run %s.
+from dqsegdb import (
+    __version__ as dqsegdb_version,
+    apicalls,
+)
 
-%s
-""" %(sys.argv[0], e), file=sys.stderr)
-
-try:
-  from glue import gpstime
-  from glue import ldbd
-  from ligo import segments
-  from glue import git_version
-  #from glue.segmentdb import segmentdb_utils
-  from glue.ligolw import lsctables
-  from glue.ligolw import ligolw
-  from glue.ligolw.utils import process
-  from glue.ligolw import types as ligolwtypes
-except ImportError as e:
-  print("""
-Error: unable to import modules from glue.
-
-Check that glue is correctly installed and in your PYTHONPATH.
-
-%s
-""" % e, file=sys.stderr)
-  sys.exit(1)
 ##################################################################
 __author__ = "Ryan Fisher <ryan.fisher@ligo.org>"
-__date__ = git_version.date
-__version__ = git_version.id
-__src__ = git_version.status
+__version__ = dqsegdb_version
 
 PROGRAM_NAME = sys.argv[0].replace('./','')
 PROGRAM_PID  = os.getpid()
@@ -212,11 +189,6 @@ def callInsertMultipleDQXMLThreaded(filepath,debug):
   result=apicalls.InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=debug,threads=1)
   return result
 
-
-#Create an xml parser, a ligo_lw document parser, and the document
-xmlparser = pyRXP.Parser()
-lwtparser = ldbd.LIGOLwParser()
-segment_md = ldbd.LIGOMetadata(xmlparser,lwtparser)
 
 ########################################################################
 # Construct local table process, process_params and segment_definer
