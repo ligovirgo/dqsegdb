@@ -36,18 +36,16 @@ The only run option (no longer an option actually) prints an extensive query of 
 """
 
 
-from optparse import OptionParser
-
-import sys
+import json
 import os
 import pwd
+import sys
+from optparse import OptionParser
+from urllib.parse import urlparse
 
 from ligo import segments
 
 from dqsegdb import apicalls
-import json
-
-from six.moves.urllib.parse import urlparse
 
 PROGRAM_NAME = sys.argv[0].replace('./','')
 PROGRAM_PID  = os.getpid()
