@@ -60,7 +60,6 @@ try:
   from glue import gpstime
   from glue import ldbd
   from ligo import segments
-  #from glue.segmentdb import segmentdb_utils
   from glue.ligolw import lsctables
   from glue.ligolw import ligolw
   from glue.ligolw.utils import process
@@ -173,18 +172,6 @@ if len(errmsg) and not options.ping:
   sys.exit(1)
 
 
-#o ########################################################################
-#o # open connection to LDBD(W)Server
-#o myClient = segmentdb_utils.setup_database(options.segment_url)
-#o
-#o if options.ping:
-#o    try:
-#o      print(myClient.ping())
-#o    except Exception, e:
-#o      print("Error ping --segment-url", str(e))
-#o      sys.exit(1)
-#o else:
-#o ########################################################################
 def dtd_uri_callback(uri):
   if uri in ['http://www.ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt',
     'http://ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt']:
@@ -232,7 +219,6 @@ segment_md = ldbd.LIGOMetadata(xmlparser,lwtparser)
 # Table process and process_params will be populated by calling the
 # process/process_params utility
 
-#myClient = segmentdb_utils.setup_database(options.segment_url)
 doc = ligolw.Document()
 doc.appendChild(ligolw.LIGO_LW())
 
