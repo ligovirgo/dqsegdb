@@ -148,9 +148,6 @@ def parse_command_line():
     parser.add_option("-o", "--output-file",   metavar = "output_file", help = "File to which output should be written.  Defaults to stdout.")
     #parser.add_option("-v", "--debug", metavar="debug", help= "Turn on debugging.")
 
-    parser.add_option("-l", "--use-s6", metavar="use_s6", action = "store_true", help="Use old S6-style client code.  This is needed to connect to S6-style segdb servers using DB2.  Note that this code is duplicated from the old client, and may become deprecated over time.")
-
-
     options, others = parser.parse_args()
 
     # Make sure we have exactly one thing to do
@@ -550,10 +547,6 @@ def run_query_segments_dqsegdb(doc, process_id, protocol, server, gps_start_time
                     known_segments=segments.segmentlist([segments.segment(x[0],x[1]) for x in i_result['known']])
                     segment_summaries.append(known_segments&segments.segmentlist([segments.segment(seg[0],seg[1])]))
 
-    #n found_segments = segmentdb_utils.query_segments(engine, 'segment', segdefs)
-    #n found_segments = reduce(operator.or_, found_segments).coalesce()
-    #n ## Note: found_segments is a segments list of the RESULT after combining the segments, the xml result never includes the original segments for the flags queried, just the final result
-
     # And we could write out everything we found
     if debug:
         print("Information on segdefs and segment_summaries: lengths, then first 10 entries")
@@ -713,22 +706,17 @@ if __name__ == '__main__':
 
     # Ping the database and exit if requested
     if options.ping:
-        if options.use_s6:
-            connection = segmentdb_utils.setup_database(database_location)
-            print(connection.ping())
-            sys.exit( 0 )
-        else:
-            # DQSEGDB 'ping'
-            o = urlparse(options.segment_url)
-            protocol=o.scheme
-            server=o.netloc
-            ifo="L1"
-            url_result=urifunctions.constructFlagQueryURL(protocol,server,ifo)
-            json_out=urifunctions.getDataUrllib2(url_result)
-            flags_information=json.loads(json_out)
-            server_version=flags_information['query_information']['api_version']
-            print("Server version is %s" % server_version)
-            sys.exit(0)
+        # DQSEGDB 'ping'
+        o = urlparse(options.segment_url)
+        protocol=o.scheme
+        server=o.netloc
+        ifo="L1"
+        url_result=urifunctions.constructFlagQueryURL(protocol,server,ifo)
+        json_out=urifunctions.getDataUrllib2(url_result)
+        flags_information=json.loads(json_out)
+        server_version=flags_information['query_information']['api_version']
+        print("Server version is %s" % server_version)
+        sys.exit(0)
 
 
 
@@ -744,7 +732,7 @@ if __name__ == '__main__':
 
     temp_files = False
 
-    if database_location and not options.use_s6:
+    if database_location:
         # Use new dqsegdb client
         o = urlparse(options.segment_url)
         protocol=o.scheme
@@ -762,13 +750,9 @@ if __name__ == '__main__':
     else:
         # Run old client
         warnings.warn('Warning: using old client code that may be less carefully maintained than DQSEGDB clients.')
-        if database_location and options.use_s6:
-            connection = segmentdb_utils.setup_database(database_location)
-            engine     = query_engine.LdbdQueryEngine(connection)
-        else:
-            temp_db, connection = setup_files(file_location, gps_start_time, gps_end_time)
-            engine     = query_engine.SqliteQueryEngine(connection)
-            temp_files = True
+        temp_db, connection = setup_files(file_location, gps_start_time, gps_end_time)
+        engine     = query_engine.SqliteQueryEngine(connection)
+        temp_files = True
         if options.show_types:
             clientutils.run_show_types(doc, connection, engine, gps_start_time, gps_end_time, options.include_segments,options.exclude_segments)
 
