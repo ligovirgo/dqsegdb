@@ -13,20 +13,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
-from warnings import warn
-import sys
 import socket
-import calendar
-import time
-import os
-from OpenSSL import crypto
-
-from six.moves.urllib.parse import urlparse
-from six.moves import http_client
-from six.moves.urllib import (request as urllib_request,
-                              error as urllib_error)
+from urllib.parse import urlparse
+from urllib import (
+    error as urllib_error,
+    request as urllib_request,
+)
+from warnings import warn
 
 
 #
