@@ -14,20 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import os
 import sys
 import time
 from datetime import datetime, time as time2
+from urllib.error import HTTPError
 
-from six.moves.urllib.error import HTTPError
+import pyRXPU as pyRXP
 
-try:
-    import pyRXPU as pyRXP
-except ImportError:
-    import pyRXP
+from ligo import segments
 
 from glue import ldbd
-from ligo import segments
 from glue.ligolw.utils import process
 
 try:
@@ -37,11 +33,14 @@ except ImportError:
     from glue import gpstime
     _UTCToGPS = lambda utc: int(gpstime.GpsSecondsFromPyUTC(time.mktime(utc)))
 
-from dqsegdb import urifunctions
-from dqsegdb import clientutils
-from dqsegdb.jsonhelper import InsertFlagVersion
-from dqsegdb.jsonhelper import InsertFlagVersionOld
-from dqsegdb.urifunctions import *
+from . import (
+    clientutils,
+    urifunctions,
+)
+from .jsonhelper import (
+    InsertFlagVersion,
+    InsertFlagVersionOld,
+)
 
 __author__ = 'Ryan Fisher <ryan.fisher@ligo.org>'
 verbose=False
@@ -672,7 +671,7 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
             startTime=testing_options['synchronize']
             inlogger.debug("Trying to patch synchronously at time %s" % startTime)
             waitTill(startTime)
-        patchDataUrllib2(url,data,logger=inlogger)
+        urifunctions.patchDataUrllib2(url,data,logger=inlogger)
         if debug:
             inlogger.debug("Patch alone succeeded for %s" % url)
             #print("Patch alone succeeded for %s" % url)
@@ -684,7 +683,7 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
             if debug:
                 inlogger.debug("Trying to put alone for url: %s" % url)
                 #print("Trying to put alone for %s" % url)
-            putDataUrllib2(url,data,logger=inlogger)
+            urifunctions.putDataUrllib2(url,data,logger=inlogger)
             if debug:
                 inlogger.debug("Put alone succeeded for %s" % url)
                 #print("Put alone succeeded for %s" % url)
@@ -696,9 +695,9 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
             if debug:
                 inlogger.debug("Trying to PUT flag and version to: %s" % suburl)
                 #print("Trying to PUT flag and version to: "+suburl)
-            putDataUrllib2(suburl,data,logger=inlogger)
+            urifunctions.putDataUrllib2(suburl,data,logger=inlogger)
             #put to version
-            putDataUrllib2(url,data,logger=inlogger)
+            urifunctions.putDataUrllib2(url,data,logger=inlogger)
             if debug:
                 inlogger.debug("Had to PUT flag and version")
                 #print("Had to PUT flag and version")
