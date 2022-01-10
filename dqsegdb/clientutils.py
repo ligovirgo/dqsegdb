@@ -25,14 +25,14 @@ from six.moves import reduce
 
 from ligo import segments
 
-from glue.ligolw import table
-from glue.ligolw import lsctables
-from glue.ligolw import types as ligolwtypes
+from ligo.lw import table
+from ligo.lw import lsctables
+from ligo.lw import types as ligolwtypes
 
 from glue.segmentdb import segmentdb_utils
 
-from glue.ligolw.utils import ligolw_sqlite
-from glue.ligolw import dbtables
+from ligo.lw.utils import ligolw_sqlite
+from ligo.lw import dbtables
 
 from dqsegdb import jsonhelper
 
@@ -486,7 +486,7 @@ def add_to_segment_ns(xmldoc, proc_id, seg_def_id, sgmtlist):
     try:
         segtable = table.get_table(xmldoc, lsctables.SegmentTable.tableName)
     except:
-        segtable = lsctables.New(lsctables.SegmentTable, columns = ["process_id", "segment_def_id", "segment_id", "start_time", "start_time_ns", "end_time", "end_time_ns"])
+        segtable = lsctables.New(lsctables.SegmentTable, columns = ["process:process_id", "segment_definer:segment_def_id", "segment_id", "start_time", "start_time_ns", "end_time", "end_time_ns"])
         xmldoc.childNodes[0].appendChild(segtable)
 
     for seg in sgmtlist:
@@ -494,12 +494,8 @@ def add_to_segment_ns(xmldoc, proc_id, seg_def_id, sgmtlist):
         segment.process_id     = proc_id
         segment.segment_def_id = seg_def_id
         segment.segment_id     = segtable.get_next_id()
-        seconds,nanoseconds=output_microseconds(seg[0])
-        segment.start_time     = seconds
-        segment.start_time_ns  = nanoseconds
-        seconds,nanoseconds=output_microseconds(seg[1])
-        segment.end_time       = seconds
-        segment.end_time_ns    = nanoseconds
+        segment.start          = seg[0]
+        segment.end            = seg[1]
 
         segtable.append(segment)
 
@@ -507,7 +503,7 @@ def add_to_segment_summary_ns(xmldoc, proc_id, seg_def_id, sgmtlist, comment='')
     try:
         seg_sum_table = table.get_table(xmldoc, lsctables.SegmentSumTable.tableName)
     except:
-        seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = ["process_id", "segment_def_id", "segment_sum_id", "start_time", "start_time_ns", "end_time", "end_time_ns", "comment"])
+        seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = ["process:process_id", "segment_definer:segment_def_id", "segment_sum_id", "start_time", "start_time_ns", "end_time", "end_time_ns", "comment"])
         xmldoc.childNodes[0].appendChild(seg_sum_table)
 
     for seg in sgmtlist:
@@ -515,16 +511,8 @@ def add_to_segment_summary_ns(xmldoc, proc_id, seg_def_id, sgmtlist, comment='')
         segment_sum.process_id     = proc_id
         segment_sum.segment_def_id = seg_def_id
         segment_sum.segment_sum_id = seg_sum_table.get_next_id()
-        seconds,nanoseconds=output_microseconds(seg[0])
-        segment_sum.start_time     = seconds
-        segment_sum.start_time_ns  = nanoseconds
-        seconds,nanoseconds=output_microseconds(seg[1])
-        segment_sum.end_time       = seconds
-        segment_sum.end_time_ns    = nanoseconds
-        #segment_sum.start_time     = seg[0]
-        #segment_sum.start_time_ns  = 0
-        #segment_sum.end_time       = seg[1]
-        #segment_sum.end_time_ns    = 0
+        segment_sum.start          = seg[0]
+        segment_sum.end            = seg[1]
         segment_sum.comment        = comment
 
         seg_sum_table.append(segment_sum)

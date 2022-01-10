@@ -5,3 +5,4 @@ pyOpenSSL >= 0.14
 ligo-segments
 lscsoft-glue >= 1.55.0
 gwdatafind
+python-ligo-lw >= 1.7.0

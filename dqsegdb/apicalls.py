@@ -18,6 +18,7 @@ import os
 import sys
 import time
 from datetime import datetime, time as time2
+from getpass import getuser
 
 from six.moves.urllib.error import HTTPError
 
@@ -28,7 +29,6 @@ except ImportError:
 
 from glue import ldbd
 from ligo import segments
-from glue.ligolw.utils import process
 
 try:
     from lal import UTCToGPS as _UTCToGPS
@@ -1008,7 +1008,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
                     insert_history_dict['insertion_metadata']['uri'] = '/dq/'+'/'.join([str(ifo),str(name),str(version)])  # FIX make dq a constant string in case we ever change it
                 #print(ifo,name,version)
                 insert_history_dict['insertion_metadata']['timestamp'] = _UTCToGPS(time.gmtime())
-                insert_history_dict['insertion_metadata']['auth_user']=process.get_username()
+                insert_history_dict['insertion_metadata']['auth_user'] = getuser()
                 #if hackDec11:
                 #    # note that this only uses one insert_history...despite
                 #    all that hard work to get the list right...

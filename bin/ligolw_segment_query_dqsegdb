@@ -60,17 +60,17 @@ from dqsegdb import clientutils
 
 from ligo import segments
 
-from glue.ligolw import ligolw
-from glue.ligolw import table
-from glue.ligolw import lsctables
-from glue.ligolw import utils
+from ligo.lw import ligolw
+from ligo.lw import table
+from ligo.lw import lsctables
+from ligo.lw import utils
 
-from glue.ligolw.utils import process
+from ligo.lw.utils import process
 from glue.segmentdb import query_engine
 from glue.segmentdb import segmentdb_utils
 
-from glue.ligolw.utils import ligolw_sqlite
-from glue.ligolw import dbtables
+from ligo.lw.utils import ligolw_sqlite
+from ligo.lw import dbtables
 
 from dqsegdb._version import get_versions
 
@@ -426,10 +426,10 @@ def run_query_types_dqsegdb(doc, process_id, protocol, server, gps_start_time, g
 #    engine.close()
 #
     # Create segment definer and segment_summary tables
-    seg_def_table = lsctables.New(lsctables.SegmentDefTable, columns = ["process_id", "segment_def_id", "ifos", "name", "version", "comment"])
+    seg_def_table = lsctables.New(lsctables.SegmentDefTable, columns = ["process:process_id", "segment_def_id", "ifos", "name", "version", "comment"])
     doc.childNodes[0].appendChild(seg_def_table)
 
-    seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = ["process_id", "segment_sum_id", "start_time", "start_time_ns", "end_time", "end_time_ns", "comment", "segment_def_id"])
+    seg_sum_table = lsctables.New(lsctables.SegmentSumTable, columns = ["process:process_id", "segment_sum_id", "start_time", "start_time_ns", "end_time", "end_time_ns", "comment", "segment_definer:segment_def_id"])
 
     doc.childNodes[0].appendChild(seg_sum_table)
     if debug:
@@ -781,7 +781,7 @@ if __name__ == '__main__':
     # Write results
     gz = (options.output_file is not None and
           options.output_file.endswith(".gz"))
-    utils.write_filename(doc, options.output_file, gz=gz)
+    utils.write_filename(doc, options.output_file, compress=gz)
 
     # Clean up
     if temp_files:

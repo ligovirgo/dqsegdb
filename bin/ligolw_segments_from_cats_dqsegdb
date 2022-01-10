@@ -52,15 +52,15 @@ from ligo import segments
 import time
 from glue import gpstime
 
-from glue.ligolw import ligolw
-from glue.ligolw import utils
-from glue.ligolw.utils import ligolw_sqlite
-from glue.ligolw import dbtables
+from ligo.lw import ligolw
+from ligo.lw import utils
+from ligo.lw.utils import ligolw_sqlite
+from ligo.lw import dbtables
 
 from glue.segmentdb import query_engine
 from glue.segmentdb import segmentdb_utils
 
-from glue.ligolw.utils import process
+from ligo.lw.utils import process
 
 from dqsegdb import apicalls
 from dqsegdb import clientutils
