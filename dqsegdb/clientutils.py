@@ -13,28 +13,25 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
-import sys
 import math
-import os
 import operator
+import os
+import sys
 import tempfile
-
-from six.moves import reduce
+from functools import reduce
 
 from ligo import segments
 
-from glue.ligolw import table
-from glue.ligolw import lsctables
-from glue.ligolw import types as ligolwtypes
-
+from glue.ligolw import (
+    dbtables,
+    lsctables,
+    table,
+    types as ligolwtypes,
+)
+from glue.ligolw.utils import ligolw_sqlite
 from glue.segmentdb import segmentdb_utils
 
-from glue.ligolw.utils import ligolw_sqlite
-from glue.ligolw import dbtables
-
-from dqsegdb import jsonhelper
+from . import jsonhelper
 
 
 def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol, server,include_list_string):
