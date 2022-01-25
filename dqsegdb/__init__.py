@@ -14,6 +14,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # set version metadata
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
+from . import _version
+__version__ = _version.get_versions()['version']
