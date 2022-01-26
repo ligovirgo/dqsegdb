@@ -115,15 +115,6 @@ options, filenames = parser.parse_args()
 if not options.segment_url:
   raise ValueError("missing argument --segment-url")
 
-#old # open connection to LDBDWClient
-#old myClient = segmentdb_utils.setup_database(options.segment_url)
-
-
-#old if options.ping:
-#old   msg = myClient.ping()
-#old   print(msg)
-#old   sys.exit(0)
-#old
 if not options.state_file and not options.segments_file:
   raise ValueError("missing argument --state-file or --segments-file")
 if options.state_file and options.segments_file:
@@ -246,10 +237,6 @@ try:
           result = True
         else:
           logger.debug("inserting %s" % infiles)
-          #myClient = segmentdb_utils.setup_database(options.segment_url)
-          #result = myClient.insertdmt(xmltext)
-          #result=apicalls.publish_xml(xmltext)
-          #infile=[infile]
           result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count)
           infiles=[]
       except KeyboardInterrupt:
@@ -288,10 +275,6 @@ try:
               result = True
             else:
               logger.debug("inserting %s" % infiles)
-              #myClient = segmentdb_utils.setup_database(options.segment_url)
-              #result = myClient.insertdmt(xmltext)
-              #result=apicalls.publish_xml(xmltext)
-              #infile=[infile]
               result=InsertMultipleDQXMLFileThreaded(infiles,logger,options.segment_url,hackDec11=False,debug=local_debug,threads=thread_count)
           except KeyboardInterrupt:
             logger.info("caught keyboard interrupt")
