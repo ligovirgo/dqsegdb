@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2014-2020 Syracuse University, European Gravitational Observatory, and Christopher Newport University.  Written by Ryan Fisher and Gary Hemming. See the NOTICE file distributed with this work for additional information regarding copyright ownership.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -26,13 +26,13 @@
 
 
 """
-Provides tools to query the DQSEGDB segment database egarding the
+Provides tools to query the DQSEGDB segment database regarding the
 set of flags defined/active at or near a given time:
 
 
-The only run option (no longer an option actually) prints an extensive query of the database for (a) given gps time(s). For the flags which were defined, it reports all active segments within the time span provided as input.
-  * What is the status of all DQ flags at this time? ligolw_dq_query -t <server> <gps_time>
-  * In a custom window (default is +/-10 seconds? ligolw_dq_query --start-pad --end-pad
+The only run option (no longer an option actually) prints an extensive query of the database for (a) given GPS time(s). For the flags which were defined, it reports all active segments within the time span provided as input.
+  * What is the status of all DQ flags at this time? ligolw_dq_query_dqsegdb -t <server> <gps_time>
+  * Same, in a custom window (default is +/-10 seconds) ligolw_dq_query_dqsegdb --start-pad --end-pad
 """
 
 
@@ -43,8 +43,6 @@ import os
 import pwd
 
 from ligo import segments
-
-from glue import git_version
 
 from dqsegdb import apicalls
 import json
@@ -60,11 +58,15 @@ except:
   USER_NAME = pwd.getpwuid(os.getuid())[0]
 
 
+from dqsegdb._version import get_versions
 
+__author__  = "Ryan Fisher <ryan.fisher@ligo.org>"
+__version__ = get_versions()['version']
+__id__ = get_versions()['full-revisionid']
+__date__ = get_versions()['date']
+__verbose_msg__ = "version: " + get_versions()['version'] + "\nfull-revisionid: " + get_versions()['full-revisionid'] + "\ndirty: " + str(get_versions()['dirty']) \
+    + "\nerror: " + str(get_versions()['error']) + "\ndate: " + get_versions()['date']
 
-__author__  = "Ryan Fisher <rpfisher@phy.syr.edu>"
-__version__ = "git id %s" % git_version.id
-__date__ = git_version.date
 
 #
 # =============================================================================
@@ -81,9 +83,10 @@ def parse_command_line():
     """
 
     parser = OptionParser(
-        version = "Name: %%prog\n%s" % git_version.verbose_msg,
+        version = "Name: %prog\n" + __verbose_msg__,
+        #version = "Name: %%prog\nVersion: %s" % get_versions()['version'],
         usage       = "%prog [ --version | --segment-url ] options gps-time1",
-        description = "Provides a report of known and active flags from the segment database for a given gps time, with a configurable window."
+        description = "Provides a report of known and active flags from the segment database for a given GPS time, with a configurable window."
 	)
 
 
@@ -96,10 +99,10 @@ def parse_command_line():
 
 
     # Data location options
-    parser.add_option("-t", "--segment-url",    metavar = "segment_url", help = "Segment URL")
+    parser.add_option("-t", "--segment-url",    metavar = "segment_url", help = "Segment URL, e.g., https://segments.ligo.org")
 
     parser.add_option("-o", "--output-file",   metavar = "output_file", help = "File to which output should be written.  Defaults to stdout.")
-    parser.add_option("-a", "--active-only",  action = "store_true", help = "Only report about active segments in specified window, excludes report of known times for flags.")
+    parser.add_option("-a", "--active-only",  action = "store_true", help = "Only report about active segments in specified window; excludes report of known times for flags.")
     parser.add_option("-f", "--tom-formatting", action = "store_true", help = "Tom Dent requested formatting option: condensed output into single lines.")
     parser.add_option("-b", "--seperate-good-from-bad", action = "store_true", help = "Seperates flags marked by the database as being active when the ifo is in a bad state from those that are active when the ifo is in a good state.")
 
@@ -299,7 +302,7 @@ if __name__ == '__main__':
     end_pad   = 0
 
     if len(time) > 1:
-        raise ValueError("Please provide one central gps time for your query.")
+        raise ValueError("Please provide one central GPS time for your query.")
     else:
         time=int(time[0])
 

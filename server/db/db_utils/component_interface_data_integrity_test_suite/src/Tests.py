@@ -28,6 +28,7 @@ DQSEGDB Regression Test Suite
 Test-handling class file
 '''
 # Import.
+from __future__ import print_function
 import Constants
 import DAO
 import logging
@@ -243,7 +244,7 @@ class TestHandle:
                     # Set error list.
                     l_error = []
                     # Loop through and get flags, versions and totals.
-                    for f_v, totals in d['results'].iteritems():
+                    for f_v, totals in list(d['results'].items()):
                         # Set flag-version URI.
                         f_v_uri = constant.dqsegdb_host + f_v + '?include=' + ak
                         # Check resource returns response.
@@ -265,7 +266,7 @@ class TestHandle:
                                 if not tot == totals['total_' + ak + '_segments']:
                                     # Append to error list.
                                     l_error.append(f_v_uri + ' - ' + ak + ' totals are incongruent - DB: ' + str(totals['total_' + ak + '_segments']) + '; JSON: ' + str(tot))
-                                print f_v + ' - ' + ak + '; DB: ' + str(totals['total_' + ak + '_segments']) + '; JSON: ' + str(tot)
+                                print(f_v + ' - ' + ak + '; DB: ' + str(totals['total_' + ak + '_segments']) + '; JSON: ' + str(tot))
                     # If reply error messages have been set.
                     if l_error:
                         m = n + ' produced failures. Incorrect responses for following URI: ' + str(l_error)
@@ -325,7 +326,7 @@ class TestHandle:
                     # Set error list.
                     l_error = []
                     # Loop through and get flags, versions and totals.
-                    for f_v, totals in d['results'].iteritems():
+                    for f_v, totals in list(d['results'].items()):
                         # Set flag-version URI.
                         f_v_uri = constant.dqsegdb_host + f_v + '?include=' + ak
                         # Check resource returns response.
@@ -362,7 +363,7 @@ class TestHandle:
                                 if not earliest_boundary == totals['earliest_' + ak + '_segment']:
                                     # Append to error list.
                                     l_error.append(f_v_uri + ' - ' + ak + ' boundaries are incongruent - DB: ' + str(totals['earliest_' + ak + '_segment']) + '; JSON: ' + str(earliest_boundary))
-                                print f_v + ' - ' + ak + '; DB: ' + str(totals['earliest_' + ak + '_segment']) + '; JSON: ' + str(earliest_boundary)
+                                print(f_v + ' - ' + ak + '; DB: ' + str(totals['earliest_' + ak + '_segment']) + '; JSON: ' + str(earliest_boundary))
                     # If reply error messages have been set.
                     if l_error:
                         m = n + ' produced failures. Incorrect responses for following URI: ' + str(l_error)

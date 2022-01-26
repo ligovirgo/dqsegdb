@@ -57,7 +57,7 @@ class DAOHandle:
                                    user=constant.db_user,
                                    passwd=constant.db_pass,
                                    db=constant.db)
-        except MySQLdb.OperationalError, err:
+        except MySQLdb.OperationalError as err:
             conn = False
             # Log event.
             log.error('** Problem establishing database connection: ' + str(err))
@@ -99,7 +99,7 @@ class DAOHandle:
         try:
             # Set DB cursor
             cur = cnxn.cursor()
-        except MySQLdb.OperationalError, err:
+        except MySQLdb.OperationalError as err:
             # Log event.
             log.error('Unable to create cursor on database connection: ' + str(err))
         else:
@@ -132,7 +132,7 @@ class DAOHandle:
                                     """, (str(dataset_id), str(t)))
                         # Commit to database.
                         cnxn.commit()
-                    except MySQLdb.OperationalError, err:
+                    except MySQLdb.OperationalError as err:
                         # Rollback.
                         cnxn.rollback()
                         # Log event.
@@ -164,7 +164,7 @@ class DAOHandle:
         try:
             # Set DB cursor
             cur = cnxn.cursor()
-        except MySQLdb.OperationalError, err:
+        except MySQLdb.OperationalError as err:
             # Log event.
             log.error('Unable to create cursor on database connection: ' + str(err))
         else:
@@ -177,7 +177,7 @@ class DAOHandle:
                             """, (str(t), str(f), str(run_id)))
                 # Commit to database.
                 cnxn.commit()
-            except MySQLdb.OperationalError, err:
+            except MySQLdb.OperationalError as err:
                 # Rollback.
                 cnxn.rollback()
                 # Log event.
@@ -196,7 +196,7 @@ class DAOHandle:
         try:
             # Set DB cursor
             cur = cnxn.cursor()
-        except MySQLdb.OperationalError, err:
+        except MySQLdb.OperationalError as err:
             # Log event.
             log.error('Unable to create cursor on database connection: ' + str(err))
         else:
@@ -237,7 +237,7 @@ class DAOHandle:
                                         """, (str(run_id), str(test_id), str(success_level_id), m))
                             # Commit to database.
                             cnxn.commit()
-                        except MySQLdb.OperationalError, err:
+                        except MySQLdb.OperationalError as err:
                             # Rollback.
                             cnxn.rollback()
                             # Log event.
@@ -257,7 +257,7 @@ class DAOHandle:
         try:
             # Set DB cursor.
             cur = cnxn.cursor()
-        except MySQLdb.OperationalError, err:
+        except MySQLdb.OperationalError as err:
             # Log event.
             log.error('**** Problem ' + err_msg + '. Unable to create cursor on database connection: ' + str(err))
         else:
@@ -275,7 +275,7 @@ class DAOHandle:
                 for x in range(0, numrows):
                     row = cur.fetchone()
                     r = row[0]
-            except MySQLdb.OperationalError, err:
+            except MySQLdb.OperationalError as err:
                 # Log event.
                 log.error('**** Problem ' + err_msg + '. Unable to execute SQL statement: ' + str(err))
         # Return.
@@ -289,7 +289,7 @@ class DAOHandle:
         try:
             # Set DB cursor
             cur = cnxn.cursor()
-        except MySQLdb.OperationalError, err:
+        except MySQLdb.OperationalError as err:
             # Log event.
             log.error('**** Problem ' + err_msg + '. Unable to create cursor on database connection: ' + str(err))
         else:
@@ -303,7 +303,7 @@ class DAOHandle:
                             """, (str(g), v))
                 # Commit to database.
                 cnxn.commit()
-            except MySQLdb.OperationalError, err:
+            except MySQLdb.OperationalError as err:
                 # Rollback.
                 cnxn.rollback()
                 # Log event.

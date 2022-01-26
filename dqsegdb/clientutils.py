@@ -52,7 +52,7 @@ def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol,
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     include_list_string : `string`
         Ex: "metadata,known,active"
     startTime : `int`
@@ -88,8 +88,8 @@ def include_exclude_caller(includedList,excludedList,startTime,endTime,protocol,
 
 def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
     """
-    Calculate the result of the union of the active times for the included flag less the intersection of that result with the union of the excluded flags
-    Inputs are 2 lists of python dictionaries representing the JSON (already have run json.loads() on the JSON), a start time, and end time, and the ifo name (it does not make sense to include/exclude across multiple ifos)
+    Calculate the result of the union of the active times for the included flag less the intersection of that result with the union of the excluded flags.
+    Inputs are 2 lists of Python dictionaries representing the JSON (already have run json.loads() on the JSON), a start time, and end time, and the ifo name (it does not make sense to include/exclude across multiple ifos).
 
     Parameters
     ----------
@@ -152,7 +152,7 @@ def calculate_combined_result(includedJSON,excludedJSON,startTime,endTime,ifo):
 def calculate_versionless_result(jsonResults,startTime,endTime,ifo_input=None):
     """
     Construct output segments lists from multiple JSON objects.
-    The jsonResults input is a list of json ojbects and
+    The jsonResults input is a list of JSON ojbects and
     are expected to be in order of decreasing versions.
     """
     debug=False
@@ -221,7 +221,7 @@ def calculate_versionless_result(jsonResults,startTime,endTime,ifo_input=None):
 ################################
 
 def seg_spec_to_sql(spec):
-    """Given a string of the form ifo:name:version, ifo:name:* or ifo:name
+    """Given a string of the form ifo:name:version, ifo:name:* or ifo:name,
     constructs a SQL caluse to restrict a search to that segment definer"""
 
     parts = spec.split(':')
@@ -241,7 +241,7 @@ def seg_spec_to_sql(spec):
 #
 # The results of show-types is a join against segment_definer and segment
 # summary, and so does not fit into an existing table type.  So here we
-# define a new type so that the ligolw routines can generate the XML
+# define a new type so that the ligolw routines can generate the XML.
 #
 class ShowTypesResultTable(table.Table):
     tableName = "show_types_result:table"
@@ -259,7 +259,7 @@ class ShowTypesResultTable(table.Table):
 
 
 class ShowTypesResult(object):
-    __slots__ = ShowTypesResultTable.validcolumns.keys()
+    __slots__ = list(ShowTypesResultTable.validcolumns.keys())
 
     def get_pyvalue(self):
         if self.value is None:
@@ -303,7 +303,7 @@ def run_show_types(doc, connection, engine, gps_start_time, gps_end_time, includ
 
         seg_dict[key].append(segments.segment(segment_summary_start_time, segment_summary_end_time))
 
-    for key, value in seg_dict.iteritems():
+    for key, value in list(seg_dict.items()):
         segmentlist = segments.segmentlist(value)
         segmentlist.coalesce()
 
@@ -330,7 +330,7 @@ def run_query_types(doc, proc_id, connection, engine, gps_start_time, gps_end_ti
     AND NOT(%d > segment_summary.end_time OR segment_summary.start_time > %d)
     """ % (gps_start_time, gps_end_time)
 
-    type_clauses = map(seg_spec_to_sql, included_segments.split(','))
+    type_clauses = list(map(seg_spec_to_sql, included_segments.split(',')))
 
     if type_clauses != []:
         sql += " AND (" + "OR ".join(type_clauses) + ")"

@@ -48,15 +48,15 @@ verbose=False
 
 def dqsegdbCheckVersion(protocol,server,ifo,name,version,warnings=True):
     """
-    Checks for existence of a given version of a flag in the db.
-    Returns true if version exists
+    Checks for existence of a given version of a flag in the DB.
+    Returns true if version exists.
 
     Parameters
     ----------
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     ifo : `string`
         Ex: 'L1'
     name: `string`
@@ -76,9 +76,9 @@ def dqsegdbCheckVersion(protocol,server,ifo,name,version,warnings=True):
             return False
         else:
             raise
-    ult_json=json.loads(result)
+    result_json=json.loads(result)
     version_list=result_json['version']
-    if version in version_list:
+    if int(version) in version_list:
         return True
     else:
         return False
@@ -90,7 +90,7 @@ def dqsegdbCheckVersion(protocol,server,ifo,name,version,warnings=True):
 
 def dqsegdbMaxVersion(protocol,server,ifo,name):
     """
-    Checks for existence of a flag in the db, returns maximum
+    Checks for existence of a flag in the DB; returns maximum
     version if the flag exists exists, 0 if the flag does not exist.
 
     Parameters
@@ -98,7 +98,7 @@ def dqsegdbMaxVersion(protocol,server,ifo,name):
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     ifo : `string`
         Ex: 'L1'
     name: `string`
@@ -132,12 +132,12 @@ def dqsegdbMaxVersion(protocol,server,ifo,name):
 
 def dqsegdbFindEndTime(flag_dict):
     """
-    Determines max end_time from known times in flag_dict
+    Determines max end_time from known times in flag_dict.
 
     Parameters
     ----------
     flag_dict: `dictionary`
-        Input dictionary, converted from json using json.loads in previous call
+        Input dictionary, converted from JSON using json.loads in previous call
 
     Returns max_end_time: `int`
     """
@@ -151,15 +151,15 @@ def dqsegdbFindEndTime(flag_dict):
 
 def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime,warnings=True):
     """
-    Issue query to server for ifo:name:version with start and end time
-    Returns the python loaded JSON response!
+    Issue query to server for ifo:name:version with start and end time.
+    Returns the Python loaded JSON response!
 
     Parameters
     ----------
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     ifo : `string`
         Ex: 'L1'
     name: `string`
@@ -185,16 +185,16 @@ def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,start
 #dqsegdbQueryTimesCompatible
 def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_string,startTime,endTime,warnings=True):
     """
-    Issue query to server for ifo:name:version with start and end time
-    This is the version that reproduces S6 style query results when the query is empty
-    Returns the python loaded JSON response!
+    Issue query to server for ifo:name:version with start and end time.
+    This is the version that reproduces S6 style query results when the query is empty.
+    Returns the Python loaded JSON response!
 
     Parameters
     ----------
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     ifo : `string`
         Ex: 'L1'
     name: `string`
@@ -218,7 +218,7 @@ def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_st
         result_json=json.loads(result)
     except HTTPError as e:
         if e.code==404:
-            # For S6 executable compatibility, we need to return something anyway to make ligolw_segments_from_cats and segment_query work properly, in this case, we'll return a faked up dictionary with empty lists for keys 'known' and 'active', which the calling functions will correctly interperet (because it's the equivalent of asking for a flag outside known time for the S6 calls)
+            # For S6 executable compatibility, we need to return something anyway to make ligolw_segments_from_cats and segment_query work properly; in this case, we'll return a faked up dictionary with empty lists for keys 'known' and 'active', which the calling functions will correctly interperet (because it's the equivalent of asking for a flag outside known time for the S6 calls)
             result_json={"known":[],"active":[]}
         else:
             raise
@@ -228,8 +228,8 @@ def dqsegdbQueryTimesCompatible(protocol,server,ifo,name,version,include_list_st
 
 def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string,warnings=True):
     """
-    Issue query to server for ifo:name:version without start and end time
-    Returns the python loaded JSON response converted into a dictionary and queryurl!
+    Issue query to server for ifo:name:version without start and end time.
+    Returns the Python loaded JSON response converted into a dictionary and queryurl!
     Returns
     ----------
     [dictionary,string(url)]
@@ -239,7 +239,7 @@ def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string,wa
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     ifo : `string`
         Ex: 'L1'
     name: `string`
@@ -264,7 +264,7 @@ def coalesceResultDictionary(result_dict):
     Parameters
     ----------
     result_dict : `dict`
-        This is the input result dictionary from the other api calls
+        This is the input result dictionary from the other API calls
     out_result_dict : `dict`
         This is the output result dictionary with actual segment lists (and coalesced results).
 
@@ -283,15 +283,15 @@ def coalesceResultDictionary(result_dict):
 
 def queryAPIVersion(protocol,server,verbose,warnings=True):
     """
-    Construct url and issue query to get the reported list of all IFOs
-    provided by dqsegd and the API version of the server.
+    Construct URL and issue query to get the reported list of all IFOs
+    provided by dqsegdb and the API version of the server.
 
     Parameters
     ----------
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     warnings : `bool`
         show warnings for `HTTPError` (as well as raising exception),
         default: `True`
@@ -310,14 +310,14 @@ def reportFlags(protocol,server,verbose,warnings=True):
     Construct url and issue query to get the reported list of all flags
     provided by dqsegdb.
     From the API Doc:
-    Get a JSON formatted string resource describing all the flags in the database. This provides an optimization by returning all flag names and all associated versions in a single call.
+    Get a JSON-formatted string resource describing all the flags in the database. This provides an optimization by returning all flag names and all associated versions in a single call.
 
     Parameters
     ----------
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     warnings : `bool`
         show warnings for `HTTPError` (as well as raising exception),
         default: `True`
@@ -330,16 +330,16 @@ def reportFlags(protocol,server,verbose,warnings=True):
 
 def reportActive(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time,warnings=True):
     """
-    Construct url and issue query to get the reported list of all active segments for all flags in the time window provided.
+    Construct URL and issue query to get the reported list of all active segments for all flags in the time window provided.
     From the API Doc:
-    Get a JSON string resource containing the active segments for all flags between t1 and t2. Note that this returns exactly what /dq/IFO/FLAG/VERSION does, except for ALL flags over the query period instead of one flag. The clients must assume that they may get empty active lists for flags that are unactive between times t1 and t2.
+    Get a JSON string resource containing the active segments for all flags between t1 and t2. Note that this returns exactly what /dq/IFO/FLAG/VERSION does, except for ALL flags over the query period instead of one flag. The clients must assume that they may get empty active lists for flags that are inactive between times t1 and t2.
 
     Parameters
     ----------
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     includeSegments : `boolean`
         Ex: True
     verbose : `boolean`
@@ -367,7 +367,7 @@ def reportActive(protocol,server,includeSegments,verbose,gps_start_time,gps_end_
 
 def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time,warnings=True):
     """
-    Construct url and issue query to get the reported list of all known segments for all flags in the time window provided.
+    Construct URL and issue query to get the reported list of all known segments for all flags in the time window provided.
     From the API Doc:
     Get a JSON string resource containing the known segments for all flags between t1 and t2. Note that this returns exactly what /dq/IFO/FLAG/VERSION/known does, except for ALL flags over the query period instead of one flag. The clients must assume that they may get empty known lists for flags that are unknown between times t1 and t2.
 
@@ -376,7 +376,7 @@ def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_t
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     includeSegments : `boolean`
         Ex: True
     verbose : `boolean`
@@ -497,8 +497,8 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     Queries server for needed flag_versions to generate the result of a
     cascaded query (was called a versionless query in S6).
 
-    Returns a python dictionary representing the calculated result "versionless"
-    flag and also the python dictionaries (in a list) for the flag_versions
+    Returns a Python dictionary representing the calculated resulting "versionless"
+    flag and also the Python dictionaries (in a list) for the flag_versions
     necessary to construct the result.
 
     Parameters
@@ -506,7 +506,7 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     protocol : `string`
         Ex: 'https'
     server : `string`
-        Ex: 'dqsegdb5.phy.syr.edu'
+        Ex: 'segments.ligo.org'
     ifo : `string`
         Ex: 'L1'
     name: `string`
@@ -530,7 +530,7 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     else:
         verbose=False
 
-    ## Construct url and issue query to determine highest version from list
+    ## Construct URL and issue query to determine highest version from list
     ## of versions
     versionQueryURL=urifunctions.constructVersionQueryURL(protocol,server,ifo,name)
     if verbose:
@@ -558,7 +558,7 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
         #}
         versionData=json.loads(versionResult)  #JSON is nice... :)
 
-        ## Construct urls and issue queries for the multiple versions and dump the results to disk locally for careful provenance
+        ## Construct URLs and issue queries for the multiple versions and dump the results to disk locally for careful provenance
         jsonResults=[]
         #urlList=versionData['resource_type']
         version_list=versionData['version']
@@ -567,7 +567,7 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
         # sort list by decreasing version number and call each URL:
         sortedurlList=sorted(urlList, key=lambda url: url.split('/')[-1], reverse=True)
         for versioned_url in sortedurlList:
-            # I am assuming I need to pull off the versions from the urls to use my existing library function.
+            # I am assuming I need to pull off the versions from the URLs to use my existing library function.
             # Alternatively, we could make a new library function that starts from the end of the version and takes the include_list_string and start and end times as inputs
             version=versioned_url.split('/')[-1]
             queryurl=urifunctions.constructSegmentQueryURLTimeWindow(protocol,server,ifo,name,version,include_list_string,startTime,endTime)
@@ -629,16 +629,16 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
 
 def dtd_uri_callback(uri):
     """
-    S6 helper function for XML file writing and parsing using a dtd.
+    S6 helper function for XML file writing and parsing using a DTD.
     """
     if uri in ['http://www.ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt',
         'http://ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt']:
-        # if the XML file contains a http pointer to the ligolw DTD at CIT then
+        # if the XML file contains an http pointer to the ligolw DTD at CIT then
         # return a local copy to avoid any network problems
         return 'file://localhost' + os.path.join( os.environ["GLUE_PREFIX"],
           'etc/ligolw_dtd.txt' )
     else:
-        # otherwise just use the uri in the file
+        # otherwise just use the URI in the file
         return uri
 
 
@@ -649,7 +649,7 @@ def waitTill(runTime,timeout=2400):
     be exceuted at specified time.
     Function source: http://stackoverflow.com/a/6579355/2769157
     """
-    startTime = time2(*(map(int, runTime.split(':'))))
+    startTime = time2(*(list(map(int, runTime.split(':')))))
     waitTime=0 # Timeout set to 20 minutes
     while startTime > datetime.today().time() and waitTime < 1200:
         time.sleep(1)
@@ -660,9 +660,9 @@ def waitTill(runTime,timeout=2400):
 
 def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
     """
-    Attempts to patch data to a url where the data is in a dictionary format
-    that can be directly dumped to json that the dqsegdb server expects.
-    Correctly fails to making a new version or flag in the database as needed.
+    Attempts to patch data to a URL where the data is in a dictionary format
+    that can be directly dumped to JSON that the dqsegdb server expects.
+    Correctly fails at making a new version or flag in the database as needed.
     """
     try:
         #patch to the flag/version
@@ -734,7 +734,7 @@ def setupSegment_md(filename,xmlparser,lwtparser,debug):
     segment_md.parse(xmltext)
     if debug:
         #segment_md.table
-        segment_md.table.keys()
+        list(segment_md.table.keys())
     return segment_md
 
 def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=False,debug=True,threads=1,testing_options={}):
@@ -742,7 +742,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
     Inserts multiple dqxml files of data into the DQSEGDB.
 
     Input:
-    - filenames is a list of string filenames for  DQXML files.
+    - filenames is a list of string filenames for DQXML files.
     - hackDec11 is deprecated (always should be false): This was used to differentiate function against different server APIs before we used numbering an responses to make decisions.
     - testing_options is a dictionary including (optionally):offset(int),synchronize(time in 'HH:MM' format (string))
 
@@ -751,7 +751,8 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
     """
     logger.info("Beginning call to InsertMultipleDQXMLFileThreaded.  This message last updated April 14 2015, Ciao da Italia!")
     from threading import Thread
-    from Queue import Queue
+    #from Queue import Queue
+    import queue as Queue   ### P3 fix
     import sys
 
     # Make a call to server+'/dq':
@@ -812,7 +813,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         # section
 
         # Note:  Wherever temp_ preceeds a name, it is generally an identifier
-        # field from the dqxml, that is only good for the single dqxml file
+        # field from the DQXML file, that is only good for the single DQXML file
         # being parsed
 
 
@@ -894,11 +895,11 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
 
         temp_id_to_flag_version = {}
 
-        for i in flag_versions_numbered.keys():
+        for i in list(flag_versions_numbered.keys()):
             ifo = flag_versions_numbered[i]['ifos']
             name = flag_versions_numbered[i]['name']
             version = flag_versions_numbered[i]['version']
-            if (ifo,name,version) not in flag_versions.keys():
+            if (ifo,name,version) not in list(flag_versions.keys()):
                 if new_comments==True:
                     flag_versions[(ifo,name,version)] = InsertFlagVersion(ifo,name,version)
                 else:
@@ -923,7 +924,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
         # parse segment_summary table and associate known segments with
         # flag_versions above:
         ## Note this next line is needed for looping over multiple files
-        for i in flag_versions.keys():
+        for i in list(flag_versions.keys()):
             flag_versions[i].temp_process_ids={}
         for j in range(len(segment_md.table['segment_summary']['stream'])):
             #flag_versions_numbered[j] = {}
@@ -957,7 +958,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             # process_metadata dictionary
             process_id_index = segment_md.table['segment_summary']['orderedcol'].index('process_id')
             temp_process_id = segment_md.table['segment_summary']['stream'][j][process_id_index]
-            if temp_process_id in flag_versions[(ifo,name,version)].temp_process_ids.keys():
+            if temp_process_id in list(flag_versions[(ifo,name,version)].temp_process_ids.keys()):
                 # We don't need to append this process metadata, as it already
                 # exists We do need to extend the affected data start and stop
                 # to match
@@ -977,13 +978,13 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
 
 
         # Now, I need to append an insert_history element to the flag_versions
-        # for this ifo,name, version, as I have the correct insertion_metadata
+        # for this ifo, name, version, as I have the correct insertion_metadata
         # and the correct
-        # process_metadata (from the process_dict earlier
+        # process_metadata (from the process_dict earlier)
         if debug:
             t1=time.time()
-        for i in flag_versions.keys():
-            for pid in flag_versions[i].temp_process_ids.keys():
+        for i in list(flag_versions.keys()):
+            for pid in list(flag_versions[i].temp_process_ids.keys()):
                 start = flag_versions[i].temp_process_ids[pid]['insert_data_start']
                 stop = flag_versions[i].temp_process_ids[pid]['insert_data_stop']
                 if new_comments:
@@ -1041,7 +1042,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             print("Unexpected error:", sys.exc_info()[0])
             raise
 
-    for i in flag_versions.keys():
+    for i in list(flag_versions.keys()):
         flag_versions[i].coalesceInsertHistory()
 
     if threads>1:
@@ -1052,7 +1053,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             t=Thread(target=threadedPatchWithFailCases, args=[q,server,debug,logger])
             t.daemon=True
             t.start()
-        for i in flag_versions.values():
+        for i in list(flag_versions.values()):
             i.buildFlagDictFromInsertVersion()
             #i.flagDict
             url=i.buildURL(server)
@@ -1067,7 +1068,7 @@ def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.vi
             q.put(i)
         q.join()
     else:
-        for i in flag_versions.values():
+        for i in list(flag_versions.values()):
             i.buildFlagDictFromInsertVersion()
             #i.flagDict
             url=i.buildURL(server)

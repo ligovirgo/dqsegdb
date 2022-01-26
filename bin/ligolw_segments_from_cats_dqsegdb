@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2009 Larne Pekowsky
 # Copyright (C) 2014-2020 Syracuse University, European Gravitational Observatory, and Christopher Newport University.  Written by Ryan Fisher and Gary Hemming. See the NOTICE file distributed with this work for additional information regarding copyright ownership.
 #
@@ -44,7 +44,8 @@ import operator
 
 from six.moves.urllib.parse import urlparse
 from six.moves.urllib.request import urlopen
-from six.moves import reduce
+# from six.moves import reduce
+from functools import reduce
 
 from ligo import segments
 
@@ -61,8 +62,6 @@ from glue.segmentdb import segmentdb_utils
 
 from glue.ligolw.utils import process
 
-from glue import git_version
-
 from dqsegdb import apicalls
 from dqsegdb import clientutils
 
@@ -75,10 +74,15 @@ try:
 except:
         USER_NAME = pwd.getpwuid(os.getuid())[0]
 
+from dqsegdb._version import get_versions
 
 __author__ = "Larne Pekowsky <lppekows@physics.syr.edu>"
-__version__ = "git id %s" % git_version.id
-__date__ = git_version.date
+#__version__ = "git id %s" % git_version.id
+__version__ = get_versions()['version']
+__id__ = get_versions()['full-revisionid']
+__date__ = get_versions()['date']
+__verbose_msg__ = "version: " + get_versions()['version'] + "\nfull-revisionid: " + get_versions()['full-revisionid'] + "\ndirty: " + str(get_versions()['dirty']) \
+    + "\nerror: " + str(get_versions()['error']) + "\ndate: " + get_versions()['date']
 
 
 #
@@ -96,29 +100,28 @@ def parse_command_line():
     """
 
     parser = OptionParser(
-        version = "Name: %%prog\n%s" % git_version.verbose_msg,
+        version = "Name: %prog\n" + __verbose_msg__,
         usage   = "%prog -v|--veto-file filename [options]",
         description = "Reads one or more segment files and a veto file and generates files of veto segments"
 	)
 
-    parser.add_option("-v", "--veto-file",    metavar = "veto_file",    help = "veto XML file (required).")
+    parser.add_option("-v", "--veto-file",    metavar = "veto_file",    help = "Veto XML file (required).")
     parser.add_option("-o", "--output-dir",   metavar = "output_dir",   default = '.',          help = "Directory to write output (default=cwd).")
-    parser.add_option("-k", "--keep-db",      metavar = "keep_db",      action  = "store_true", help = "Keep sqlite database.")
-    parser.add_option("-r", "--remove-definer-table",    action = "store_true", help = "If set the veto definer table will not be included in the output.")
-
-    parser.add_option("-t", "--segment-url",  metavar = "segment_url", help = "Segment URL")
-    parser.add_option("-d", "--database",     metavar = "use_database", action = "store_true", help = "use database specified by environment variable S6_SEGMENT_SERVER")
-    parser.add_option("-f", "--dmt-file",     metavar = "use_files", action = "store_true", help = "Warning: NOT UPDATED FOR DQSEGDB CLIENT YET! use files in directory specified by environment variable ONLINEDQ")
-    parser.add_option("-c", "--cumulative-categories",   action = "store_true", help = "If set the category N files will contain all segments in categories <= N")
-    parser.add_option("-p", "--separate-categories",     action = "store_true", help = "If set the category N files will contain only category N")
-    parser.add_option("-i", "--individual-results",      action = "store_true", help = "If set include information on each veto individually.")
-    parser.add_option("-C", "--veto-categories", action="store", default=None, help="A comma separated list of all veto categories to consider. If not given then consider all categories in the veto-definer file.")
-    parser.add_option("-I", "--ifo-list", action="store", default=None, help="A comma separated list of all ifos to consider. If not given then consider all ifos in the veto-definer file.")
-    parser.add_option("-N", "--non-integer", action="store_true", help="Allow non-integer start and end time")
+    parser.add_option("-k", "--keep-db",      metavar = "keep_db",      action  = "store_true", help = "Keep sqlite database (don't delete it when the script exits).")
+    parser.add_option("-r", "--remove-definer-table",    action = "store_true", help = "If set, the veto definer table will not be included in the output.")
+    parser.add_option("-t", "--segment-url",  metavar = "segment_url", help = "Segment URL, e.g., https://segments.ligo.org .")
+    parser.add_option("-d", "--database",     metavar = "use_database", action = "store_true", help = "Use database specified by environment variable S6_SEGMENT_SERVER.")
+    parser.add_option("-f", "--dmt-file",     metavar = "use_files", action = "store_true", help = "Warning: NOT UPDATED FOR DQSEGDB CLIENT YET! use files in directory specified by environment variable ONLINEDQ.")
+    parser.add_option("-c", "--cumulative-categories",   action = "store_true", help = "If set, the category N files will contain all segments in categories <= N.")
+    parser.add_option("-p", "--separate-categories",     action = "store_true", help = "If set, the category N files will contain only category N.")
+    parser.add_option("-i", "--individual-results",      action = "store_true", help = "If set, include information on each veto individually.")
+    parser.add_option("-C", "--veto-categories", action="store", default=None, help="A comma-separated list of all veto categories to consider. If not given, then consider all categories in the veto-definer file.")
+    parser.add_option("-I", "--ifo-list", action="store", default=None, help="A comma-separated list of all ifos to consider. If not given, then consider all ifos in the veto-definer file.")
+    parser.add_option("-N", "--non-integer", action="store_true", help="Allow non-integer start and end time.")
 
     # Time options
-    parser.add_option("-s", "--gps-start-time", metavar = "gps_start_time", help = "Start of GPS time range")
-    parser.add_option("-e", "--gps-end-time",   metavar = "gps_end_time", help = "End of GPS time range")
+    parser.add_option("-s", "--gps-start-time", metavar = "gps_start_time", help = "Start of GPS time range.")
+    parser.add_option("-e", "--gps-end-time",   metavar = "gps_end_time", help = "End of GPS time range.")
     parser.add_option("-g", "--debug", metavar = "debug", help = "Print debug information.")
 
     options, others = parser.parse_args()
@@ -163,8 +166,7 @@ def parse_command_line():
     file_location     = None
 
     # Make sure we know who to contact for data
-    # (This is redundant with ligolw_segment_query, maybe move to
-    # query_engine)
+    # (This is redundant with ligolw_segment_query, maybe move to query_engine)
     if options.segment_url:
         if options.segment_url.startswith('ldbd') or options.segment_url.startswith('http'):
             database_location = options.segment_url
@@ -291,10 +293,10 @@ if __name__ == '__main__':
 
     if file_location:
         xml_files += segmentdb_utils.get_all_files_in_range(file_location, min_start_time, max_end_time)
-        segment_query_engine = veto_query_engine
-    else:
-        segment_connection   = segmentdb_utils.setup_database(db_location)
-        segment_query_engine = query_engine.LdbdQueryEngine(segment_connection)
+#        segment_query_engine = veto_query_engine
+#    else:
+#        segment_connection   = segmentdb_utils.setup_database(db_location)
+#        segment_query_engine = query_engine.LdbdQueryEngine(segment_connection)
 
     # old before Kipp changed APIs:  ligolw_sqlite.insert_from_urls(veto_connection, xml_files)
     ContentHandler.connection = veto_connection
@@ -336,7 +338,7 @@ if __name__ == '__main__':
             doc.childNodes[0].appendChild(dbtables.get_xml(veto_connection, ['process']).childNodes[0])
 
             # Register ourselves
-            proc_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__, version=git_version.id).process_id
+            proc_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__, version = __id__).process_id
 
             # Keep the veto_definer for tracking purposes
             if not options.remove_definer_table:
@@ -463,4 +465,4 @@ if __name__ == '__main__':
         os.remove(temp_db)
     if debug:
         print("If you see this message, your call to ligolw_segments_from_cats was successful.")
-        print("You may want to follow up on any warnings printed before this point, they will indicate any flags that didn't exist in the database but were in the veto definer file.")
+        print("You may want to follow up on any warnings printed before this point; they will indicate any flags that didn't exist in the database but were in the veto definer file.")

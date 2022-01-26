@@ -30,7 +30,16 @@ Utility function-handling class file
 # Import.
 import json
 import logging
-import urllib2
+
+# attempt at Python 2/Python 3 compatibility; there is a related change
+#   in the call that was to urllib2 later
+#import urllib2
+try:
+    # this should work in P2 but not P3
+    from urllib2 import urlopen
+except ImportError as error:
+    # this should work in P3 (and P2, but we probably (?) don't want it to)
+    from urllib.request import urlopen
 
 # Instantiate logger.
 log = logging.getLogger(__name__)
@@ -43,7 +52,9 @@ class UtilHandle:
         resp_dict = {'r' : False, 'm' : '', 'd' : {}}
         # Attempt to open url.
         try:
-            response = urllib2.urlopen(uri)
+            # attempt at P2/P3 compatibility; see import statements
+            #response = urllib2.urlopen(uri)
+            response = urlopen(uri)
         except:
             # Log event.
             resp_dict['m'] = 'Unable to complete ' + n + ': ' + uri

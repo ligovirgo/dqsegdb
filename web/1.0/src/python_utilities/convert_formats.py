@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License\n
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.\n
 
+from __future__ import print_function
 import argparse
 import json
 import shutil
@@ -220,4 +221,4 @@ if __name__ == "__main__":
         final_filepath=".".join(["_".join(filepath.split("_")[0:-1]),filepath.split("_")[-1:][0]])
         shutil.copy(res_file, final_filepath)
 
-    print "Output file %s created" % res_file
+    print("Output file %s created" % res_file)
