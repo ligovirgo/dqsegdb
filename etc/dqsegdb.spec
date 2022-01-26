@@ -88,7 +88,6 @@ rm -rf $RPM_BUILD_ROOT
 %license LICENSE
 %doc README.md
 %{_bindir}/*dqsegdb
-%{_prefix}/etc/dqsegdb*
 
 %files -n python%{python3_pkgversion}-dqsegdb
 %defattr(-,root,root)
