@@ -194,7 +194,8 @@ def putDataUrllib2(url,payload,timeout=900,logger=None,
     #    opener=urllib_request.build_opener(HTTPSClientAuthHandler)
     #else:
     #    opener = urllib_request.build_opener(urllib_request.HTTPHandler)
-    if isinstance(payload, str): payload = payload.encode('utf-8')    # P3 fix
+    if isinstance(payload, str):
+        payload = payload.encode('utf-8')
     request = urllib_request.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PUT'
@@ -257,6 +258,8 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None,
     #else:
     #    opener = urllib_request.build_opener(urllib_request.HTTPHandler)
     #print(opener.handle_open.items())
+    if isinstance(payload, str):
+        payload = payload.encode('utf-8')
     request = urllib_request.Request(url, data=payload)
     request.add_header('Content-Type', 'JSON')
     request.get_method = lambda: 'PATCH'
@@ -264,7 +267,6 @@ def patchDataUrllib2(url,payload,timeout=900,logger=None,
         logger.debug("Beginning URL call: %s" % url)
     try:
         #urlreturned = opener.open(request)
-        if isinstance(request.data, str): request.data = request.data.encode('utf-8')   # P3 fix
         urlreturned = urllib_request.urlopen(request, timeout=timeout, **urlopen_kw)
     except urllib_error.HTTPError as e:
         handleHTTPError("PATCH",url,e)

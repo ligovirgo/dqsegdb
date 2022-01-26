@@ -664,6 +664,13 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
     that can be directly dumped to JSON that the dqsegdb server expects.
     Correctly fails at making a new version or flag in the database as needed.
     """
+    # translate dict data to bytes in a compact representation
+    data = json.dumps(
+        i.flagDict,
+        indent=None,
+        separators=(",",":"),
+    ).encode("utf-8")
+
     try:
         #patch to the flag/version
         if debug:
@@ -673,7 +680,7 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
             startTime=testing_options['synchronize']
             inlogger.debug("Trying to patch synchronously at time %s" % startTime)
             waitTill(startTime)
-        patchDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
+        patchDataUrllib2(url,data,logger=inlogger)
         if debug:
             inlogger.debug("Patch alone succeeded for %s" % url)
             #print("Patch alone succeeded for %s" % url)
@@ -685,7 +692,7 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
             if debug:
                 inlogger.debug("Trying to put alone for url: %s" % url)
                 #print("Trying to put alone for %s" % url)
-            putDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
+            putDataUrllib2(url,data,logger=inlogger)
             if debug:
                 inlogger.debug("Put alone succeeded for %s" % url)
                 #print("Put alone succeeded for %s" % url)
@@ -697,9 +704,9 @@ def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
             if debug:
                 inlogger.debug("Trying to PUT flag and version to: %s" % suburl)
                 #print("Trying to PUT flag and version to: "+suburl)
-            putDataUrllib2(suburl,json.dumps(i.flagDict),logger=inlogger)
+            putDataUrllib2(suburl,data,logger=inlogger)
             #put to version
-            putDataUrllib2(url,json.dumps(i.flagDict),logger=inlogger)
+            putDataUrllib2(url,data,logger=inlogger)
             if debug:
                 inlogger.debug("Had to PUT flag and version")
                 #print("Had to PUT flag and version")
