@@ -293,10 +293,6 @@ if __name__ == '__main__':
 
     if file_location:
         xml_files += segmentdb_utils.get_all_files_in_range(file_location, min_start_time, max_end_time)
-#        segment_query_engine = veto_query_engine
-#    else:
-#        segment_connection   = segmentdb_utils.setup_database(db_location)
-#        segment_query_engine = query_engine.LdbdQueryEngine(segment_connection)
 
     # old before Kipp changed APIs:  ligolw_sqlite.insert_from_urls(veto_connection, xml_files)
     ContentHandler.connection = veto_connection
@@ -363,14 +359,6 @@ if __name__ == '__main__':
                 if len(veto_interval) > 0:
                     segdefs.append( (ifo, name, version, veto_interval[0][0], veto_interval[0][1], start_pad, end_pad) )
 
-            # Old:
-            # if options.use_s6 or options.dmt_files:
-            #     vetoed_segments   = segmentdb_utils.query_segments(segment_query_engine, 'segment', segdefs)
-            #     segment_summaries = segmentdb_utils.query_segments(segment_query_engine, 'segment_summary', segdefs)
-            #     #import pdb
-            #     #pdb.set_trace()
-            # else:
-            # New DQSEGDB client:
             o=urlparse(options.segment_url)
             protocol=o.scheme
             server=o.netloc
