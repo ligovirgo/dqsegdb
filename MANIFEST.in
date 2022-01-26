@@ -1,6 +1,5 @@
 include LICENSE README MANIFEST.in
 include etc/*
-prune dqsegdb.egg-info
 exclude etc/.gitignore
 exclude etc/dqsegdb-0.91.spec
 exclude etc/dqsegdb_template.spec
@@ -9,3 +8,6 @@ include debian/*
 include debian/source/*
 include versioneer.py
 include dqsegdb/_version.py
+prune bdist
+prune server
+prune web
