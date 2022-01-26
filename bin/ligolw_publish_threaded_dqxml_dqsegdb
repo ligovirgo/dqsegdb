@@ -80,13 +80,18 @@ try:
 except:
   USER_NAME = pwd.getpwuid(os.getuid())[0]
 
-from glue import git_version
+from dqsegdb._version import get_versions
+
 __author__ = "Ryan Fisher <ryan.fisher@ligo.org>"
-__date__    = git_version.date
-__version__ = git_version.id
+__date__    = get_versions()['date']
+__version__ = get_versions()['version']
+__id__ = get_versions()['full-revisionid']
+__verbose_msg__ = "version: " + get_versions()['version'] + "\nfull-revisionid: " + get_versions()['full-revisionid'] + "\ndirty: " + str(get_versions()['dirty']) \
+    + "\nerror: " + str(get_versions()['error']) + "\ndate: " + get_versions()['date']
 
 parser = OptionParser(
-  version = "%prog CVS $Header$",
+  #version = "%prog CVS $Header$",
+  version = "Name: %prog\n" + __verbose_msg__,
   usage   = "%prog [OPTIONS]",
   description = "Publishes XML files into the segment database")
 

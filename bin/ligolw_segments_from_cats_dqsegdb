@@ -62,8 +62,6 @@ from glue.segmentdb import segmentdb_utils
 
 from glue.ligolw.utils import process
 
-from glue import git_version
-
 from dqsegdb import apicalls
 from dqsegdb import clientutils
 
@@ -76,10 +74,15 @@ try:
 except:
         USER_NAME = pwd.getpwuid(os.getuid())[0]
 
+from dqsegdb._version import get_versions
 
 __author__ = "Larne Pekowsky <lppekows@physics.syr.edu>"
-__version__ = "git id %s" % git_version.id
-__date__ = git_version.date
+#__version__ = "git id %s" % git_version.id
+__version__ = get_versions()['version']
+__id__ = get_versions()['full-revisionid']
+__date__ = get_versions()['date']
+__verbose_msg__ = "version: " + get_versions()['version'] + "\nfull-revisionid: " + get_versions()['full-revisionid'] + "\ndirty: " + str(get_versions()['dirty']) \
+    + "\nerror: " + str(get_versions()['error']) + "\ndate: " + get_versions()['date']
 
 
 #
@@ -97,7 +100,7 @@ def parse_command_line():
     """
 
     parser = OptionParser(
-        version = "Name: %%prog\n%s" % git_version.verbose_msg,
+        version = "Name: %prog\n" + __verbose_msg__,
         usage   = "%prog -v|--veto-file filename [options]",
         description = "Reads one or more segment files and a veto file and generates files of veto segments"
 	)
@@ -290,10 +293,10 @@ if __name__ == '__main__':
 
     if file_location:
         xml_files += segmentdb_utils.get_all_files_in_range(file_location, min_start_time, max_end_time)
-        segment_query_engine = veto_query_engine
-    else:
-        segment_connection   = segmentdb_utils.setup_database(db_location)
-        segment_query_engine = query_engine.LdbdQueryEngine(segment_connection)
+#        segment_query_engine = veto_query_engine
+#    else:
+#        segment_connection   = segmentdb_utils.setup_database(db_location)
+#        segment_query_engine = query_engine.LdbdQueryEngine(segment_connection)
 
     # old before Kipp changed APIs:  ligolw_sqlite.insert_from_urls(veto_connection, xml_files)
     ContentHandler.connection = veto_connection
@@ -335,7 +338,7 @@ if __name__ == '__main__':
             doc.childNodes[0].appendChild(dbtables.get_xml(veto_connection, ['process']).childNodes[0])
 
             # Register ourselves
-            proc_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__, version=git_version.id).process_id
+            proc_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__, version = __id__).process_id
 
             # Keep the veto_definer for tracking purposes
             if not options.remove_definer_table:

@@ -44,8 +44,6 @@ import pwd
 
 from ligo import segments
 
-from glue import git_version
-
 from dqsegdb import apicalls
 import json
 
@@ -60,11 +58,15 @@ except:
   USER_NAME = pwd.getpwuid(os.getuid())[0]
 
 
-
+from dqsegdb._version import get_versions
 
 __author__  = "Ryan Fisher <ryan.fisher@ligo.org>"
-__version__ = "git id %s" % git_version.id
-__date__ = git_version.date
+__version__ = get_versions()['version']
+__id__ = get_versions()['full-revisionid']
+__date__ = get_versions()['date']
+__verbose_msg__ = "version: " + get_versions()['version'] + "\nfull-revisionid: " + get_versions()['full-revisionid'] + "\ndirty: " + str(get_versions()['dirty']) \
+    + "\nerror: " + str(get_versions()['error']) + "\ndate: " + get_versions()['date']
+
 
 #
 # =============================================================================
@@ -81,7 +83,8 @@ def parse_command_line():
     """
 
     parser = OptionParser(
-        version = "Name: %%prog\n%s" % git_version.verbose_msg,
+        version = "Name: %prog\n" + __verbose_msg__,
+        #version = "Name: %%prog\nVersion: %s" % get_versions()['version'],
         usage       = "%prog [ --version | --segment-url ] options gps-time1",
         description = "Provides a report of known and active flags from the segment database for a given GPS time, with a configurable window."
 	)

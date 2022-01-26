@@ -72,7 +72,8 @@ from glue.segmentdb import segmentdb_utils
 from glue.ligolw.utils import ligolw_sqlite
 from glue.ligolw import dbtables
 
-from glue import git_version
+from dqsegdb._version import get_versions
+
 
 debug=False
 #debug=True
@@ -86,8 +87,15 @@ except:
 
 
 __author__  = "Ryan Fisher <ryan.fisher@ligo.org>, Larne Pekowsky <lppekows@physics.syr.edu>, Ping Wei <piwei@syr.edu>"
-__version__ = "git id %s" % git_version.id
-__date__ = git_version.date
+#__version__ = "git id %s" % git_version.id
+__version__ = get_versions()['version']
+__id__ = get_versions()['full-revisionid']
+__date__ = get_versions()['date']
+__verbose_msg__ = "version: " + get_versions()['version'] + "\nfull-revisionid: " + get_versions()['full-revisionid'] + "\ndirty: " + str(get_versions()['dirty']) \
+    + "\nerror: " + str(get_versions()['error']) + "\ndate: " + get_versions()['date']
+__formatted_date__ = __date__[0:10] + " " + __date__[11:19] + " +0000"
+#__formatted_date__ = __date__[0:10] + " " + __date__[11:19] + " " + __date__[19:25]   # it would be nice to fix this so that the time isn't off by a few hours
+
 
 
 #
@@ -105,7 +113,7 @@ def parse_command_line():
     """
 
     parser = OptionParser(
-        version = "Name: %%prog\n%s" % git_version.verbose_msg,
+        version = "Name: %prog\n" + __verbose_msg__,
         usage       = "%prog [ --version | --ping | --show-types | --query-types | --query-segments ]  [ --segment | --database | --dmt-files ] options ",
         description = "Performs a number of queries against either a set of DMT files or a segment database"
 	)
@@ -732,7 +740,7 @@ if __name__ == '__main__':
     # set up the response
     doc = ligolw.Document()
     doc.appendChild(ligolw.LIGO_LW())
-    process_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__, version = git_version.id, cvs_entry_time = __date__).process_id
+    process_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__, version = __id__, cvs_entry_time = __formatted_date__).process_id
 
     temp_files = False
 

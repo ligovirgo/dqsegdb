@@ -60,7 +60,6 @@ try:
   from glue import gpstime
   from glue import ldbd
   from ligo import segments
-  from glue import git_version
   #from glue.segmentdb import segmentdb_utils
   from glue.ligolw import lsctables
   from glue.ligolw import ligolw
@@ -76,10 +75,19 @@ Check that glue is correctly installed and in your PYTHONPATH.
 """ % e, file=sys.stderr)
   sys.exit(1)
 ##################################################################
+
+from dqsegdb._version import get_versions
+
 __author__ = "Ryan Fisher <ryan.fisher@ligo.org>"
-__date__ = git_version.date
-__version__ = git_version.id
-__src__ = git_version.status
+__version__ = get_versions()['version']
+__id__ = get_versions()['full-revisionid']
+__date__ = get_versions()['date']
+__verbose_msg__ = "version: " + get_versions()['version'] + "\nfull-revisionid: " + get_versions()['full-revisionid'] + "\ndirty: " + str(get_versions()['dirty']) \
+    + "\nerror: " + str(get_versions()['error']) + "\ndate: " + get_versions()['date']
+__formatted_date__ = __date__[0:10] + " " + __date__[11:19] + " +0000"
+#__formatted_date__ = __date__[0:10] + " " + __date__[11:19] + " " + __date__[19:25]   # it would be nice to fix this so that the time isn't off by a few hours
+#__src__ = git_version.status
+__src__ = "Status: dirty = " + str(get_versions()['dirty'])
 
 PROGRAM_NAME = sys.argv[0].replace('./','')
 PROGRAM_PID  = os.getpid()
@@ -231,8 +239,8 @@ doc.appendChild(ligolw.LIGO_LW())
 ligolwtypes.FromPyType[type(True)] = ligolwtypes.FromPyType[type(0)]
 
 process_id = process.register_to_xmldoc(doc, PROGRAM_NAME, options.__dict__,
-             version = __version__,
-             cvs_entry_time = __date__, comment = 'ligolw_segment_insert_dqsegdb client insert or append').process_id
+             version = __id__,
+             cvs_entry_time = __formatted_date__, comment = 'ligolw_segment_insert_dqsegdb client insert or append').process_id
 
 ##########################################################################
 #             Process segment-file and summary-file
