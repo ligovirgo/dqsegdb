@@ -16,3 +16,11 @@ web/src/.pydevproject
 *.so
 *.swp
 /.coverage
+
+# debian build files
+debian/files
+debian/*debhelper*
+debian/*.substvars
+debian/*dqsegdb/
+debian/tmp/
+.pybuild/

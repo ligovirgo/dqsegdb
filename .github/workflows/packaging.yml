@@ -286,7 +286,7 @@ jobs:
     runs-on: ubuntu-latest
     container: igwn/base:${{ matrix.el }}
     env:
-      SRPM: "dqsegdb-*.src.rpm"
+      SRPM: "python-dqsegdb-*.src.rpm"
     steps:
       - name: Download SRPM
         uses: actions/download-artifact@v2
