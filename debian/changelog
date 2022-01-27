@@ -1,3 +1,10 @@
+dqsegdb (2.0.0-1) unstable; urgency=medium
+
+  * 2.0.0 change from Python 2 to Python 3; numerous small + medium improvements in code
+  * added python3-lal as a requirement of python3-dqsegdb
+
+ -- Robert Bruntz <robert.bruntz@ligo.org>  Thu, 27 Jan 2022 14:11:00 -0500
+
 dqsegdb (1.6.1-1) unstable; urgency=low
 
   * 1.6.1 bug fix  release to use new ssl handler for https connections for

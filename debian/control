@@ -21,6 +21,7 @@ Depends:
  ${misc:Depends},
  ${python3:Depends},
  python3-gwdatafind,
+ python3-lal
  python3-ligo-segments,
  python3-lscsoft-glue (>= 1.55) | python3-glue (>= 1.55),
  python3-pyrxp,
