@@ -1,7 +1,7 @@
-six
-pykerberos
-pyRXP
-pyOpenSSL >= 0.14
+gwdatafind
+lalsuite
 ligo-segments
 lscsoft-glue >= 1.55.0
-gwdatafind
+pyOpenSSL >= 0.14
+pyRXP
+six
