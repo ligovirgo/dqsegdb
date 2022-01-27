@@ -398,7 +398,7 @@ def run_query_segments(doc, process_id, engine, gps_start_time, gps_end_time, in
 
         ifo     = spec[0]
         name    = spec[1]
-        if len(spec) is 3 and spec[2] is not '*':
+        if len(spec) == 3 and spec[2] != '*':
             version = int(spec[2])
             if version < 1:
                 print("Segment version numbers must be greater than zero", file=sys.stderr)
