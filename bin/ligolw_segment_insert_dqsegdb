@@ -121,7 +121,6 @@ def parse_command_line():
   parser.add_option("-G", "--segment-file", action = "store", metavar = "FILE", default = None,  help = "Read the segment rows from FILE. This should containin the GPS start and end times over which the flag was active")
   parser.add_option("-B", "--active-indicates-ifo-goodness", action = "store_true", default = False,  help = "Sets the variable in the database to indicate that the flag is active when something is good in the ifo state. Default is False, so active flags normally indicate something is wrong.")
 
-
   return parser.parse_args()
 
 
@@ -172,17 +171,6 @@ if len(errmsg) and not options.ping:
   sys.exit(1)
 
 
-def dtd_uri_callback(uri):
-  if uri in ['http://www.ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt',
-    'http://ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt']:
-    # if the XML file contains a http pointer to the ligolw DTD at CIT then
-    # return a local copy to avoid any network problems
-    return 'file://localhost' + os.path.join( os.environ["GLUE_PREFIX"],
-      'etc/ligolw_dtd.txt' )
-  else:
-    # otherwise just use the uri in the file
-    return uri
-
 def publishAndExit(filepath,debug=False):
   result=callInsertMultipleDQXMLThreaded(filepath,debug)
   if not result:
@@ -192,8 +180,10 @@ def publishAndExit(filepath,debug=False):
     print("Insert worked!")
     sys.exit()
 
+
 def del_file(name):
   os.remove(name)
+
 
 def callInsertMultipleDQXMLThreaded(filepath,debug):
   logger = logging.getLogger('ligolw_publish_dqxml_dqsegdb')

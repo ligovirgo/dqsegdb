@@ -46,6 +46,7 @@ from dqsegdb.urifunctions import *
 __author__ = 'Ryan Fisher <ryan.fisher@ligo.org>'
 verbose=False
 
+
 def dqsegdbCheckVersion(protocol,server,ifo,name,version,warnings=True):
     """
     Checks for existence of a given version of a flag in the DB.
@@ -87,6 +88,7 @@ def dqsegdbCheckVersion(protocol,server,ifo,name,version,warnings=True):
     # Pro:
     # No need to actually parse result for this function so just return True
     # Con?
+
 
 def dqsegdbMaxVersion(protocol,server,ifo,name):
     """
@@ -148,6 +150,7 @@ def dqsegdbFindEndTime(flag_dict):
         import warnings
         warnings.warn("Function used to find max known_time from a flag was handed a flag with an empty set of known times.  Returning None")
         return None
+
 
 def dqsegdbQueryTimes(protocol,server,ifo,name,version,include_list_string,startTime,endTime,warnings=True):
     """
@@ -257,6 +260,7 @@ def dqsegdbQueryTimeless(protocol,server,ifo,name,version,include_list_string,wa
     result_json=json.loads(result)
     return result_json,queryurl
 
+
 def coalesceResultDictionary(result_dict):
     """
     Takes a dictionary as returned by QueryTimes or QueryTimeless and converts the lists of tuples into actual segment lists (and coalesces them).
@@ -280,6 +284,7 @@ def coalesceResultDictionary(result_dict):
     known_seg_list.coalesce()
     out_result_dict['known']=known_seg_list
     return out_result_dict
+
 
 def queryAPIVersion(protocol,server,verbose,warnings=True):
     """
@@ -328,6 +333,7 @@ def reportFlags(protocol,server,verbose,warnings=True):
     result=urifunctions.getDataUrllib2(queryurl,warnings=warnings)
     return result
 
+
 def reportActive(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time,warnings=True):
     """
     Construct URL and issue query to get the reported list of all active segments for all flags in the time window provided.
@@ -365,6 +371,7 @@ def reportActive(protocol,server,includeSegments,verbose,gps_start_time,gps_end_
     result=urifunctions.getDataUrllib2(queryurl,timeout=1200,warnings=warnings)
     return result,queryurl
 
+
 def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_time,warnings=True):
     """
     Construct URL and issue query to get the reported list of all known segments for all flags in the time window provided.
@@ -400,6 +407,7 @@ def reportKnown(protocol,server,includeSegments,verbose,gps_start_time,gps_end_t
         print(queryurl)
     result=urifunctions.getDataUrllib2(queryurl,timeout=1200,warnings=warnings)
     return result,queryurl
+
 
 def parseKnown(jsonResult):
     """
@@ -489,8 +497,8 @@ def parseKnown(jsonResult):
             row=(str(ifo),str(flag),int(version),str(comment),float(start),float(stop),str(summary_comment))
             rows.append(row)
 
-
     return rows
+
 
 def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, startTime, endTime, debug=False, warnings=True):
     """
@@ -627,21 +635,6 @@ def dqsegdbCascadedQuery(protocol, server, ifo, name, include_list_string, start
     # Note: The result_flag will not have query_metadata
     return result_flag,jsonResults,affected_results
 
-def dtd_uri_callback(uri):
-    """
-    S6 helper function for XML file writing and parsing using a DTD.
-    """
-    if uri in ['http://www.ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt',
-        'http://ldas-sw.ligo.caltech.edu/doc/ligolwAPI/html/ligolw_dtd.txt']:
-        # if the XML file contains an http pointer to the ligolw DTD at CIT then
-        # return a local copy to avoid any network problems
-        return 'file://localhost' + os.path.join( os.environ["GLUE_PREFIX"],
-          'etc/ligolw_dtd.txt' )
-    else:
-        # otherwise just use the URI in the file
-        return uri
-
-
 
 def waitTill(runTime,timeout=2400):
     """
@@ -655,7 +648,6 @@ def waitTill(runTime,timeout=2400):
         time.sleep(1)
         waitTime+=1
     return
-
 
 
 def patchWithFailCases(i,url,debug=True,inlogger=None,testing_options={}):
@@ -727,6 +719,7 @@ def threadedPatchWithFailCases(q,server,debug,inputlogger=None):
             sys.exit(1)
         q.task_done()
 
+
 def setupSegment_md(filename,xmlparser,lwtparser,debug):
     """
     Helper function used to setup ligolw parser (S6 xml generation tool).
@@ -743,6 +736,7 @@ def setupSegment_md(filename,xmlparser,lwtparser,debug):
         #segment_md.table
         list(segment_md.table.keys())
     return segment_md
+
 
 def InsertMultipleDQXMLFileThreaded(filenames,logger,server='http://slwebtest.virgo.infn.it',hackDec11=False,debug=True,threads=1,testing_options={}):
     """
