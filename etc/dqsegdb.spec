@@ -51,10 +51,10 @@ DQSEGDB server instances.
 
 %package -n python%{python3_pkgversion}-%{srcname}
 Summary: Python %{python3_version} client library for the DQSEGDB service
-Requires: python%{python3_pkgversion}-glue >= 1.55
 Requires: python%{python3_pkgversion}-gwdatafind
 Requires: python%{python3_pkgversion}-lal
 Requires: python%{python3_pkgversion}-ligo-segments
+Requires: python%{python3_pkgversion}-lscsoft-glue >= 3.0.1
 Requires: python%{python3_pkgversion}-pyOpenSSL >= 0.14
 Requires: python%{python3_pkgversion}-pyRXP
 %{?python_provide:%python_provide python%{python3_pkgversion}-%{srcname}}

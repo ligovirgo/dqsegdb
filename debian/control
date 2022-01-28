@@ -8,7 +8,7 @@ Build-Depends:
  python3-all,
  python3-gwdatafind,
  python3-ligo-segments,
- python3-lscsoft-glue (>= 1.55) | python3-glue (>= 1.55),
+ python3-lscsoft-glue (>= 3.0.1),
  python3-pyrxp,
  python3-pytest,
  python3-setuptools,
@@ -23,7 +23,8 @@ Depends:
  python3-gwdatafind,
  python3-lal,
  python3-ligo-segments,
- python3-lscsoft-glue (>= 1.55) | python3-glue (>= 1.55),
+ python3-lscsoft-glue (>= 3.0.1),
+ python3-openssl (>= 0.14),
  python3-pyrxp,
 Description: Python 3 DQSegDB client
  This package provides the Python3 library to connect to LIGO/VIRGO
@@ -35,7 +36,7 @@ Depends:
  ${misc:Depends},
  ${python3:Depends},
  python3-dqsegdb (= ${binary:Version}),
-Conflicts: python-dqsegdb (<< 1.6.1-2)
+Conflicts: python-dqsegdb (<< 2.0.0-1)
 Description: dqsegdb client
  This package provides the client tools to connect to LIGO/VIRGO
  DQSEGDB instances.
