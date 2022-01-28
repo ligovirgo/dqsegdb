@@ -1,6 +1,6 @@
 %define srcname dqsegdb
-%define version 1.6.1
-%define release 2
+%define version 2.0.0
+%define release 1
 
 Name: python-%{srcname}
 Version: %{version}
@@ -53,6 +53,7 @@ DQSEGDB server instances.
 Summary: Python %{python3_version} client library for the DQSEGDB service
 Requires: python%{python3_pkgversion}-glue >= 1.55
 Requires: python%{python3_pkgversion}-gwdatafind
+Requires: python%{python3_pkgversion}-lal
 Requires: python%{python3_pkgversion}-ligo-segments
 Requires: python%{python3_pkgversion}-pyOpenSSL >= 0.14
 Requires: python%{python3_pkgversion}-pyRXP
@@ -99,6 +100,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog
 
 %changelog
+* Thu Jan 27 2022 Robert Bruntz <robert.bruntz@ligo.org> 2.0.0-1
+- added python3-lal as a requirement for python3-dqsegdb
+
 * Tue Dec 7 2021 Duncan Macleod <duncan.macleod@ligo.org> 1.6.1-2
 - build python3 packages
 - bundle command-line tools separately
