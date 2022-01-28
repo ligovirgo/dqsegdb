@@ -100,7 +100,7 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog
 
 %changelog
-* Thur Jan 27 2022 Robert Bruntz <robert.bruntz@ligo.org> 2.0.0-1
+* Thu Jan 27 2022 Robert Bruntz <robert.bruntz@ligo.org> 2.0.0-1
 - added python3-lal as a requirement for python3-dqsegdb
 
 * Tue Dec 7 2021 Duncan Macleod <duncan.macleod@ligo.org> 1.6.1-2
