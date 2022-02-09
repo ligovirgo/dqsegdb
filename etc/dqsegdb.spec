@@ -25,7 +25,12 @@ BuildRequires: python%{python3_pkgversion}
 BuildRequires: python%{python3_pkgversion}-setuptools
 
 # test requirements
+BuildRequires: python%{python3_pkgversion}-glue >= 1.55
+BuildRequires: python%{python3_pkgversion}-gwdatafind
+BuildRequires: python%{python3_pkgversion}-lal
+BuildRequires: python%{python3_pkgversion}-ligo-segments
 BuildRequires: python%{python3_pkgversion}-pyOpenSSL >= 0.14
+BuildRequires: python%{python3_pkgversion}-pyRXP
 BuildRequires: python%{python3_pkgversion}-pytest
 
 # -- src.rpm
