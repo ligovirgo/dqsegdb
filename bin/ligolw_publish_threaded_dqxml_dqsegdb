@@ -29,34 +29,33 @@ Example call to function:
 ligolw_publish_threaded_dqxml_dqsegdb --segment-url https://segments.ligo.org --state-file=/home/rfisher/DQSEGDB/DQSEGDBClient/var/spool/L-DQ_Segments_long_test.xml --pid-file=/home/rfisher/DQSEGDB/DQSEGDBClient/var/run/L-DQ_Segments.pid --log-file=/home/rfisher/DQSEGDB/DQSEGDBClient/var/log/L-DQ_Segments.log --input-directory=/archive/frames/dmt/ER4/DQ/L1 --log-level DEBUG -m 60 -c 20 -e 105819443
 """
 
-from __future__ import print_function
-
-import sys
-import traceback
 import copy
-import pwd
-import os
-import signal
-import re
 import logging
 import logging.handlers
-
+import os
+import pwd
+import signal
+import sys
+import traceback
 from optparse import OptionParser
 
-from glue import lal
 from ligo import segments
 from ligo.segments import utils as segmentsUtils
-from glue import pidfile
 
-from glue.ligolw import ligolw
-from glue.ligolw import utils as ligolw_utils
+from glue import (
+    lal,
+    pidfile,
+)
+from glue.ligolw import (
+    array,
+    ligolw,
+    table,
+    utils as ligolw_utils,
+)
 from glue.ligolw.utils import process as ligolw_process
-# ER6 Glue fixes:
-from glue.ligolw import table
-from glue.ligolw import array
-
 from glue.segmentdb import segmentdb_utils
-from dqsegdb.apicalls import *
+
+from dqsegdb.apicalls import InsertMultipleDQXMLFileThreaded
 
 
 # try and exit gracefully on a term signal

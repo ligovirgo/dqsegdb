@@ -32,40 +32,39 @@ the segments, and produces veto files as XML.  Produces output to match S6
 style segment database tools.
 """
 
-from __future__ import print_function
-
-from optparse import OptionParser
-
-import sys
+import operator
 import os
 import pwd
+import re
+import sys
 import tempfile
-import operator
-
-from six.moves.urllib.parse import urlparse
-from six.moves.urllib.request import urlopen
-# from six.moves import reduce
+import time
 from functools import reduce
+from optparse import OptionParser
+from urllib.parse import urlparse
+from urllib.request import urlopen
 
 from ligo import segments
 
-import time
-from glue import gpstime
-
-from glue.ligolw import ligolw
-from glue.ligolw import utils
-from glue.ligolw.utils import ligolw_sqlite
-from glue.ligolw import dbtables
-
-from glue.segmentdb import query_engine
-from glue.segmentdb import segmentdb_utils
-
-from glue.ligolw.utils import process
+from glue import (
+    gpstime,
+)
+from glue.ligolw import (
+   dbtables,
+   ligolw,
+   utils,
+)
+from glue.ligolw.utils import (
+    ligolw_sqlite,
+    process,
+)
+from glue.segmentdb import (
+    query_engine,
+    segmentdb_utils,
+)
 
 from dqsegdb import apicalls
 from dqsegdb import clientutils
-
-import re
 
 PROGRAM_NAME = sys.argv[0].replace('./','')
 PROGRAM_PID  = os.getpid()

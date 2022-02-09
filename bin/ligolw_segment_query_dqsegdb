@@ -38,42 +38,44 @@ exactly the format returned by S6 style segment database tools.
 * Example: ligolw_segment_query_dqsegdb --segment-url=https://segments.ligo.org --query-segments --gps-start-time 987654321 --gps-end-time 987654333 --include-segments="H1:DMT-SCIENCE:1" -o example.xml
 """
 
-from __future__ import print_function
-
-from optparse import OptionParser
 
 
-import sys
-import warnings
-import os
-#import operator
-import pwd
-import tempfile
 import json
+import os
+import pwd
+import sys
+import tempfile
+import warnings
+from optparse import OptionParser
+from urllib.parse import urlparse
+from urllib.request import urlopen
 
-from six.moves.urllib.parse import urlparse
-from six.moves.urllib.request import urlopen
-
-from dqsegdb import apicalls
-from dqsegdb import urifunctions
-from dqsegdb import clientutils
+from dqsegdb import (
+    apicalls,
+    clientutils,
+    urifunctions,
+)
 
 from ligo import segments
 
-from glue.ligolw import ligolw
-from glue.ligolw import table
-from glue.ligolw import lsctables
-from glue.ligolw import utils
-
-from glue.ligolw.utils import process
-from glue.segmentdb import query_engine
-from glue.segmentdb import segmentdb_utils
-
-from glue.ligolw.utils import ligolw_sqlite
-from glue.ligolw import dbtables
+from glue.ligolw import (
+    dbtables,
+    ligolw,
+    lsctables,
+    table,
+    types as ligolwtypes,
+    utils,
+)
+from glue.ligolw.utils import (
+    ligolw_sqlite,
+    process,
+)
+from glue.segmentdb import (
+    query_engine,
+    segmentdb_utils,
+)
 
 from dqsegdb._version import get_versions
-
 
 debug=False
 #debug=True
