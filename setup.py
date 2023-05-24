@@ -18,6 +18,10 @@ AUTHOR = 'Ryan Fisher'
 AUTHOR_EMAIL = 'ryan.fisher@ligo.org'
 LICENSE = 'GPLv3'
 
+print("This version of the dqsegdb code is obsolete.  Please see https://git.ligo.org/computing/dqsegdb/ for the current code.")
+print("This code has been modified to prevent accidental installation of the obsolete code.  You should only modify and install it if you *really* know what you're doing.")
+exit()
+
 # -- versioning ---------------------------------------------------------------
 
 import versioneer
